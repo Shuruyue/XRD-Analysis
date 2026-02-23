@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Run a 20-phase thesis-grade audit workflow and emit a markdown report.
-"""
+"""Run a 20-phase XRD audit workflow and emit a markdown report."""
 
 from __future__ import annotations
 
@@ -39,9 +37,9 @@ def run_cmd(command: List[str], cwd: Path) -> tuple[int, str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run 20-phase PhD-grade XRD project audit.")
+    parser = argparse.ArgumentParser(description="Run 20-phase XRD project audit.")
     parser.add_argument("--sample", type=Path, default=Path("data/raw/202511/20251125_0ml_2h.txt"))
-    parser.add_argument("--output", type=Path, default=Path("outputs/reports/phd20_audit_report.md"))
+    parser.add_argument("--output", type=Path, default=Path("outputs/reports/audit_20phase_report.md"))
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -55,12 +53,12 @@ def main() -> int:
         (5, "Angle accuracy verification", ["python", "scripts/verify_angle_accuracy.py", str(args.sample)], 0),
         (6, "Background correction verification", ["python", "scripts/verify_background_correction.py", str(args.sample)], 0),
         (7, "CLI smoke test", ["python", "-m", "xrd_analysis.cli", "--help"], 0),
-        (8, "Single-sample analysis run", ["python", "-m", "xrd_analysis.cli", "analyze", str(args.sample), "-o", "outputs/phd20_tmp"], 0),
-        (9, "Calibration guardrail test with non-standard input", ["python", "-m", "xrd_analysis.cli", "calibrate", str(args.sample), "-o", "outputs/phd20_tmp/fake_calibration.yaml"], 1),
+        (8, "Single-sample analysis run", ["python", "-m", "xrd_analysis.cli", "analyze", str(args.sample), "-o", "outputs/audit20_tmp"], 0),
+        (9, "Calibration guardrail test with non-standard input", ["python", "-m", "xrd_analysis.cli", "calibrate", str(args.sample), "-o", "outputs/audit20_tmp/fake_calibration.yaml"], 1),
         (10, "Unit test suite", ["python", "-m", "pytest", "-q"], 0),
-        (11, "Documentation presence check", ["python", "-c", "from pathlib import Path; p=Path('docs/engineering_specs/11_PhD_20Phase_Optimization_Plan_EN.md'); print('OK' if p.exists() else 'MISSING'); raise SystemExit(0 if p.exists() else 1)"], 0),
+        (11, "Documentation presence check", ["python", "-c", "from pathlib import Path; p=Path('docs/engineering_specs/11_20Phase_Optimization_Plan_EN.md'); print('OK' if p.exists() else 'MISSING'); raise SystemExit(0 if p.exists() else 1)"], 0),
         (12, "Reference catalog presence check", ["python", "-c", "from pathlib import Path; p=Path('docs/engineering_specs/12_Reference_Catalog_100plus_EN.md'); print('OK' if p.exists() else 'MISSING'); raise SystemExit(0 if p.exists() else 1)"], 0),
-        (13, "Report file generation check", ["python", "-c", "from pathlib import Path; p=Path('outputs/phd20_tmp'); print('OK' if p.exists() else 'MISSING'); raise SystemExit(0 if p.exists() else 1)"], 0),
+        (13, "Report file generation check", ["python", "-c", "from pathlib import Path; p=Path('outputs/audit20_tmp'); print('OK' if p.exists() else 'MISSING'); raise SystemExit(0 if p.exists() else 1)"], 0),
         (14, "Pipeline import check", ["python", "-c", "from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline; print('OK')"], 0),
         (15, "Scherrer module import check", ["python", "-c", "from xrd_analysis.methods.scherrer import ScherrerCalculator; print('OK')"], 0),
         (16, "W-H module import check", ["python", "-c", "from xrd_analysis.methods.williamson_hall import WilliamsonHallAnalyzer; print('OK')"], 0),
@@ -89,7 +87,7 @@ def main() -> int:
 
     # Markdown report
     lines = [
-        "# PhD-Grade 20-Phase Audit Report",
+        "# 20-Phase XRD Audit Report",
         "",
         f"- Generated: {datetime.now().isoformat(timespec='seconds')}",
         f"- Sample: `{args.sample}`",

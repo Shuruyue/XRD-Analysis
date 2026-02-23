@@ -1,8 +1,8 @@
-# PhD-Grade 20-Phase Execution Log
+# 20-Phase Execution Log
 
 **Document ID**: DOC-ENG-13  
 **Date**: 2026-02-23  
-**Audit Runner Output**: `outputs/reports/phd20_audit_report.md` and `outputs/reports/phd20_audit_report.json`
+**Audit Runner Output**: `outputs/reports/audit_20phase_report.md` and `outputs/reports/audit_20phase_report.json`
 
 ---
 
@@ -23,7 +23,7 @@
 
 2. **Thesis QA Rubric Construction**  
    Status: Completed  
-   Evidence: `docs/engineering_specs/11_PhD_20Phase_Optimization_Plan_EN.md`.
+   Evidence: `docs/engineering_specs/11_20Phase_Optimization_Plan_EN.md`.
 
 3. **External Repo Reconnaissance**  
    Status: Completed  
@@ -93,7 +93,7 @@
 
 19. **Reproducible Benchmark Packaging**  
     Status: Completed  
-    Evidence: `scripts/run_phd20_audit.py` produces markdown + JSON report artifacts.
+    Evidence: `scripts/run_20phase_audit.py` produces markdown + JSON report artifacts.
 
 20. **Final Readiness Gate**  
     Status: Completed  
@@ -105,4 +105,3 @@
 
 - Real instrument calibration cannot be finalized until a true standard scan (LaB6/Si) is provided under `data/standards/`.
 - This blocker is intentionally surfaced as a controlled expected outcome in the 20-phase audit.
-

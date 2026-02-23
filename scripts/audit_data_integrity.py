@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Data integrity audit for thesis-grade XRD workflows.
+Data integrity audit for XRD workflows.
 
 Checks:
 1) Raw file presence and filename pattern consistency
@@ -94,4 +94,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -1,8 +1,8 @@
-# PhD-Grade XRD Optimization Plan (20 Phases)
+# XRD Optimization Plan (20 Phases)
 
 **Document ID**: DOC-ENG-11  
 **Date**: 2026-02-23  
-**Objective**: Upgrade this bachelor-thesis XRD codebase toward PhD-grade methodology rigor, software robustness, and reproducible reporting.
+**Objective**: Upgrade this XRD codebase toward high-rigor methodology, robust software quality, and reproducible reporting.
 
 ---
 
@@ -94,4 +94,3 @@ Additional mandatory review tracks:
 - M3: Report includes preprocessing, angle-verification, and method-limit diagnostics.
 - M4: Reference catalog expanded by at least 100 additional entries.
 - M5: One-command audit run produces reproducible artifacts.
-
