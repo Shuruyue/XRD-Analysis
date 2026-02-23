@@ -50,9 +50,6 @@ xrd-analysis calibrate data/standards/lab6_standard.txt -o calibration.yaml
 python scripts/calibrate_instrument.py data/standards/lab6_standard.txt \
   -o outputs/calibration.yaml \
   --update-config config.yaml
-
-# Report from summary CSV
-xrd-analysis report outputs/summary.csv -f markdown
 ```
 
 ### Validation Scripts
@@ -76,8 +73,6 @@ python scripts/audit_data_integrity.py
 # Instrument calibration helper (with fit-quality diagnostics)
 python scripts/calibrate_instrument.py data/standards/lab6_standard.txt -o outputs/calibration.yaml
 
-# One-command 20-phase audit
-python scripts/run_20phase_audit.py --sample data/raw/202511/20251125_0ml_2h.txt
 ```
 
 ---
@@ -97,11 +92,9 @@ xrd_analysis/
 │   ├── fitting/             # Peak fitting core
 │   ├── methods/             # Analysis methods (Scherrer, W-H, Texture)
 │   ├── validation/          # Error analysis and validation
-│   └── visualization/       # Plotting and reports
+│   └── visualization/       # Plotting
 ├── scripts/                 # Verification & Utility scripts
 ├── tests/                   # Unit tests
-├── docs/                    # User documentation (API, Guides)
-├── dev_notes/               # Developer notes & technical details
 ├── references/              # Literature references (PDFs)
 └── outputs/                 # Output directory (Ignored by Git)
 
@@ -132,12 +125,6 @@ D = K * lambda / (beta * cos(theta))
 1. Bearden, J.A. (1967). X-Ray Wavelengths. Rev. Mod. Phys. 39, 78-124.
 2. Langford, J.I. & Wilson, A.J.C. (1978). Scherrer after Sixty Years. J. Appl. Cryst. 11, 102-113.
 3. NIST Standard Reference Material 660c (LaB6)
-4. External benchmark and practical calibration notes:
-   `docs/engineering_specs/10_External_Repo_Paper_Benchmark.md`
-5. 20-phase optimization plan:
-   `docs/engineering_specs/11_20Phase_Optimization_Plan_EN.md`
-6. 100+ extended references:
-   `docs/engineering_specs/12_Reference_Catalog_100plus_EN.md`
 
 ---
 

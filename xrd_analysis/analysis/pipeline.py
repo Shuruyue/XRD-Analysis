@@ -49,13 +49,6 @@ from xrd_analysis.fitting.lm_optimizer import LMOptimizer
 from xrd_analysis.fitting.pseudo_voigt import PseudoVoigt, PseudoVoigtParams
 from xrd_analysis.preprocessing.pipeline import PreprocessingPipeline
 
-# Import after to avoid circular dependency
-from xrd_analysis.analysis.report_generator import (
-    ComprehensiveResult,
-    generate_comprehensive_report,
-    generate_csv_summary,
-)
-
 
 # =============================================================================
 # Configuration
@@ -169,10 +162,6 @@ class PipelineResult:
     stacking_fault: Optional[StackingFaultResult] = None
     lattice_result: Optional[LatticeConstantResult] = None
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
-    
-    # Comprehensive
-    comprehensive: Optional[ComprehensiveResult] = None
-    report: str = ""
 
 
 # =============================================================================
@@ -628,7 +617,6 @@ class XRDAnalysisPipeline:
         # Step 1: Load data
         two_theta, intensity, error = self._load_and_validate_data(filepath)
         if error:
-            result.report = error
             return result
 
         # Step 1.5: Preprocessing (smoothing/background/Kα2 strip)
@@ -647,7 +635,6 @@ class XRDAnalysisPipeline:
         # Step 2: Find peaks
         result.peaks = self._find_peaks_from_data(two_theta_proc, intensity_proc)
         if len(result.peaks) < 2:
-            result.report = f"Only {len(result.peaks)} peaks found"
             return result
 
         # Step 2.5: Angle correctness check (measured vs expected positions)
@@ -676,78 +663,10 @@ class XRDAnalysisPipeline:
         # Step 6: Defect analysis
         result.stacking_fault, result.lattice_result = self._run_defect_analysis(result.peaks)
         
-        # Step 7: Annealing state and comprehensive report
+        # Step 7: Annealing state
         result.annealing_state, _ = determine_annealing_state(effective_sample_age)
-        result.comprehensive = self._build_comprehensive(result)
-        result.report = generate_comprehensive_report(result.comprehensive)
         
         return result
-    
-    def _build_comprehensive(self, result: PipelineResult) -> ComprehensiveResult:
-        """Build ComprehensiveResult from pipeline result."""
-        comp = ComprehensiveResult(
-            sample_name=result.sample_name,
-            sample_age_hours=result.sample_age_hours,
-        )
-
-        comp.preprocessing_summary = list(result.preprocessing_notes)
-        comp.background_applied = result.background_applied
-        comp.background_method = result.background_method
-        comp.background_fraction_mean = result.background_fraction_mean
-        comp.angle_offset_mean_deg = result.angle_offset_mean_deg
-        comp.angle_offset_rmse_deg = result.angle_offset_rmse_deg
-        comp.angle_offset_max_abs_deg = result.angle_offset_max_abs_deg
-        comp.angle_validation_peaks = result.angle_validation_peaks
-        if (
-            result.angle_offset_max_abs_deg is not None
-            and result.angle_offset_max_abs_deg > 0.10
-        ):
-            comp.warnings.append(
-                f"Peak-angle max offset is {result.angle_offset_max_abs_deg:.3f} deg (>0.10 deg). "
-                "Check specimen displacement/zero-shift."
-            )
-        
-        # Scherrer
-        if result.average_size_nm:
-            comp.scherrer_size_nm = result.average_size_nm
-            comp.scherrer_validity = "VALID"
-        
-        # W-H
-        if result.wh_result:
-            comp.wh_size_nm = result.wh_result.crystallite_size_nm
-            comp.wh_strain = result.wh_result.microstrain
-            comp.wh_r_squared = result.wh_result.r_squared
-            comp.wh_quality = result.wh_result.quality_level.value
-            if result.wh_result.warning_message:
-                comp.warnings.append(result.wh_result.warning_message)
-            if result.wh_result.anisotropy_note:
-                comp.warnings.append(
-                    "W-H indicates anisotropy-dominated broadening; interpret isotropic strain with caution."
-                )
-        
-        # Texture (DATA ONLY, no diagnosis)
-        if result.texture_result:
-            comp.dominant_orientation = result.texture_result.dominant_hkl
-            comp.dominant_tc = result.texture_result.dominant_tc
-            comp.is_random_texture = result.texture_result.is_random
-            if len(result.peaks) < 2:
-                comp.warnings.append(
-                    "Texture analysis reliability is limited because fewer than 2 peaks were found."
-                )
-        
-        # Defects
-        if result.stacking_fault:
-            comp.peak_separation_deg = result.stacking_fault.peak_separation_deg
-            comp.stacking_fault_alpha = result.stacking_fault.alpha_percent
-            comp.stacking_fault_severity = result.stacking_fault.severity.value
-        
-        if result.lattice_result:
-            comp.lattice_constant = result.lattice_result.lattice_constant
-            comp.lattice_status = result.lattice_result.status.value
-        
-        comp.annealing_state = result.annealing_state.value
-        
-        return comp
 
     def process_file(
         self,
@@ -756,16 +675,12 @@ class XRDAnalysisPipeline:
         sample_age_hours: Optional[float] = None,
     ) -> PipelineResult:
         """
-        Analyze one file and save a text report to output directory.
+        Analyze one file and ensure output directory exists.
         """
         result = self.analyze(filepath, sample_age_hours=sample_age_hours)
 
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-
-        report_path = out_dir / f"{result.sample_name}_report.txt"
-        report_content = result.report or "No report generated."
-        report_path.write_text(report_content, encoding="utf-8")
 
         return result
 
@@ -784,7 +699,7 @@ def run_full_analysis(
     
     Example:
         >>> result = run_full_analysis("data/raw/sample.txt")
-        >>> print(result.report)
+        >>> print(result.sample_name)
     """
     pipeline = XRDAnalysisPipeline(config)
     return pipeline.analyze(filepath, sample_age_hours)

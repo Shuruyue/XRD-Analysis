@@ -31,12 +31,6 @@ from xrd_analysis.methods.defect_analysis import (
     WARREN_G_COEFFICIENT,
     STANDARD_LATTICE_CONSTANT,
 )
-from xrd_analysis.analysis.report_generator import (
-    ComprehensiveResult,
-    generate_comprehensive_report,
-    generate_csv_summary,
-)
-
 
 class TestConstants:
     """Tests for physical constants."""
@@ -210,43 +204,6 @@ class TestSelfAnnealingState:
         state, note = determine_annealing_state(None)
         
         assert state == AnnealingState.UNKNOWN
-
-
-class TestReportGeneration:
-    """Tests for comprehensive report generation."""
-    
-    def test_report_contains_sections(self):
-        """Report should contain all phase sections."""
-        result = ComprehensiveResult(
-            sample_name="Test Sample",
-            scherrer_size_nm=45.0,
-            wh_size_nm=42.7,
-            wh_strain=2.1e-4,
-            dominant_orientation=(1, 1, 1),
-            peak_separation_deg=7.05,
-            lattice_constant=3.6162,
-        )
-        
-        report = generate_comprehensive_report(result)
-        
-        assert "Phase 04" in report
-        assert "Phase 05" in report
-        assert "Phase 06" in report
-        assert "Phase 07" in report
-        assert "Test Sample" in report
-    
-    def test_csv_summary(self):
-        """CSV summary should have headers and values."""
-        result = ComprehensiveResult(
-            sample_name="Test",
-            scherrer_size_nm=45.0,
-        )
-        
-        csv = generate_csv_summary(result)
-        
-        assert "Sample" in csv
-        assert "Scherrer_nm" in csv
-        assert "Test" in csv
 
 
 if __name__ == "__main__":

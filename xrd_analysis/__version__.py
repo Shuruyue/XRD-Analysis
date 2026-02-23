@@ -24,6 +24,6 @@ VERSION_HISTORY = """
   - Initial refactored release 初始重構版本
   - Package renamed: src/ → xrd_analysis/
   - Merged Enhanced modules into main modules
-  - Unified CLI entry point (xrd-analysis analyze/calibrate/report)
+  - Unified CLI entry point (xrd-analysis analyze/calibrate)
   - Modern pyproject.toml packaging
 """

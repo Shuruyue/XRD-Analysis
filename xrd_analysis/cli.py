@@ -57,7 +57,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 Examples:
   xrd-analysis analyze data/sample.txt -o outputs/
   xrd-analysis calibrate data/LaB6_standard.txt
-  xrd-analysis report outputs/results.csv
         """
     )
     
@@ -113,23 +112,6 @@ Examples:
         help="Output calibration file 輸出校正檔案"
     )
     
-    # report command
-    report_parser = subparsers.add_parser(
-        "report",
-        help="Generate analysis report 產生分析報告"
-    )
-    report_parser.add_argument(
-        "results",
-        type=Path,
-        help="Results CSV file 結果 CSV 檔案"
-    )
-    report_parser.add_argument(
-        "-f", "--format",
-        choices=["markdown", "html", "pdf"],
-        default="markdown",
-        help="Report format 報告格式"
-    )
-    
     args = parser.parse_args(argv)
     
     if args.command is None:
@@ -141,8 +123,6 @@ Examples:
             return _run_analyze(args)
         elif args.command == "calibrate":
             return _run_calibrate(args)
-        elif args.command == "report":
-            return _run_report(args)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -261,26 +241,82 @@ def _write_summary_csv(results, output_dir: Path) -> Optional[Path]:
     """
     Write one-row-per-sample summary CSV from pipeline results.
     """
-    from xrd_analysis.analysis.report_generator import generate_csv_summary
+    header = [
+        "Sample",
+        "SampleAge_h",
+        "Scherrer_nm",
+        "WH_Size_nm",
+        "WH_Strain",
+        "WH_R2",
+        "Dominant_hkl",
+        "TC_dominant",
+        "Peak_Sep_deg",
+        "SF_alpha_pct",
+        "Lattice_A",
+        "Anneal_State",
+        "Background_Method",
+        "Background_Fraction",
+        "Angle_Mean_Offset_deg",
+        "Angle_RMSE_deg",
+        "Angle_MaxAbs_deg",
+        "Angle_NPeaks",
+    ]
 
-    header = None
-    rows = []
-
+    rows: List[str] = []
     for result in results:
-        if result.comprehensive is None:
-            continue
-        csv_text = generate_csv_summary(result.comprehensive).strip().splitlines()
-        if len(csv_text) < 2:
-            continue
-        if header is None:
-            header = csv_text[0]
-        rows.append(csv_text[1])
+        dom_hkl = ""
+        dom_tc = ""
+        if result.texture_result and result.texture_result.dominant_hkl:
+            h, k, l = result.texture_result.dominant_hkl
+            dom_hkl = f"({h}{k}{l})"
+            if result.texture_result.dominant_tc is not None:
+                dom_tc = f"{result.texture_result.dominant_tc:.2f}"
 
-    if not header or not rows:
+        wh_size = ""
+        wh_strain = ""
+        wh_r2 = ""
+        if result.wh_result:
+            wh_size = f"{result.wh_result.crystallite_size_nm:.1f}"
+            wh_strain = f"{result.wh_result.microstrain:.2e}"
+            wh_r2 = f"{result.wh_result.r_squared:.3f}"
+
+        sf_sep = ""
+        sf_alpha = ""
+        if result.stacking_fault:
+            sf_sep = f"{result.stacking_fault.peak_separation_deg:.3f}"
+            sf_alpha = f"{result.stacking_fault.alpha_percent:.2f}"
+
+        lattice_a = ""
+        if result.lattice_result:
+            lattice_a = f"{result.lattice_result.lattice_constant:.4f}"
+
+        row = [
+            result.sample_name,
+            f"{result.sample_age_hours:.1f}" if result.sample_age_hours is not None else "",
+            f"{result.average_size_nm:.1f}" if result.average_size_nm is not None else "",
+            wh_size,
+            wh_strain,
+            wh_r2,
+            dom_hkl,
+            dom_tc,
+            sf_sep,
+            sf_alpha,
+            lattice_a,
+            result.annealing_state.value if hasattr(result.annealing_state, "value") else str(result.annealing_state),
+            result.background_method if result.background_applied else "none",
+            f"{result.background_fraction_mean:.4f}" if result.background_fraction_mean is not None else "",
+            f"{result.angle_offset_mean_deg:.4f}" if result.angle_offset_mean_deg is not None else "",
+            f"{result.angle_offset_rmse_deg:.4f}" if result.angle_offset_rmse_deg is not None else "",
+            f"{result.angle_offset_max_abs_deg:.4f}" if result.angle_offset_max_abs_deg is not None else "",
+            str(result.angle_validation_peaks) if result.angle_validation_peaks else "",
+        ]
+        rows.append(",".join(row))
+
+    if not rows:
         return None
 
     summary_path = output_dir / "summary.csv"
-    summary_path.write_text("\n".join([header, *rows]) + "\n", encoding="utf-8")
+    summary_path.write_text(",".join(header) + "\n" + "\n".join(rows) + "\n", encoding="utf-8")
     return summary_path
 
 
@@ -480,116 +516,6 @@ def _run_calibrate(args) -> int:
     
     print(f"\nCalibration saved to: {args.output}")
     print("Calibration complete. 校正完成。")
-    return 0
-
-
-def _run_report(args) -> int:
-    """
-    Run report generation command.
-    執行報告生成指令。
-    
-    Generates analysis report from results CSV file.
-    從結果 CSV 檔案生成分析報告。
-    """
-    import pandas as pd
-    from datetime import datetime
-    from xrd_analysis.analysis.report_generator import generate_comprehensive_report
-    
-    print(f"Generating {args.format} report from: {args.results}")
-    
-    # Load results
-    if not args.results.exists():
-        print(f"Error: Results file not found: {args.results}")
-        return 1
-    
-    try:
-        df = pd.read_csv(args.results)
-    except Exception as e:
-        print(f"Error loading CSV: {e}")
-        return 1
-    
-    print(f"  Loaded {len(df)} analysis records")
-    
-    # Generate report content
-    report_lines = [
-        "# XRD-Analysis Analysis Report",
-        f"# XRD-Analysis 分析報告",
-        "",
-        f"**Generated / 生成時間**: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        "",
-        "---",
-        "",
-        "## Summary / 摘要",
-        "",
-    ]
-    
-    # Add summary statistics
-    if 'size_nm' in df.columns:
-        valid_sizes = df['size_nm'].dropna()
-        if len(valid_sizes) > 0:
-            report_lines.extend([
-                f"- **Total samples / 總樣品數**: {len(df)}",
-                f"- **Average crystallite size / 平均晶粒尺寸**: {valid_sizes.mean():.1f} nm",
-                f"- **Size range / 尺寸範圍**: {valid_sizes.min():.1f} - {valid_sizes.max():.1f} nm",
-                "",
-            ])
-    
-    # Add data table
-    report_lines.extend([
-        "## Data Table / 資料表",
-        "",
-        df.to_markdown(index=False) if hasattr(df, 'to_markdown') else df.to_string(),
-        "",
-    ])
-    
-    report_content = "\n".join(report_lines)
-    
-    # Determine output path
-    output_path = args.results.parent / f"report_{args.results.stem}.{args.format}"
-    if args.format == "markdown":
-        output_path = output_path.with_suffix(".md")
-    
-    # Save report
-    if args.format == "markdown":
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(report_content)
-        print(f"\nMarkdown report saved to: {output_path}")
-    elif args.format == "html":
-        try:
-            import markdown
-            html_content = markdown.markdown(report_content, extensions=['tables'])
-            html_output = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>XRD-Analysis Report</title>
-    <style>
-        body {{ font-family: 'Segoe UI', sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }}
-        table {{ border-collapse: collapse; width: 100%; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-        th {{ background: #4a90d9; color: white; }}
-    </style>
-</head>
-<body>
-{html_content}
-</body>
-</html>"""
-            output_path = output_path.with_suffix(".html")
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html_output)
-            print(f"\nHTML report saved to: {output_path}")
-        except ImportError:
-            print("Warning: 'markdown' package not installed. Saving as markdown instead.")
-            output_path = output_path.with_suffix(".md")
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(report_content)
-    else:
-        print(f"Warning: {args.format} format not yet implemented. Saving as markdown.")
-        output_path = output_path.with_suffix(".md")
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(report_content)
-    
-    print("Report generated. 報告已生成。")
     return 0
 
 
