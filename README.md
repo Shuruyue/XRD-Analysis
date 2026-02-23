@@ -70,8 +70,14 @@ python scripts/verify_angle_accuracy.py data/raw/202511/20251125_0ml_2h.txt
 # Verify background correction statistics
 python scripts/verify_background_correction.py data/raw/202511/20251125_0ml_2h.txt
 
+# Data integrity audit (raw/standards/provenance readiness)
+python scripts/audit_data_integrity.py
+
 # Instrument calibration helper (with fit-quality diagnostics)
 python scripts/calibrate_instrument.py data/standards/lab6_standard.txt -o outputs/calibration.yaml
+
+# One-command 20-phase thesis-grade audit
+python scripts/run_phd20_audit.py --sample data/raw/202511/20251125_0ml_2h.txt
 ```
 
 ---
@@ -128,6 +134,10 @@ D = K * lambda / (beta * cos(theta))
 3. NIST Standard Reference Material 660c (LaB6)
 4. External benchmark and practical calibration notes:
    `docs/engineering_specs/10_External_Repo_Paper_Benchmark.md`
+5. PhD-grade 20-phase optimization plan:
+   `docs/engineering_specs/11_PhD_20Phase_Optimization_Plan_EN.md`
+6. 100+ extended references:
+   `docs/engineering_specs/12_Reference_Catalog_100plus_EN.md`
 
 ---
 

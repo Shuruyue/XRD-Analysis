@@ -556,6 +556,22 @@ class XRDAnalysisPipeline:
         ]
         avg_size = np.mean(valid_sizes) if valid_sizes else None
         return scherrer_results, avg_size
+
+    def _prepare_wh_input(self, peaks, scherrer_results):
+        """
+        Prepare W-H input using instrument-corrected sample broadening.
+
+        Methodology rationale:
+        - W-H should use sample broadening (beta_sample), not raw observed FWHM.
+        - We therefore reuse Scherrer pathway deconvolution output (fwhm_sample).
+        """
+        if not scherrer_results or len(peaks) != len(scherrer_results):
+            return None, None, None
+
+        two_theta_arr = np.array([p.two_theta for p in peaks], dtype=float)
+        fwhm_sample_arr = np.array([r.fwhm_sample for r in scherrer_results], dtype=float)
+        hkl_list = [p.hkl for p in peaks]
+        return two_theta_arr, fwhm_sample_arr, hkl_list
     
     def _run_defect_analysis(self, peaks):
         """Run defect and lattice analysis. Returns (stacking_fault, lattice)."""
@@ -647,10 +663,11 @@ class XRDAnalysisPipeline:
         
         # Step 4: W-H analysis (if enough peaks)
         if len(result.peaks) >= 3:
-            two_theta_arr = np.array([p.two_theta for p in result.peaks])
-            fwhm_arr = np.array([p.fwhm for p in result.peaks])
-            hkl_list = [p.hkl for p in result.peaks]
-            result.wh_result = self.wh.analyze(two_theta_arr, fwhm_arr, hkl_list)
+            two_theta_arr, fwhm_arr, hkl_list = self._prepare_wh_input(
+                result.peaks, result.scherrer_results
+            )
+            if two_theta_arr is not None:
+                result.wh_result = self.wh.analyze(two_theta_arr, fwhm_arr, hkl_list)
         
         # Step 5: Texture analysis
         intensities = {p.hkl: p.intensity for p in result.peaks}
@@ -701,12 +718,22 @@ class XRDAnalysisPipeline:
             comp.wh_strain = result.wh_result.microstrain
             comp.wh_r_squared = result.wh_result.r_squared
             comp.wh_quality = result.wh_result.quality_level.value
+            if result.wh_result.warning_message:
+                comp.warnings.append(result.wh_result.warning_message)
+            if result.wh_result.anisotropy_note:
+                comp.warnings.append(
+                    "W-H indicates anisotropy-dominated broadening; interpret isotropic strain with caution."
+                )
         
         # Texture (DATA ONLY, no diagnosis)
         if result.texture_result:
             comp.dominant_orientation = result.texture_result.dominant_hkl
             comp.dominant_tc = result.texture_result.dominant_tc
             comp.is_random_texture = result.texture_result.is_random
+            if len(result.peaks) < 2:
+                comp.warnings.append(
+                    "Texture analysis reliability is limited because fewer than 2 peaks were found."
+                )
         
         # Defects
         if result.stacking_fault:

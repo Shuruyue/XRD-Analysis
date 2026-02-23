@@ -47,6 +47,18 @@ python scripts/calibrate_instrument.py data/standards/lab6_standard.txt \
 - Quantifies background-to-signal ratio.
 - Confirms no negative-intensity artifacts remain after correction.
 
+#### `audit_data_integrity.py`
+**Purpose**: Audits data and calibration readiness.
+**Uses**:
+- Validates raw filename pattern and empty-file risk.
+- Checks whether a real calibration standard file exists.
+
+#### `run_phd20_audit.py`
+**Purpose**: Runs a thesis-grade 20-phase audit workflow.
+**Uses**:
+- Executes validation, CLI, and test checkpoints in sequence.
+- Writes markdown/json audit reports under `outputs/reports/`.
+
 ### Plot Generation (繪圖工具)
 
 #### `generate_fitting_diagnosis.py`

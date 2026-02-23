@@ -14,6 +14,9 @@ Welcome to the XRD-Analysis (Advanced XRD Crystallite Size Analysis System) docu
 
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Development guidelines *(to be created)*
 - **Project Structure** - See [complete_structure_tree.md](../審核資料/complete_structure_tree.md)
+- **PhD 20-Phase Plan** - [engineering_specs/11_PhD_20Phase_Optimization_Plan_EN.md](engineering_specs/11_PhD_20Phase_Optimization_Plan_EN.md)
+- **100+ Reference Catalog** - [engineering_specs/12_Reference_Catalog_100plus_EN.md](engineering_specs/12_Reference_Catalog_100plus_EN.md)
+- **20-Phase Execution Log** - [engineering_specs/13_PhD_20Phase_Execution_Log_EN.md](engineering_specs/13_PhD_20Phase_Execution_Log_EN.md)
 
 ## Quick Start
 
