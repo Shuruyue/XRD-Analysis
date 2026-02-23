@@ -14,6 +14,8 @@ xrd_analysis is an automated XRD analysis system that addresses common issues in
 - Inaccurate instrumental broadening correction
 - Incorrect peak profile function selection
 
+Default constants and examples in this repository target Cu scans, but the workflow itself is not limited to electroplated Cu.
+
 ### Core Features
 
 - **True Voigt + Kalpha Doublet Fitting**: Primary path uses physically rigorous line shape with Cu Kalpha1/Kalpha2 coupling
@@ -66,9 +68,6 @@ python scripts/verify_angle_accuracy.py data/raw/202511/20251125_0ml_2h.txt
 
 # Verify background correction statistics
 python scripts/verify_background_correction.py data/raw/202511/20251125_0ml_2h.txt
-
-# Data integrity audit (raw/standards/provenance readiness)
-python scripts/audit_data_integrity.py
 
 # Instrument calibration helper (with fit-quality diagnostics)
 python scripts/calibrate_instrument.py data/standards/lab6_standard.txt -o outputs/calibration.yaml

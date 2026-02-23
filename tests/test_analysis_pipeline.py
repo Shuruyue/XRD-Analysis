@@ -1,4 +1,4 @@
-"""Tests for analysis pipeline coupling and methodology constraints."""
+"""Tests for analysis pipeline coupling and implementation constraints."""
 
 import numpy as np
 
@@ -30,4 +30,3 @@ def test_prepare_wh_input_uses_scherrer_corrected_fwhm():
     assert np.allclose(two_theta_arr, [43.3, 50.4, 74.1])
     assert np.allclose(fwhm_arr, [0.21, 0.19, 0.17])
     assert hkl_list == [(1, 1, 1), (2, 0, 0), (2, 2, 0)]
-

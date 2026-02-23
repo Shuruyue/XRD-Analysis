@@ -501,7 +501,7 @@ def determine_annealing_state(
     if sample_age_hours < 1:
         return (
             AnnealingState.AS_DEPOSITED,
-            "鍍態樣品：預期細晶粒、高缺陷密度。建議 7 天後重測以獲得穩定結構"
+            "初始態樣品：預期細晶粒、高缺陷密度。建議 7 天後重測以獲得穩定結構"
         )
     elif sample_age_hours < 24:
         state = AnnealingState.PARTIAL

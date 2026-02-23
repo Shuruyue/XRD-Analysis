@@ -214,8 +214,8 @@ class ScherrerCubicK:
     2. 若使用積分寬度，請參考原論文 Table 2 的 $K_β$ 欄位
        For integral breadth, see $K_β$ column in original Table 2
        
-    3. 電鍍銅形成柱狀晶粒具有立方晶習，非球形晶粒
-       Electrodeposited Cu forms columnar grains with cubic habit
+    3. Cu 薄膜/鍍層等實務案例常見柱狀晶粒與立方晶習，非球形晶粒
+       Cu thin-film/plated cases often show columnar grains with cubic habit
     
     ═══════════════════════════════════════════════════════════════════════════
     物理意義 Physical Meaning
@@ -259,7 +259,7 @@ def get_k_for_hkl(
     """
     Get appropriate Scherrer K value for given (hkl) direction.
     
-    For electrodeposited copper with cubic habit grains, the Scherrer
+    For copper systems with cubic-habit grains, the Scherrer
     constant varies with crystallographic direction due to the 
     non-spherical grain shape.
     
@@ -458,8 +458,8 @@ def get_poisson_ratio(
     Get direction-dependent Poisson's ratio for copper.
     取得銅的方向相依泊松比。
     
-    用於殘留應力分析，特別是具有織構的電鍍銅樣品。
-    For residual stress analysis, especially for textured electroplated Cu.
+    用於殘留應力分析，特別是具有織構的 Cu 樣品。
+    For residual stress analysis, especially for textured Cu samples.
     
     Args:
         h, k, l: Miller indices / Miller 指數
@@ -533,10 +533,10 @@ def get_youngs_modulus(h: int, k: int, l: int) -> float:
 
 
 # =============================================================================
-# Electrodeposited Copper Lattice Anomaly Detection
+# Copper Lattice Anomaly Detection Helpers
 # =============================================================================
 
-# Standard lattice constant range for electrodeposited copper
+# Standard lattice constant reference window for Cu datasets
 ELECTROPLATED_A_STANDARD = 3.6150  # Å (reference)
 ELECTROPLATED_A_MIN = 3.6150       # Å (pure, stress-free)
 ELECTROPLATED_A_MAX = 3.6200       # Å (with impurity expansion)
@@ -556,7 +556,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
     """
     Validate measured lattice constant against expected range.
     
-    Electrodeposited copper often exhibits lattice expansion due to:
+    Processed Cu samples can exhibit lattice expansion due to:
     1. Impurity incorporation (S, Cl, C from additives)
     2. Vacancy accumulation
     3. Residual stress
