@@ -129,7 +129,7 @@ class VisualizationConfig:
         figure_format: Output file format (png, svg, pdf)
         colormap: Color scheme name
     """
-    dpi: int = 2400
+    dpi: int = 600
     figure_format: str = "png"
     colormap: str = "colorblind_safe"
     
@@ -229,7 +229,7 @@ class ParameterConfig:
         # Extract visualization parameters
         vis_dict = yaml_config.get('visualization', {})
         visualization = VisualizationConfig(
-            dpi=vis_dict.get('dpi', 2400),
+            dpi=vis_dict.get('dpi', 600),
             figure_format=vis_dict.get('format', 'png'),
         )
         

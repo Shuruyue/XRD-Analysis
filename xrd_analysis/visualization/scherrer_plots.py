@@ -21,7 +21,7 @@ def plot_scherrer_evolution_by_peak(
     data: List[Dict[str, Any]],
     x_param: str = "time",
     output_path: Optional[str] = None,
-    dpi: int = 1200,
+    dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: Tuple[float, float] = (12, 8),
@@ -178,7 +178,7 @@ def plot_scherrer_evolution_by_peak(
 def plot_scherrer_by_concentration(
     data: List[Dict[str, Any]],
     output_path: Optional[str] = None,
-    dpi: int = 1200,
+    dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: Tuple[float, float] = (11, 11), # Square figure to help subplots be square

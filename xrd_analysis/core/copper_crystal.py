@@ -405,16 +405,20 @@ class CopperPoissonRatio:
            = 0.0149951 - (-0.0062817) - 0.0066313
            = 0.0146455 GPa⁻¹
     
-    方向相依泊松比公式 Direction-dependent formula:
-        ν_hkl = -S12 × E_hkl
-        
-        其中 E_hkl = 1 / [S11 - 2×S0×Γ]
-        Γ = (h²k² + k²l² + l²h²) / (h² + k² + l²)²
-        
-    計算結果 Calculated values:
-        ν_111 = -S12 × E_111 = -(-0.0062817) × 191.1 = 0.268 ✓
-        ν_200 = -S12 × E_100 = -(-0.0062817) × 66.7 = 0.419 ✓  
-        ν_220 = -S12 × E_110 = -(-0.0062817) × 130.3 = 0.342 ✓
+    方向相依泊松比（主要方向）公式 Direction-dependent formulas (principal directions):
+        ν_<100> = C12 / (C11 + C12)
+               = 121.4 / (168.4 + 121.4)
+               = 0.419
+
+        ν_<111> = (C11 + 2C12 - 2C44) / [2(C11 + 2C12 + C44)]
+               = (168.4 + 2*121.4 - 2*75.4) / [2*(168.4 + 2*121.4 + 75.4)]
+               = 0.268
+
+    實作值來源 Implementation note:
+        ν_220 與 ν_311 採用文獻表列值/近似值，
+        用於殘留應力估算的方向修正。
+        ν_220 and ν_311 are taken from tabulated/approximated literature values
+        for directional correction in residual stress estimation.
         
     多晶平均 Polycrystalline average:
         ν_poly = 0.343 (Ledbetter & Naimon 1974 reported value)
@@ -423,10 +427,10 @@ class CopperPoissonRatio:
     應用 Application
     ═══════════════════════════════════════════════════════════════════════════
     
-    用於 X-ray 殘留應力分析公式：
-    For X-ray residual stress analysis:
+    用於 X-ray 殘留應力分析（平面應力、等雙軸）：
+    For X-ray residual stress analysis (plane-stress, equi-biaxial):
     
-        σ = E_hkl / (1 + ν_hkl) × (d - d₀) / d₀
+        σ = -E_hkl / (2ν_hkl) × (d - d₀) / d₀
     
     織構樣品應使用方向相依值以獲得準確應力數據。
     For textured samples, use directional values for accurate stress data.

@@ -31,6 +31,16 @@ class ComprehensiveResult:
     sample_name: str = "Unknown"
     sample_age_hours: Optional[float] = None
     analysis_date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M"))
+
+    # Methodology / preprocessing quality
+    preprocessing_summary: List[str] = field(default_factory=list)
+    background_applied: bool = False
+    background_method: str = "none"
+    background_fraction_mean: Optional[float] = None
+    angle_offset_mean_deg: Optional[float] = None
+    angle_offset_rmse_deg: Optional[float] = None
+    angle_offset_max_abs_deg: Optional[float] = None
+    angle_validation_peaks: int = 0
     
     # Phase 04: Scherrer
     scherrer_size_nm: Optional[float] = None
@@ -89,6 +99,35 @@ def generate_comprehensive_report(result: ComprehensiveResult) -> str:
         lines.append(f"樣品存放：{result.sample_age_hours:.1f} 小時")
     else:
         lines.append("樣品存放：未知")
+
+    # Analysis workflow and methodology checks
+    lines.extend([
+        "",
+        "-" * 40,
+        "【Workflow / 方法流程】",
+        "-" * 40,
+        "  載入資料 -> 依預期峰位找峰 -> Scherrer -> W-H -> Texture -> 缺陷 -> 文字報告",
+    ])
+    if result.preprocessing_summary:
+        lines.append("  預處理：")
+        for item in result.preprocessing_summary:
+            lines.append(f"    - {item}")
+    if result.background_applied:
+        lines.append(f"  背景校正：ON ({result.background_method})")
+        if result.background_fraction_mean is not None:
+            lines.append(f"  平均背景占比：{result.background_fraction_mean:.3f}")
+    else:
+        lines.append("  背景校正：OFF")
+
+    if result.angle_validation_peaks > 0:
+        lines.append(
+            f"  角度驗證：n={result.angle_validation_peaks}, "
+            f"mean={result.angle_offset_mean_deg:+.4f}°, "
+            f"RMSE={result.angle_offset_rmse_deg:.4f}°, "
+            f"max|Δ2θ|={result.angle_offset_max_abs_deg:.4f}°"
+        )
+    else:
+        lines.append("  角度驗證：無可比對峰位")
     
     # Phase 04: Scherrer
     lines.extend([
@@ -217,6 +256,12 @@ def generate_csv_summary(result: ComprehensiveResult) -> str:
         "SF_alpha_pct",
         "Lattice_A",
         "Anneal_State",
+        "Background_Method",
+        "Background_Fraction",
+        "Angle_Mean_Offset_deg",
+        "Angle_RMSE_deg",
+        "Angle_MaxAbs_deg",
+        "Angle_NPeaks",
     ]
     
     dom_hkl = ""
@@ -237,6 +282,12 @@ def generate_csv_summary(result: ComprehensiveResult) -> str:
         f"{result.stacking_fault_alpha:.2f}" if result.stacking_fault_alpha else "",
         f"{result.lattice_constant:.4f}" if result.lattice_constant else "",
         result.annealing_state,
+        result.background_method if result.background_applied else "none",
+        f"{result.background_fraction_mean:.4f}" if result.background_fraction_mean is not None else "",
+        f"{result.angle_offset_mean_deg:.4f}" if result.angle_offset_mean_deg is not None else "",
+        f"{result.angle_offset_rmse_deg:.4f}" if result.angle_offset_rmse_deg is not None else "",
+        f"{result.angle_offset_max_abs_deg:.4f}" if result.angle_offset_max_abs_deg is not None else "",
+        str(result.angle_validation_peaks) if result.angle_validation_peaks else "",
     ]
     
     return ",".join(headers) + "\n" + ",".join(values)

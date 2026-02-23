@@ -243,7 +243,7 @@ def compare_methods_for_sample(filepath: Path, output_dir: Path):
     
     # Save using xrd_analysis save_figure
     output_path = output_dir / f'{sample_name}_method_comparison.png'
-    save_figure(fig, str(output_path), dpi=1200)
+    save_figure(fig, str(output_path), dpi=300)
     plt.close()
     
     return True

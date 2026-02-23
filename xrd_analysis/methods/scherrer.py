@@ -141,11 +141,13 @@ class ScherrerCalculator:
         self,
         wavelength: float = CU_KA1,
         use_cubic_habit: bool = True,
-        caglioti_params: Optional[Tuple[float, float, float]] = None
+        caglioti_params: Optional[Tuple[float, float, float]] = None,
+        deconvolution_method: str = "auto",
     ) -> None:
         self.wavelength = wavelength
         self.use_cubic_habit = use_cubic_habit
         self.caglioti_params = caglioti_params
+        self.deconvolution_method = deconvolution_method
 
     def calculate(
         self,
@@ -153,6 +155,7 @@ class ScherrerCalculator:
         fwhm_observed: float,
         fwhm_instrumental: Optional[float] = None,
         hkl: Optional[Tuple[int, int, int]] = None,
+        correction_method: Optional[str] = None,
         **kwargs
     ) -> ScherrerResult:
         """
@@ -166,6 +169,12 @@ class ScherrerCalculator:
                 儀器寬化，若 None 則使用 Caglioti。
             hkl: Miller indices for K selection (auto-assigned if None).
                 Miller 指數，若 None 則自動指派。
+            correction_method:
+                Broadening subtraction method:
+                - "quadratic": β = sqrt(β_obs² - β_inst²)
+                - "voigt": component-wise G/L subtraction
+                - "auto": use "voigt" only when eta_observed is provided,
+                          otherwise use "quadratic"
 
         Returns:
             ScherrerResult with calculated size and metadata.
@@ -230,58 +239,81 @@ class ScherrerCalculator:
         # 3. Recombine: FWHM_samp ≈ 0.5346 fL + √(0.2166 fL² + fG²)
         # =========================================================================
         
-        # Default eta if not provided (fallback to geometric/linear assumptions)
-        # Fix: Retrieve eta from kwargs as it's passed from pipeline
-        eta_obs = kwargs.get('eta', 0.5)  # Default to 0.5 (Pseudo-Voigt mix) if missing
-        eta_inst = 0.0 # Instrument assumed Gaussian by default
+        # Respect pipeline argument names first, then backward-compatible aliases.
+        eta_obs = kwargs.get("eta_observed", kwargs.get("eta"))
+        eta_inst = kwargs.get("eta_instrumental", 0.0)  # Instrument assumed Gaussian by default
+        method = (correction_method or self.deconvolution_method or "auto").lower()
 
         if fwhm_instrumental > 0:
-            # 1. Decompose Observed
-            fG_obs, fL_obs = self._get_voigt_components(fwhm_observed, eta_obs)
-            
-            # 2. Decompose Instrumental
-            fG_inst, fL_inst = self._get_voigt_components(fwhm_instrumental, eta_inst)
-            
-            # 3. Component Subtraction
-            # Lorentzian: Linear subtraction
-            fL_sample = fL_obs - fL_inst
-            
-            # Gaussian: Quadratic subtraction
-            fG_sq_diff = fG_obs**2 - fG_inst**2
-            
-            # Validity Check (Physically impossible cases)
-            if fL_sample < 0 and fG_sq_diff < 0:
-                # Both components smaller than instrument -> Completely unreliable
-                validity_flag = ValidityFlag.UNRELIABLE
-                warnings.append(
-                    f"FWHM_obs ({fwhm_observed:.4f}°) < FWHM_inst ({fwhm_instrumental:.4f}°)"
-                )
-                is_reliable = False
-                fwhm_sample = 0.001 # prevent nan
-            else:
-                # Handle cases where one component might be slightly negative due to noise/fitting error
-                # We clamp negative correlations to 0 but warn if significant
-                if fG_sq_diff < 0:
-                    fG_sample = 0
-                    if abs(fG_sq_diff) > 0.0001: # Tolerance
-                         warnings.append("Gaussian component smaller than instrument")
-                else:
-                    fG_sample = np.sqrt(fG_sq_diff)
-                    
-                if fL_sample < 0:
-                    fL_sample = 0
-                    if abs(fL_sample) > 0.0001:
-                         warnings.append("Lorentzian component smaller than instrument")
+            ratio = fwhm_observed / fwhm_instrumental
 
-                # 4. Recombine (Olivero-Longbothum approximation)
-                fwhm_sample = 0.5346 * fL_sample + np.sqrt(0.2166 * fL_sample**2 + fG_sample**2)
-                
-                # Double check ratio for reliability flag
-                ratio = fwhm_observed / fwhm_instrumental
-                if ratio < FWHM_RATIO_THRESHOLD:
+            if ratio < FWHM_RATIO_THRESHOLD:
+                validity_flag = ValidityFlag.UNRELIABLE
+                warnings.append(f"FWHM ratio {ratio:.2f} < {FWHM_RATIO_THRESHOLD}")
+                is_reliable = False
+
+            if method == "auto":
+                # If eta is unavailable, use textbook quadratic subtraction
+                # to remain consistent with documented examples.
+                method = "voigt" if eta_obs is not None else "quadratic"
+
+            if method == "quadratic":
+                fwhm_sq_diff = fwhm_observed**2 - fwhm_instrumental**2
+                if fwhm_sq_diff <= 0:
+                    fwhm_sample = 0.001  # Prevent divide-by-zero / NaN
+                    if fwhm_observed < fwhm_instrumental:
+                        warnings.append(
+                            f"FWHM_obs ({fwhm_observed:.4f}°) < FWHM_inst ({fwhm_instrumental:.4f}°)"
+                        )
+                else:
+                    fwhm_sample = float(np.sqrt(fwhm_sq_diff))
+            elif method == "voigt":
+                if eta_obs is None:
+                    eta_obs = 0.5
+                    warnings.append("eta_observed missing; fallback eta=0.5 for Voigt subtraction")
+
+                # 1. Decompose Observed
+                fG_obs, fL_obs = self._get_voigt_components(fwhm_observed, eta_obs)
+
+                # 2. Decompose Instrumental
+                fG_inst, fL_inst = self._get_voigt_components(fwhm_instrumental, eta_inst)
+
+                # 3. Component Subtraction
+                # Lorentzian: Linear subtraction
+                fL_sample = fL_obs - fL_inst
+
+                # Gaussian: Quadratic subtraction
+                fG_sq_diff = fG_obs**2 - fG_inst**2
+
+                # Validity Check (Physically impossible cases)
+                if fL_sample < 0 and fG_sq_diff < 0:
+                    # Both components smaller than instrument -> Completely unreliable
                     validity_flag = ValidityFlag.UNRELIABLE
-                    warnings.append(f"FWHM ratio {ratio:.2f} < {FWHM_RATIO_THRESHOLD}")
+                    warnings.append(
+                        f"FWHM_obs ({fwhm_observed:.4f}°) < FWHM_inst ({fwhm_instrumental:.4f}°)"
+                    )
                     is_reliable = False
+                    fwhm_sample = 0.001  # prevent nan
+                else:
+                    # Handle cases where one component might be slightly negative due to noise/fitting error
+                    # We clamp negative correlations to 0 but warn if significant
+                    if fG_sq_diff < 0:
+                        fG_sample = 0
+                        if abs(fG_sq_diff) > 0.0001:  # Tolerance
+                            warnings.append("Gaussian component smaller than instrument")
+                    else:
+                        fG_sample = np.sqrt(fG_sq_diff)
+
+                    if fL_sample < 0:
+                        fL_sample_raw = fL_sample
+                        fL_sample = 0
+                        if abs(fL_sample_raw) > 0.0001:
+                            warnings.append("Lorentzian component smaller than instrument")
+
+                    # 4. Recombine (Olivero-Longbothum approximation)
+                    fwhm_sample = 0.5346 * fL_sample + np.sqrt(0.2166 * fL_sample**2 + fG_sample**2)
+            else:
+                raise ValueError(f"Unknown correction_method: {method}")
         else:
             # No instrumental correction
             fwhm_sample = fwhm_observed
@@ -449,7 +481,8 @@ def calculate_scherrer(
     two_theta: float,
     fwhm_observed: float,
     fwhm_instrumental: float = 0.0,
-    use_cubic_habit: bool = True
+    use_cubic_habit: bool = True,
+    correction_method: str = "auto",
 ) -> ScherrerResult:
     """
     Convenience function for Scherrer calculation with full metadata.
@@ -461,7 +494,12 @@ def calculate_scherrer(
         D = 49.0 nm
     """
     calc = ScherrerCalculator(use_cubic_habit=use_cubic_habit)
-    return calc.calculate(two_theta, fwhm_observed, fwhm_instrumental)
+    return calc.calculate(
+        two_theta,
+        fwhm_observed,
+        fwhm_instrumental,
+        correction_method=correction_method,
+    )
 
 
 def generate_scherrer_report(

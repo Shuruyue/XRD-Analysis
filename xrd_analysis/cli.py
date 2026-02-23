@@ -21,7 +21,7 @@ from xrd_analysis.__version__ import __version__
 # =============================================================================
 # Reference: NIST Standard Reference Material 660c
 #            Certificate of Analysis, National Institute of Standards and Technology
-#            a = 4.15689 Å (lattice parameter)
+#            a = 4.156826 Å (certified lattice parameter at 22.5 °C)
 #            Cu Kα₁ wavelength: λ = 1.540562 Å (Bearden 1967)
 #
 # Peak positions calculated using Bragg's Law for cubic LaB6
@@ -31,14 +31,17 @@ LAB6_STANDARD_PEAKS = {
     (1, 0, 0): 21.358,   # First reflection
     (1, 1, 0): 30.385,   # Second reflection
     (1, 1, 1): 37.442,   # Third reflection
-    (2, 0, 0): 43.505,   # Fourth reflection
-    (2, 1, 0): 48.958,   # Fifth reflection
-    (2, 1, 1): 53.993,   # Sixth reflection
+    (2, 0, 0): 43.507,   # Fourth reflection
+    (2, 1, 0): 48.957,   # Fifth reflection
+    (2, 1, 1): 53.989,   # Sixth reflection
     (2, 2, 0): 63.218,   # Seventh reflection
     (3, 0, 0): 67.548,   # Eighth reflection
-    (3, 1, 0): 71.704,   # Ninth reflection
-    (3, 1, 1): 75.724,   # Tenth reflection
+    (3, 1, 0): 71.745,   # Ninth reflection
+    (3, 1, 1): 75.844,   # Tenth reflection
 }
+
+# Minimum peaks required for stable Caglioti regression
+MIN_CALIBRATION_PEAKS = 5
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -197,6 +200,38 @@ def _build_analysis_config(config_path: Optional[Path]):
         if isinstance(min_intensity, (int, float)):
             config.min_intensity = float(min_intensity)
 
+    preprocessing = loaded.get("preprocessing", {})
+    if isinstance(preprocessing, dict):
+        smoothing = preprocessing.get("smoothing", {})
+        if isinstance(smoothing, dict):
+            enable = smoothing.get("enable")
+            window_size = smoothing.get("window_size")
+            poly_order = smoothing.get("poly_order")
+            if isinstance(enable, bool):
+                config.enable_smoothing = enable
+            if isinstance(window_size, int):
+                config.smoothing_window = window_size
+            if isinstance(poly_order, int):
+                config.smoothing_poly_order = poly_order
+
+        background = preprocessing.get("background", {})
+        if isinstance(background, dict):
+            enable = background.get("enable")
+            method = background.get("method")
+            poly_degree = background.get("poly_degree")
+            if isinstance(enable, bool):
+                config.enable_background = enable
+            if isinstance(method, str):
+                config.background_method = method
+            if isinstance(poly_degree, int):
+                config.background_degree = poly_degree
+
+        kalpha = preprocessing.get("kalpha_strip", {})
+        if isinstance(kalpha, dict):
+            enable = kalpha.get("enable")
+            if isinstance(enable, bool):
+                config.enable_kalpha_strip = enable
+
     return config
 
 
@@ -302,6 +337,8 @@ def _run_calibrate(args) -> int:
     like LaB6 (NIST SRM 660c) or Si.
     使用標準樣品（如 LaB6 或 Si）校準 Caglioti 參數。
     """
+    from datetime import datetime
+
     import numpy as np
     import yaml
     from xrd_analysis.analysis.pipeline import load_bruker_txt, find_peak_in_range
@@ -327,41 +364,86 @@ def _run_calibrate(args) -> int:
     
     # Find peaks and measure FWHM
     peaks_data = []
+    matched_peaks = []
+    max_position_error_deg = 0.40
     print("\nFitting standard peaks...")
     
     for hkl, expected_pos in LAB6_STANDARD_PEAKS.items():
         if two_theta.min() <= expected_pos <= two_theta.max():
-            peak = find_peak_in_range(two_theta, intensity, expected_pos, window=2.0)
+            peak = find_peak_in_range(
+                two_theta,
+                intensity,
+                expected_pos,
+                window=2.0,
+                use_doublet_fitting=True,
+                doublet_max_iterations=8000,
+            )
             if peak is not None and peak.fwhm > 0:
-                peaks_data.append({
+                delta_deg = float(peak.two_theta - expected_pos)
+                peak_info = {
                     'hkl': hkl,
+                    'expected_two_theta': float(expected_pos),
                     'two_theta': peak.two_theta,
                     'fwhm': peak.fwhm,
                     'intensity': peak.intensity,
-                })
-                print(f"  - {hkl}: 2θ={peak.two_theta:.3f}°, FWHM={peak.fwhm:.4f}°")
+                    'delta_two_theta': delta_deg,
+                }
+                peaks_data.append(peak_info)
+                if abs(delta_deg) <= max_position_error_deg:
+                    matched_peaks.append(peak_info)
+                print(
+                    f"  - {hkl}: expected={expected_pos:.3f} deg, "
+                    f"fitted={peak.two_theta:.3f} deg, "
+                    f"delta={delta_deg:+.3f} deg, FWHM={peak.fwhm:.4f} deg"
+                )
     
-    if len(peaks_data) < 3:
-        print(f"\nWarning: Only {len(peaks_data)} peaks found. Need at least 3 for calibration.")
-        print("Using default Caglioti parameters.")
-        U, V, W = 0.001, -0.001, 0.0025
-    else:
-        # Fit Caglioti: FWHM² = U·tan²θ + V·tanθ + W
-        theta_rad = np.array([np.radians(p['two_theta'] / 2) for p in peaks_data])
-        tan_theta = np.tan(theta_rad)
-        fwhm_sq = np.array([p['fwhm'] ** 2 for p in peaks_data])
-        
-        # Linear regression: y = U·x² + V·x + W
-        X = np.column_stack([tan_theta**2, tan_theta, np.ones_like(tan_theta)])
-        coeffs, residuals, rank, s = np.linalg.lstsq(X, fwhm_sq, rcond=None)
-        U, V, W = coeffs
-        
-        print(f"\nCaglioti parameters fitted from {len(peaks_data)} peaks:")
-    
+    if len(matched_peaks) < MIN_CALIBRATION_PEAKS:
+        print(
+            f"\nError: Only {len(matched_peaks)} peaks match the standard position tolerance "
+            f"(±{max_position_error_deg:.2f} deg). Need at least {MIN_CALIBRATION_PEAKS}."
+        )
+        print("Calibration aborted. Verify that input is a true standard scan (LaB6/Si).")
+        return 1
+
+    # Fit Caglioti using calibrated class
+    two_theta_used = np.array([p["two_theta"] for p in matched_peaks], dtype=float)
+    fwhm_used = np.array([p["fwhm"] for p in matched_peaks], dtype=float)
+
+    caglioti = CagliotiCorrection()
+    params = caglioti.calibrate(two_theta_used, fwhm_used)
+    U, V, W = params.U, params.V, params.W
+
+    # Fit diagnostics on FWHM² regression
+    theta_rad = np.radians(two_theta_used / 2.0)
+    tan_theta = np.tan(theta_rad)
+    fwhm_sq_measured = fwhm_used**2
+    fwhm_sq_pred = U * tan_theta**2 + V * tan_theta + W
+    residual_sq = fwhm_sq_measured - fwhm_sq_pred
+
+    ss_res = float(np.sum(residual_sq**2))
+    ss_tot = float(np.sum((fwhm_sq_measured - np.mean(fwhm_sq_measured))**2))
+    r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
+    rmse_fwhm_sq = float(np.sqrt(np.mean(residual_sq**2)))
+    max_abs_residual_sq = float(np.max(np.abs(residual_sq)))
+
+    # Sanity check over measured angular window
+    tt_grid = np.linspace(float(two_theta.min()), float(two_theta.max()), 200)
+    tt_grid = tt_grid[(tt_grid >= 15.0) & (tt_grid <= 120.0)]
+    grid_fwhm_sq = U * np.tan(np.radians(tt_grid / 2.0))**2 + V * np.tan(np.radians(tt_grid / 2.0)) + W
+    has_negative_region = bool(np.any(grid_fwhm_sq <= 0))
+
+    print(f"\nCaglioti parameters fitted from {len(matched_peaks)} matched peaks:")
     print(f"  U = {U:.6f}")
     print(f"  V = {V:.6f}")
     print(f"  W = {W:.6f}")
-    print(f"  FWHM at 43° ≈ {np.sqrt(U * np.tan(np.radians(21.5))**2 + V * np.tan(np.radians(21.5)) + W):.4f}°")
+    fwhm_43 = np.sqrt(max(U * np.tan(np.radians(21.5))**2 + V * np.tan(np.radians(21.5)) + W, 0.0))
+    print(f"  FWHM at 43 deg ~ {fwhm_43:.4f} deg")
+    print(f"\nCalibration diagnostics:")
+    print(f"  R² (FWHM² fit) = {r_squared:.6f}")
+    print(f"  RMSE(FWHM²) = {rmse_fwhm_sq:.6e} deg²")
+    print(f"  Max |residual| (FWHM²) = {max_abs_residual_sq:.6e} deg²")
+    if has_negative_region:
+        print("  WARNING: FWHM² becomes non-positive in part of scan range; verify standard data quality.")
     
     # Save calibration
     calibration = {
@@ -371,11 +453,30 @@ def _run_calibrate(args) -> int:
             'W': float(W),
         },
         'standard': str(args.standard),
-        'n_peaks_used': len(peaks_data),
+        'n_peaks_used': len(matched_peaks),
+        'n_peaks_found': len(peaks_data),
+        'position_tolerance_deg': max_position_error_deg,
+        'calibrated_at': datetime.now().isoformat(timespec="seconds"),
+        'fit_quality': {
+            'r_squared_fwhm_sq': r_squared,
+            'rmse_fwhm_sq_deg2': rmse_fwhm_sq,
+            'max_abs_residual_fwhm_sq_deg2': max_abs_residual_sq,
+            'has_non_positive_fwhm_sq_region': has_negative_region,
+        },
+        'peaks': [
+            {
+                'hkl': f"({p['hkl'][0]}{p['hkl'][1]}{p['hkl'][2]})",
+                'expected_two_theta_deg': float(p['expected_two_theta']),
+                'two_theta_deg': float(p['two_theta']),
+                'delta_two_theta_deg': float(p['delta_two_theta']),
+                'fwhm_deg': float(p['fwhm']),
+            }
+            for p in matched_peaks
+        ],
     }
     
-    with open(args.output, 'w') as f:
-        yaml.dump(calibration, f, default_flow_style=False)
+    with open(args.output, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(calibration, f, default_flow_style=False, sort_keys=False)
     
     print(f"\nCalibration saved to: {args.output}")
     print("Calibration complete. 校正完成。")

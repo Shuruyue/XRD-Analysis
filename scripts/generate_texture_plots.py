@@ -180,7 +180,7 @@ def process_all_samples():
         x_param='time',
         output_path=str(output_dir / "texture_evolution_TC_by_direction.png"),
         normalize=False,
-        dpi=1200,
+        dpi=300,
         show=False
     )
     
@@ -191,7 +191,7 @@ def process_all_samples():
         x_param='time',
         output_path=str(output_dir / "texture_evolution_Fraction_by_direction.png"),
         normalize=True,
-        dpi=1200,
+        dpi=300,
         show=False
     )
     
@@ -202,7 +202,7 @@ def process_all_samples():
         x_param='time',
         output_path=str(output_dir / "texture_fraction_by_concentration.png"),
         metric="fraction",
-        dpi=1200,
+        dpi=300,
         show=False
     )
     
@@ -213,7 +213,7 @@ def process_all_samples():
         x_param='time',
         output_path=str(output_dir / "texture_TC_by_concentration.png"),
         metric="tc",
-        dpi=1200,
+        dpi=300,
         show=False
     )
     

@@ -20,8 +20,8 @@ XRD_ANALYSIS_STYLE: Dict[str, Any] = {
     'figure.facecolor': 'white',
     # 'figure.edgecolor': 'black', # Some journals prefer this
 
-    # Save settings: 600 DPI for high-quality academic output (Safe for viewers)
-    'savefig.dpi': 600,
+    # Save settings: 300 DPI for common journal raster requirements
+    'savefig.dpi': 300,
     'savefig.facecolor': 'white',
     'savefig.edgecolor': 'white',
     'savefig.bbox': 'tight',
@@ -181,7 +181,7 @@ def create_figure(
 def save_figure(
     fig,
     filepath: str,
-    dpi: int = 2400,
+    dpi: int = 300,
     format: str = None,
     transparent: bool = False
 ) -> None:

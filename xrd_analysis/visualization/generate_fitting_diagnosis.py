@@ -234,7 +234,7 @@ def generate_sample_fitting_plot(
     
     # Save plot using visualization module
     output_path = output_dir / f'{sample_name}_fitting.png'
-    save_figure(fig, str(output_path), dpi=1200)
+    save_figure(fig, str(output_path), dpi=300)
     plt.close()
     
     return peaks_info

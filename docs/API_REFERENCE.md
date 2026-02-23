@@ -90,7 +90,7 @@ from xrd_analysis.core.constants import (
     CU_KA1,           # 1.540562 Å (Bearden 1967)
     CU_KA2,           # 1.544390 Å
     KA2_KA1_RATIO,    # 0.5 (Burger-Dorgelo rule)
-    SCHERRER_K,       # 0.94 (spherical particles)
+    SCHERRER_K,       # Dataclass: spherical=0.829, cubic=0.94, default=0.829
     MIN_RELIABLE_SIZE, # 2.0 nm
     MAX_RELIABLE_SIZE, # 200.0 nm
 )
@@ -472,20 +472,20 @@ plot_texture_polar(
 
 ```bash
 # Single file analysis
-xrd-analysis analyze sample.txt --output results/
+xrd-analysis analyze sample.txt -o results/
 
 # Batch analysis
-xrd-analysis analyze data/*.txt --output results/
+xrd-analysis analyze data/*.txt -o results/
 
-# Generate comprehensive report
-xrd-analysis report data/*.txt --output report/
+# Generate report from summary CSV
+xrd-analysis report results/summary.csv -f markdown
 ```
 
 ### Instrument Calibration
 
 ```bash
 # Calibrate using LaB6 standard
-xrd-analysis calibrate lab6_standard.txt --output calibration/
+xrd-analysis calibrate lab6_standard.txt -o calibration.yaml
 
 # The calibration results (U, V, W) can be used in config.yaml
 ```

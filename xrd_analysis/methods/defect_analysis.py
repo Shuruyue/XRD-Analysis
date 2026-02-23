@@ -225,7 +225,7 @@ class StackingFaultAnalyzer:
     Warren formula:
         α = (Δ2θ_exp - Δ2θ_std) / G
         
-    where G ≈ -20.0 for FCC (111)-(200) when using degrees
+    where G ≈ -7.897 for FCC (111)-(200) in degree-based implementation
     """
     
     def __init__(self, g_coefficient: float = WARREN_G_COEFFICIENT):
@@ -233,7 +233,7 @@ class StackingFaultAnalyzer:
         Initialize stacking fault analyzer.
         
         Args:
-            g_coefficient: Warren geometric coefficient (default: -20.0)
+            g_coefficient: Warren geometric coefficient (default: -7.897)
         """
         self.g_coefficient = g_coefficient
     
@@ -410,7 +410,8 @@ class LatticeMonitor:
         Estimate residual stress from peak shift.
         從峰位偏移估算殘留應力。
         
-        σ = E / (1+ν) × (d - d₀) / d₀
+        Plane-stress equi-biaxial model:
+        σ = -E / (2ν) × (d - d₀) / d₀
         """
         d_measured = calculate_d_spacing(two_theta, self.wavelength)
         d_standard = self.standard_d.get(hkl, d_measured)

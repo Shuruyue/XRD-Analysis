@@ -20,7 +20,8 @@ def fit_peak_with_diagnosis(
     intensity: np.ndarray,
     expected_center: float,
     window: float = 2.5,
-    use_doublet: bool = False
+    use_doublet: bool = False,
+    doublet_max_iterations: int = 20000,
 ) -> Dict:
     """
     Fit a single peak using Kα doublet model and return detailed diagnosis info.
@@ -88,7 +89,7 @@ def fit_peak_with_diagnosis(
     try:
         if use_doublet:
             # Use Kα doublet fitting with timeout protection
-            fitter = DoubletFitter(max_iterations=100000)
+            fitter = DoubletFitter(max_iterations=doublet_max_iterations)
             fit_result = fitter.fit(theta_range, int_range, expected_center, initial_fwhm)
             
             if fit_result.success and fit_result.r_squared > 0.8:

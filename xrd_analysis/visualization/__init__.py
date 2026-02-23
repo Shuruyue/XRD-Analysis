@@ -13,6 +13,15 @@ Submodules:
     - fitting_plots: Peak fitting diagnosis plots
 """
 
+import os
+
+import matplotlib
+
+# Use a non-interactive backend by default in headless environments.
+# 若使用者未指定 MPLBACKEND，預設採用 Agg 以避免 Tk 依賴問題。
+if not os.environ.get("MPLBACKEND"):
+    matplotlib.use("Agg")
+
 from xrd_analysis.visualization.fitting_plots import (
     plot_doublet_comparison,
     plot_fit_residuals,

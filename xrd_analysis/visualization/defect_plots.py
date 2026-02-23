@@ -36,7 +36,7 @@ LIMITATION_NOTE_SF = (
 def plot_stress_evolution(
     data: List[Dict[str, Any]],
     output_path: Optional[str] = None,
-    dpi: int = 1200,
+    dpi: int = 600,
     show: bool = True
 ) -> plt.Figure:
     """
@@ -153,7 +153,7 @@ def plot_stress_evolution(
 def plot_stacking_fault_evolution(
     data: List[Dict[str, Any]],
     output_path: Optional[str] = None,
-    dpi: int = 1200,
+    dpi: int = 600,
     show: bool = True
 ) -> plt.Figure:
     """

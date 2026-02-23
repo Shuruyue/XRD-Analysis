@@ -179,7 +179,7 @@ def plot_wh_residuals(
     fit_result: Optional[Dict[str, Any]] = None,
     hkl_labels: Optional[List[str]] = None,
     output_path: Optional[str] = None,
-    dpi: int = 2400,
+    dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: Tuple[float, float] = (10, 5),
@@ -271,7 +271,7 @@ def plot_wh_residuals(
 def plot_strain_evolution(
     data: List[Dict[str, Any]],
     output_path: Optional[str] = None,
-    dpi: int = 1200,
+    dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: Tuple[float, float] = (10, 8),

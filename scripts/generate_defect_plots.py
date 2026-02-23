@@ -198,7 +198,7 @@ def main():
     plot_stress_evolution(
         samples,
         output_path=str(plots_dir / "stress_evolution.png"),
-        dpi=1200,
+        dpi=300,
         show=False
     )
     
@@ -207,7 +207,7 @@ def main():
     plot_stacking_fault_evolution(
         samples,
         output_path=str(plots_dir / "stacking_fault_evolution.png"),
-        dpi=1200,
+        dpi=300,
         show=False
     )
     

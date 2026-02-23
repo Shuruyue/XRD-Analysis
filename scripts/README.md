@@ -6,6 +6,20 @@ This directory contains standalone scripts for validating physical calculations,
 
 ### Verification Scripts (驗證腳本)
 
+#### `calibrate_instrument.py`
+**Purpose**: Practical instrument calibration using standard scans.
+**Uses**:
+- Runs Caglioti fit (`U`, `V`, `W`) from LaB6/Si standard peaks.
+- Exports calibration diagnostics to YAML.
+- Optionally updates `config.yaml` in-place.
+
+**Example**:
+```bash
+python scripts/calibrate_instrument.py data/standards/lab6_standard.txt \
+  -o outputs/calibration.yaml \
+  --update-config config.yaml
+```
+
 #### `verify_physics.py`
 **Purpose**: Validates basic crystallographic formulas.
 **Uses**:
@@ -18,6 +32,20 @@ This directory contains standalone scripts for validating physical calculations,
 **Uses**:
 - Calculates directional Young's Modulus ($E_{hkl}$) for Copper.
 - Verifies Reuss/Voigt/Hill averaging methods.
+
+#### `verify_angle_accuracy.py`
+**Purpose**: Verifies 2θ correctness from detected peak positions.
+**Uses**:
+- Compares measured Cu peak positions against expected references.
+- Reports mean/RMSE/max peak-angle offsets.
+- Flags zero-shift/specimen displacement risk when offset is too large.
+
+#### `verify_background_correction.py`
+**Purpose**: Verifies preprocessing background subtraction behavior.
+**Uses**:
+- Reports raw/background/corrected intensity statistics.
+- Quantifies background-to-signal ratio.
+- Confirms no negative-intensity artifacts remain after correction.
 
 ### Plot Generation (繪圖工具)
 

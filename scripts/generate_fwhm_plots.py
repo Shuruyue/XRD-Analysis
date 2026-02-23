@@ -81,7 +81,7 @@ print("2. FWHM evolution grid (one subplot per concentration)...")
 fig2 = plot_fwhm_by_concentration(
     plot_data,
     output_path=str(dir_results / "fwhm_compare_grid.png"),
-    dpi=2000,
+    dpi=300,
     show=False
 )
 print("   Saved: fwhm_compare_grid.png")

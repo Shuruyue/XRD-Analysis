@@ -278,6 +278,7 @@ class PreprocessingPipeline:
         # Step 4: Kα2 stripping (conditional)
         if self.enable_kalpha_strip:
             if should_apply_kalpha_stripping(two_theta):
+                t0 = time.perf_counter()
                 current_intensity = self.kalpha_stripper.strip(
                     two_theta, current_intensity
                 )

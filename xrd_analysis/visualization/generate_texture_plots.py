@@ -353,7 +353,7 @@ def main():
             x_param='time',
             output_path=str(output_dir / "tc_evolution_by_time.png"),
             show=False,
-            dpi=1200,
+            dpi=300,
             normalize=False,  # Standard TC (sum=3)
         )
         plt.close(fig)
@@ -370,7 +370,7 @@ def main():
     #         x_param='time',
     #         output_path=str(output_dir / "texture_fraction_by_time.png"),
     #         show=False,
-    #         dpi=1200,
+    #         dpi=300,
     #         normalize=True,  # Fraction mode (sum=1)
     #     )
     #     plt.close(fig)
@@ -387,7 +387,7 @@ def main():
             x_param='time',
             output_path=str(output_dir / "texture_fraction_single.png"),
             show=False,
-            dpi=1200,
+            dpi=300,
         )
         plt.close(fig)
         print("  ✓ texture_fraction_single.png (combined plot)")
@@ -402,7 +402,7 @@ def main():
     #         x_param='concentration',
     #         output_path=str(output_dir / "tc_evolution_by_concentration.png"),
     #         show=False,
-    #         dpi=1200,
+    #         dpi=300,
     #     )
     #     plt.close(fig)
     #     print("  ✓ tc_evolution_by_concentration.png")
@@ -432,7 +432,7 @@ def main():
                     output_path=str(output_dir / f"tc_polar_{sample_name}.png"),
                     show=False,
                     sample_name=sample_name,
-                    dpi=1200,
+                    dpi=300,
                 )
                 plt.close(fig)
                 print(f"  ✓ tc_polar_{sample_name}.png")

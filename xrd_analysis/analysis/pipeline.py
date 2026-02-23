@@ -47,6 +47,7 @@ from xrd_analysis.methods.defect_analysis import (
 from xrd_analysis.fitting.hkl_assignment import assign_hkl
 from xrd_analysis.fitting.lm_optimizer import LMOptimizer
 from xrd_analysis.fitting.pseudo_voigt import PseudoVoigt, PseudoVoigtParams
+from xrd_analysis.preprocessing.pipeline import PreprocessingPipeline
 
 # Import after to avoid circular dependency
 from xrd_analysis.analysis.report_generator import (
@@ -77,6 +78,15 @@ class AnalysisConfig:
     # Peak detection / 峰值偵測
     peak_window: float = 2.0  # degrees around expected position
     min_intensity: float = 100  # minimum counts
+
+    # Preprocessing / 預處理
+    enable_smoothing: bool = True
+    smoothing_window: int = 11
+    smoothing_poly_order: int = 3
+    enable_background: bool = True
+    background_method: str = "chebyshev"
+    background_degree: int = 5
+    enable_kalpha_strip: bool = True
     
     # Instrumental broadening (Caglioti U, V, W) / 儀器展寬
     # FWHM_inst² = U·tan²θ + V·tanθ + W
@@ -134,6 +144,16 @@ class PipelineResult:
     
     # Peak data
     peaks: List[PeakData] = field(default_factory=list)
+
+    # Preprocessing and angle-quality diagnostics
+    preprocessing_notes: List[str] = field(default_factory=list)
+    background_applied: bool = False
+    background_method: str = ""
+    background_fraction_mean: Optional[float] = None
+    angle_offset_mean_deg: Optional[float] = None
+    angle_offset_rmse_deg: Optional[float] = None
+    angle_offset_max_abs_deg: Optional[float] = None
+    angle_validation_peaks: int = 0
     
     # Phase 04: Scherrer
     scherrer_results: List[ScherrerResult] = field(default_factory=list)
@@ -316,7 +336,8 @@ def find_peak_in_range(
     intensity: np.ndarray,
     center: float,
     window: float = 2.5,
-    use_doublet_fitting: bool = True
+    use_doublet_fitting: bool = True,
+    doublet_max_iterations: int = 20000,
 ) -> Optional[PeakData]:
     """
     Find peak near expected position using Kα doublet fitting.
@@ -355,7 +376,12 @@ def find_peak_in_range(
         try:
             from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
             fit_result = fit_peak_with_diagnosis(
-                two_theta, intensity, center, window=2.5, use_doublet=True
+                two_theta,
+                intensity,
+                center,
+                window=2.5,
+                use_doublet=True,
+                doublet_max_iterations=doublet_max_iterations,
             )
             
             if fit_result['success'] and fit_result.get('r_squared', 0) > 0.8:
@@ -420,7 +446,15 @@ class XRDAnalysisPipeline:
         self.config = config or AnalysisConfig()
         
         # Initialize analyzers
-        self.scherrer = ScherrerCalculator()
+        self.scherrer = ScherrerCalculator(
+            wavelength=self.config.wavelength,
+            use_cubic_habit=self.config.use_cubic_habit,
+            caglioti_params=(
+                self.config.caglioti_u,
+                self.config.caglioti_v,
+                self.config.caglioti_w,
+            ),
+        )
         
         # Initialize Williamson-Hall analyzer
         # 初始化 Williamson-Hall 分析器
@@ -431,6 +465,15 @@ class XRDAnalysisPipeline:
         self.texture = TextureAnalyzer()
         self.sf_analyzer = StackingFaultAnalyzer()
         self.lattice = LatticeMonitor()
+        self.preprocessing = PreprocessingPipeline(
+            window_size=self.config.smoothing_window,
+            poly_order=self.config.smoothing_poly_order,
+            background_method=self.config.background_method,
+            background_degree=self.config.background_degree,
+            enable_smoothing=self.config.enable_smoothing,
+            enable_background=self.config.enable_background,
+            enable_kalpha_strip=self.config.enable_kalpha_strip,
+        )
     
     def _load_and_validate_data(self, filepath: str):
         """Load XRD data and validate. Returns (two_theta, intensity, error_message)."""
@@ -455,6 +498,40 @@ class XRDAnalysisPipeline:
                 peak.hkl = hkl
                 peaks.append(peak)
         return peaks
+
+    def _run_preprocessing(self, two_theta: np.ndarray, intensity: np.ndarray):
+        """Run configured preprocessing and return processed arrays with metadata."""
+        pre_result = self.preprocessing.run(two_theta, intensity)
+        notes = [
+            f"{step.name}: {'ON' if step.applied else 'OFF'} ({step.notes})"
+            for step in pre_result.steps
+        ]
+
+        background_fraction_mean = None
+        if pre_result.background is not None:
+            denom = float(np.mean(np.maximum(pre_result.raw_intensity, 1.0)))
+            if denom > 0:
+                background_fraction_mean = float(np.mean(pre_result.background) / denom)
+
+        return pre_result.two_theta, pre_result.intensity, notes, pre_result.background is not None, background_fraction_mean
+
+    def _validate_peak_angles(self, peaks):
+        """Validate measured peak positions against expected references."""
+        offsets = []
+        for peak in peaks:
+            expected = self.config.EXPECTED_PEAKS.get(peak.hkl)
+            if expected is None:
+                continue
+            offsets.append(float(peak.two_theta - expected))
+
+        if not offsets:
+            return None, None, None, 0
+
+        offset_arr = np.array(offsets, dtype=float)
+        mean_offset = float(np.mean(offset_arr))
+        rmse = float(np.sqrt(np.mean(offset_arr**2)))
+        max_abs = float(np.max(np.abs(offset_arr)))
+        return mean_offset, rmse, max_abs, len(offsets)
     
     def _run_scherrer_analysis(self, peaks):
         """Run Scherrer analysis on all peaks. Returns (results, average_size)."""
@@ -463,7 +540,9 @@ class XRDAnalysisPipeline:
             result = self.scherrer.calculate(
                 two_theta=peak.two_theta,
                 fwhm_observed=peak.fwhm,
-                fwhm_instrumental=np.sqrt(self.config.caglioti_w),
+                # Let ScherrerCalculator compute angle-dependent instrumental broadening
+                # via Caglioti U, V, W when available.
+                fwhm_instrumental=None,
                 hkl=peak.hkl,
                 eta_observed=peak.eta,
                 eta_instrumental=0.0  # Assume Gaussian instrument (Caglioti standard)
@@ -535,12 +614,33 @@ class XRDAnalysisPipeline:
         if error:
             result.report = error
             return result
+
+        # Step 1.5: Preprocessing (smoothing/background/Kα2 strip)
+        (
+            two_theta_proc,
+            intensity_proc,
+            preprocessing_notes,
+            background_applied,
+            background_fraction_mean,
+        ) = self._run_preprocessing(two_theta, intensity)
+        result.preprocessing_notes = preprocessing_notes
+        result.background_applied = background_applied
+        result.background_method = self.config.background_method if background_applied else "none"
+        result.background_fraction_mean = background_fraction_mean
         
         # Step 2: Find peaks
-        result.peaks = self._find_peaks_from_data(two_theta, intensity)
+        result.peaks = self._find_peaks_from_data(two_theta_proc, intensity_proc)
         if len(result.peaks) < 2:
             result.report = f"Only {len(result.peaks)} peaks found"
             return result
+
+        # Step 2.5: Angle correctness check (measured vs expected positions)
+        (
+            result.angle_offset_mean_deg,
+            result.angle_offset_rmse_deg,
+            result.angle_offset_max_abs_deg,
+            result.angle_validation_peaks,
+        ) = self._validate_peak_angles(result.peaks)
         
         # Step 3: Scherrer analysis
         result.scherrer_results, result.average_size_nm = self._run_scherrer_analysis(result.peaks)
@@ -572,6 +672,23 @@ class XRDAnalysisPipeline:
             sample_name=result.sample_name,
             sample_age_hours=result.sample_age_hours,
         )
+
+        comp.preprocessing_summary = list(result.preprocessing_notes)
+        comp.background_applied = result.background_applied
+        comp.background_method = result.background_method
+        comp.background_fraction_mean = result.background_fraction_mean
+        comp.angle_offset_mean_deg = result.angle_offset_mean_deg
+        comp.angle_offset_rmse_deg = result.angle_offset_rmse_deg
+        comp.angle_offset_max_abs_deg = result.angle_offset_max_abs_deg
+        comp.angle_validation_peaks = result.angle_validation_peaks
+        if (
+            result.angle_offset_max_abs_deg is not None
+            and result.angle_offset_max_abs_deg > 0.10
+        ):
+            comp.warnings.append(
+                f"Peak-angle max offset is {result.angle_offset_max_abs_deg:.3f} deg (>0.10 deg). "
+                "Check specimen displacement/zero-shift."
+            )
         
         # Scherrer
         if result.average_size_nm:
