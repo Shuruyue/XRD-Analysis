@@ -4,12 +4,12 @@ Generate comprehensive fitting diagnosis plots
 """
 
 from pathlib import Path
-from axcsas.analysis import batch_analyze
-from axcsas.visualization.generate_fitting_diagnosis import generate_sample_fitting_plot
+from xrd_analysis.analysis import batch_analyze
+from xrd_analysis.visualization.generate_fitting_diagnosis import generate_sample_fitting_plot
 import matplotlib.pyplot as plt
 import numpy as np
 
-from axcsas.core.config_loader import load_config
+from xrd_analysis.core.config_loader import load_config
 
 # Setup paths
 project_root = Path(__file__).resolve().parent.parent

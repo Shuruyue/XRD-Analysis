@@ -13,7 +13,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.validation import (
+from xrd_analysis.validation import (
     calculate_rwp,
     calculate_r_squared,
     calculate_chi_squared,
@@ -22,7 +22,7 @@ from axcsas.validation import (
     validate_size_range,
     check_broadening_ratio
 )
-from axcsas.validation.goodness_of_fit import assess_fit_quality, calculate_rp
+from xrd_analysis.validation.goodness_of_fit import assess_fit_quality, calculate_rp
 
 
 class TestGoodnessOfFit:

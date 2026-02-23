@@ -1,6 +1,6 @@
-# AXCSAS Documentation
+# XRD-Analysis Documentation
 
-Welcome to the AXCSAS (Advanced XRD Crystallite Size Analysis System) documentation!
+Welcome to the XRD-Analysis (Advanced XRD Crystallite Size Analysis System) documentation!
 
 ## Available Documentation
 
@@ -17,7 +17,7 @@ Welcome to the AXCSAS (Advanced XRD Crystallite Size Analysis System) documentat
 
 ## Quick Start
 
-**New to AXCSAS?**
+**New to xrd_analysis?**
 → Read [USER_GUIDE.md](USER_GUIDE.md) sections 1-4
 
 **Need specific function syntax?**
@@ -38,9 +38,9 @@ docs/
 
 ## External Resources
 
-- **GitHub Repository**: https://github.com/Shuruyue/AXCSAS
-- **Issue Tracker**: https://github.com/Shuruyue/AXCSAS/issues
-- **PyPI** *(when available)*: https://pypi.org/project/axcsas/
+- **GitHub Repository**: https://github.com/Shuruyue/XRD-Analysis
+- **Issue Tracker**: https://github.com/Shuruyue/XRD-Analysis/issues
+- **PyPI** *(when available)*: https://pypi.org/project/xrd_analysis/
 
 ---
 

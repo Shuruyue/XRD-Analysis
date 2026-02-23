@@ -22,22 +22,22 @@ from typing import List, Dict, Any
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from axcsas.core.copper_crystal import (
+from xrd_analysis.core.copper_crystal import (
     get_youngs_modulus, 
     get_poisson_ratio, 
     get_standard_peaks
 )
-from axcsas.methods.defect_analysis import (
+from xrd_analysis.methods.defect_analysis import (
     LatticeMonitor, 
     analyze_stacking_faults,
     StressType
 )
-from axcsas.visualization.defect_plots import (
+from xrd_analysis.visualization.defect_plots import (
     plot_stress_evolution,
     plot_stacking_fault_evolution
 )
-from axcsas.analysis.pipeline import load_bruker_txt, parse_filename
-from axcsas.fitting.peak_fitter import fit_peak_with_diagnosis
+from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
+from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -60,7 +60,7 @@ def process_raw_files(root_dir: Path) -> List[Dict]:
     data_dir = root_dir / "data" / "raw" / "202511"
     if not data_dir.exists():
         # Try finding it elsewhere
-        data_dir = Path("d:/Shuru/Git Project/AXCSAS/data/raw/202511")
+        data_dir = Path("d:/Shuru/Git Project/xrd_analysis/data/raw/202511")
         
     if not data_dir.exists():
         logger.error(f"Data directory not found: {data_dir}")

@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.preprocessing import (
+from xrd_analysis.preprocessing import (
     XRDDataset,
     DataValidationResult,
     validate_xrd_data,

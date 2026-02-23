@@ -23,15 +23,15 @@ import warnings
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from axcsas.analysis.pipeline import load_bruker_txt, parse_filename
-from axcsas.fitting.peak_fitter import fit_peak_with_diagnosis
-from axcsas.methods.scherrer import ScherrerCalculator
-from axcsas.core.copper_crystal import get_standard_peaks
-from axcsas.visualization.scherrer_plots import (
+from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
+from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
+from xrd_analysis.methods.scherrer import ScherrerCalculator
+from xrd_analysis.core.copper_crystal import get_standard_peaks
+from xrd_analysis.visualization.scherrer_plots import (
     plot_scherrer_evolution_by_peak,
     plot_scherrer_by_concentration
 )
-from axcsas.core.config import ParameterConfig
+from xrd_analysis.core.config import ParameterConfig
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')

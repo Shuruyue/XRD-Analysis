@@ -1,4 +1,4 @@
-# AXCSAS
+# XRD-Analysis
 
 ## Advanced XRD Crystallite Size Analysis System
 
@@ -8,7 +8,7 @@ Automated crystallite size analysis system using Pseudo-Voigt fitting and instru
 
 ## Project Overview
 
-AXCSAS is an automated XRD analysis system that addresses common issues in manual Scherrer size calculations:
+xrd_analysis is an automated XRD analysis system that addresses common issues in manual Scherrer size calculations:
 
 - Subjective baseline selection errors
 - Inaccurate instrumental broadening correction
@@ -40,10 +40,10 @@ pip install -e ".[dev]"
 
 ```bash
 # Run analysis on a single file
-axcsas analyze data/raw/sample.xy
+xrd-analysis analyze data/raw/sample.xy
 
 # Generate comprehensive report
-axcsas report --input-dir data/raw/ --output-dir outputs/
+xrd-analysis report --input-dir data/raw/ --output-dir outputs/
 ```
 
 ### Validation Scripts
@@ -60,14 +60,14 @@ python scripts/verify_elastic_moduli.py
 
 ## Project Structure
 
-AXCSAS/
+xrd_analysis/
 ├── config.yaml              # Global configuration
 ├── pyproject.toml           # Python project configuration
 ├── data/                    # Data directory
 │   ├── raw/                 # Raw XRD data
 │   ├── standards/           # NIST standard data
 │   └── processed/           # Preprocessed data
-├── axcsas/                  # Core source code
+├── xrd_analysis/                  # Core source code
 │   ├── core/                # Physical constants and crystallography
 │   ├── preprocessing/       # Data preprocessing modules
 │   ├── fitting/             # Peak fitting core

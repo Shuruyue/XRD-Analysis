@@ -1,4 +1,4 @@
-# AXCSAS Dependencies
+# XRD-Analysis Dependencies
 # Synchronized with pyproject.toml
 # References:
 #   Bearden, J.A. (1967). X-Ray Wavelengths. Rev. Mod. Phys. 39, 78-124.

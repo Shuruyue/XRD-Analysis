@@ -4,10 +4,10 @@ Generate FWHM plots from XRD analysis results
 """
 
 from pathlib import Path
-from axcsas.analysis import batch_analyze
-from axcsas.visualization import plot_fwhm_evolution, plot_fwhm_by_concentration
+from xrd_analysis.analysis import batch_analyze
+from xrd_analysis.visualization import plot_fwhm_evolution, plot_fwhm_by_concentration
 
-from axcsas.core.config_loader import load_config
+from xrd_analysis.core.config_loader import load_config
 
 # Setup paths
 project_root = Path(__file__).resolve().parent.parent

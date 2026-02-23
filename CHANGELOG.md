@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to AXCSAS will be documented in this file.
+All notable changes to xrd_analysis will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Module-level `LAB6_STANDARD_PEAKS` constant with full NIST references
 - Multi-encoding fallback strategy for data loading (UTF-8 → Latin-1 → CP1252)
 - Enhanced user-adjustable parameter documentation with concrete examples
-- Helper methods in `AXCSASPipeline` for better code organization
+- Helper methods in `XRDAnalysisPipeline` for better code organization
 
 ### Changed
 - Simplified DPI documentation in `style.py` from 14 lines to 3 lines
@@ -42,8 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial refactored release
-- Package renamed from `src/` to `axcsas/`
-- Unified CLI entry point (`axcsas analyze/calibrate/report`)
+- Package renamed from `src/` to `xrd_analysis/`
+- Unified CLI entry point (`xrd-analysis analyze/calibrate/report`)
 - Direction-dependent Scherrer K values
 - Kα doublet fitting support
 - Comprehensive texture analysis (Harris TC)
@@ -109,4 +109,4 @@ All existing code will continue to work without modifications.
 
 ---
 
-**Full Release History**: https://github.com/Shuruyue/AXCSAS/releases
+**Full Release History**: https://github.com/Shuruyue/XRD-Analysis/releases

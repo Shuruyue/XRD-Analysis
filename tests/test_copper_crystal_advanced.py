@@ -5,7 +5,7 @@ Advanced tests for copper crystal elastic moduli calculations.
 """
 
 import pytest
-from axcsas.core.copper_crystal import (
+from xrd_analysis.core.copper_crystal import (
     calculate_youngs_modulus_from_stiffness,
     calculate_d_spacing,
     CU_ELASTIC

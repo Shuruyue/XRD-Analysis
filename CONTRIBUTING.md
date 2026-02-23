@@ -1,6 +1,6 @@
-# Contributing to AXCSAS
+# Contributing to xrd_analysis
 
-Thank you for your interest in contributing to AXCSAS! This document provides guidelines and instructions for contributors.
+Thank you for your interest in contributing to xrd_analysis! This document provides guidelines and instructions for contributors.
 
 ## Table of Contents
 
@@ -31,8 +31,8 @@ Be respectful, constructive, and professional in all interactions.
 **Fork and Clone**:
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/AXCSAS.git
-cd AXCSAS
+git clone https://github.com/YOUR_USERNAME/xrd_analysis.git
+cd xrd_analysis
 ```
 
 ---
@@ -96,7 +96,7 @@ pytest tests/test_scherrer.py -v
 
 **Check coverage**:
 ```bash
-pytest --cov=axcsas --cov-report=html
+pytest --cov=xrd_analysis --cov-report=html
 ```
 
 **Writing Tests**:
@@ -117,17 +117,17 @@ pytest --cov=axcsas --cov-report=html
 
 **Format code automatically**:
 ```bash
-black axcsas/
+black xrd_analysis/
 ```
 
 **Check linting**:
 ```bash
-ruff check axcsas/
+ruff check xrd_analysis/
 ```
 
 **Type checking**:
 ```bash
-mypy axcsas/
+mypy xrd_analysis/
 ```
 
 **Documentation**:
@@ -219,7 +219,7 @@ git push origin feature/your-feature-name
 
 **Adding New Analysis Methods**:
 
-1. Create new module in `axcsas/methods/`
+1. Create new module in `xrd_analysis/methods/`
 2. Follow existing patterns (dataclasses for results, analyzer classes)
 3. Add comprehensive docstrings
 4. Include academic citations
@@ -229,7 +229,7 @@ git push origin feature/your-feature-name
 
 **Example Structure**:
 ```python
-# axcsas/methods/new_method.py
+# XRD-Analysis/methods/new_method.py
 
 from dataclasses import dataclass
 from typing import Optional
@@ -264,4 +264,4 @@ class NewMethodAnalyzer:
 
 ---
 
-**Thank you for contributing to AXCSAS!** 🎉
+**Thank you for contributing to xrd_analysis!** 🎉

@@ -12,10 +12,10 @@ import sys
 from pathlib import Path
 
 
-from axcsas.core.constants import CU_KA1
-from axcsas.core.copper_crystal import CU_JCPDS_EXTENDED
+from xrd_analysis.core.constants import CU_KA1
+from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
 
-from axcsas.methods.defect_analysis import (
+from xrd_analysis.methods.defect_analysis import (
     StackingFaultAnalyzer,
     StackingFaultResult,
     StackingFaultSeverity,
@@ -31,7 +31,7 @@ from axcsas.methods.defect_analysis import (
     WARREN_G_COEFFICIENT,
     STANDARD_LATTICE_CONSTANT,
 )
-from axcsas.analysis.report_generator import (
+from xrd_analysis.analysis.report_generator import (
     ComprehensiveResult,
     generate_comprehensive_report,
     generate_csv_summary,

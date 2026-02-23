@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "axcsas"
+name = "xrd-analysis"
 dynamic = ["version"]
 description = "Advanced XRD Crystallite Size Analysis System"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
-    {name = "AXCSAS Team"}
+    {name = "XRD-Analysis Team"}
 ]
 keywords = ["XRD", "crystallography", "Scherrer", "Williamson-Hall", "texture analysis"]
 classifiers = [
@@ -43,19 +43,19 @@ dev = [
 ]
 
 [project.scripts]
-axcsas = "axcsas.cli:main"
+xrd-analysis = "xrd_analysis.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Shuruyue/AXCSAS"
-Documentation = "https://github.com/Shuruyue/AXCSAS#readme"
-Repository = "https://github.com/Shuruyue/AXCSAS"
+Homepage = "https://github.com/Shuruyue/XRD-Analysis"
+Documentation = "https://github.com/Shuruyue/XRD-Analysis#readme"
+Repository = "https://github.com/Shuruyue/XRD-Analysis"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["axcsas*"]
+include = ["xrd_analysis*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "axcsas.__version__.__version__"}
+version = {attr = "xrd_analysis.__version__.__version__"}
 
 [tool.black]
 line-length = 88

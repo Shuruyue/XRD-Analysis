@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.fitting import (
+from xrd_analysis.fitting import (
     PseudoVoigt,
     PseudoVoigtParams,
     calculate_r_wp,

@@ -13,7 +13,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.methods import (
+from xrd_analysis.methods import (
     ScherrerCalculator,
     WilliamsonHallAnalyzer,
     TextureAnalyzer,
@@ -24,8 +24,8 @@ from axcsas.methods import (
 
 
 
-from axcsas.core.constants import CU_KA1
-from axcsas.core.copper_crystal import CU_JCPDS_EXTENDED, CU_CRYSTAL
+from xrd_analysis.core.constants import CU_KA1
+from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED, CU_CRYSTAL
 
 
 class TestPhysicsVerification:

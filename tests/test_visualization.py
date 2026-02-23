@@ -12,12 +12,12 @@ import numpy as np
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from axcsas.visualization.style import apply_axcsas_style, PEAK_COLORS
-from axcsas.visualization.wh_plots import plot_williamson_hall
-from axcsas.visualization.texture_plots import plot_texture_polar
-from axcsas.visualization.fitting_plots import plot_peak_fit
-from axcsas.visualization.generate_fitting_diagnosis import fit_peak_with_diagnosis
-from axcsas.core.constants import CU_KA1
+from xrd_analysis.visualization.style import apply_xrd_analysis_style, PEAK_COLORS
+from xrd_analysis.visualization.wh_plots import plot_williamson_hall
+from xrd_analysis.visualization.texture_plots import plot_texture_polar
+from xrd_analysis.visualization.fitting_plots import plot_peak_fit
+from xrd_analysis.visualization.generate_fitting_diagnosis import fit_peak_with_diagnosis
+from xrd_analysis.core.constants import CU_KA1
 
 class TestVisualizationConstants:
     """Tests for constants usage in visualization."""
@@ -30,7 +30,7 @@ class TestVisualizationConstants:
     def test_style_application(self):
         """Style application should not raise error."""
         try:
-            apply_axcsas_style()
+            apply_xrd_analysis_style()
         except Exception as e:
             pytest.fail(f"Style application failed: {e}")
 
@@ -61,7 +61,7 @@ class TestTexturePlotting:
 class TestFittingDiagnosis:
     """Tests for fitting diagnosis logic (without actual plotting)."""
     
-    @patch('axcsas.visualization.generate_fitting_diagnosis.LMOptimizer')
+    @patch('xrd_analysis.visualization.generate_fitting_diagnosis.LMOptimizer')
     def test_fitting_logic_structure(self, MockOptimizer):
         """Verify fit_peak_with_diagnosis returns correct dictionary structure."""
         # Setup mock optimizer result

@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.methods.scherrer import (
+from xrd_analysis.methods.scherrer import (
     ScherrerCalculator,
     ScherrerResult,
     ValidityFlag,
@@ -23,7 +23,7 @@ from axcsas.methods.scherrer import (
     generate_scherrer_report,
     FWHM_RATIO_THRESHOLD,
 )
-from axcsas.core.copper_crystal import (
+from xrd_analysis.core.copper_crystal import (
     get_k_for_hkl,
     SCHERRER_CUBIC_K,
 )

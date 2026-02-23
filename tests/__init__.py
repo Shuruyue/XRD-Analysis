@@ -1,2 +1,2 @@
-# AXCSAS Tests
+# XRD-Analysis Tests
 # Run with: pytest tests/ -v

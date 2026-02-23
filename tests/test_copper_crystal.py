@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.core.copper_crystal import (
+from xrd_analysis.core.copper_crystal import (
     CopperCrystal,
     CU_CRYSTAL,
     CU_JCPDS_EXTENDED,

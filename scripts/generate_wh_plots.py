@@ -22,12 +22,12 @@ import warnings
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from axcsas.analysis.pipeline import load_bruker_txt, parse_filename
-from axcsas.fitting.peak_fitter import fit_peak_with_diagnosis
-from axcsas.fitting.ka_doublet import DoubletFitter
-from axcsas.methods.williamson_hall import analyze_williamson_hall
-from axcsas.visualization.wh_plots import plot_williamson_hall, plot_strain_evolution
-from axcsas.core.copper_crystal import get_standard_peaks
+from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
+from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
+from xrd_analysis.fitting.ka_doublet import DoubletFitter
+from xrd_analysis.methods.williamson_hall import analyze_williamson_hall
+from xrd_analysis.visualization.wh_plots import plot_williamson_hall, plot_strain_evolution
+from xrd_analysis.core.copper_crystal import get_standard_peaks
 
 # Suppress warnings
 warnings.filterwarnings('ignore')

@@ -24,25 +24,36 @@ import matplotlib.pyplot as plt
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from axcsas.analysis.pipeline import load_bruker_txt, parse_filename
-from axcsas.fitting.peak_fitter import fit_peak_with_diagnosis
-from axcsas.methods.texture import analyze_texture
-from axcsas.visualization.texture_plots import plot_texture_polar, plot_tc_evolution, plot_texture_fraction_single
+from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
+from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
+from xrd_analysis.methods.texture import analyze_texture
+from xrd_analysis.visualization.texture_plots import plot_texture_polar, plot_tc_evolution, plot_texture_fraction_single
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
+from scipy.special import voigt_profile
+from xrd_analysis.fitting.pseudo_voigt import TrueVoigt
+
 def calculate_area(amplitude, fwhm, eta):
     """
-    Calculate integrated area of a Pseudo-Voigt peak.
-    Area = Amp * FWHM * [eta * (pi/2) + (1-eta) * sqrt(pi/(4*ln2))]
+    Calculate exact integrated area using True Voigt definition.
+    Area = Amp / V(0) for a normalized Voigt profile scaled to Amp height.
     """
-    # Constants
-    CONST_LORENTZ = 1.570796327  # pi/2
-    CONST_GAUSS = 1.064467       # sqrt(pi/(4*ln2))
+    # 1. Convert Pseudo-Voigt params (FWHM, Eta) to True Voigt params (Sigma, Gamma)
+    sigma, gamma = TrueVoigt.params_from_fwhm(fwhm, eta)
     
-    shape_factor = eta * CONST_LORENTZ + (1 - eta) * CONST_GAUSS
-    return amplitude * fwhm * shape_factor
+    # 2. Calculate peak value of normalized Voigt
+    # Scipy's voigt_profile is normalized such that integral is 1.
+    v_max = voigt_profile(0, sigma, gamma)
+    
+    # 3. Our profile is scaled by Amplitude/v_max
+    # Integral = (Amplitude / v_max) * Integral(normalized_voigt)
+    # Integral = Amplitude / v_max
+    if v_max > 0:
+        return amplitude / v_max
+    return 0.0
+
 
 def process_all_samples():
     print("="*60)

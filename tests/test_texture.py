@@ -14,7 +14,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.methods.texture import (
+from xrd_analysis.methods.texture import (
     TextureAnalyzer,
     TextureAnalysisResult,
     OrientationType,

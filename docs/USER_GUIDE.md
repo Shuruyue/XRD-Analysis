@@ -1,4 +1,4 @@
-# AXCSAS User Guide
+# XRD-Analysis User Guide
 
 **Getting Started with XRD Crystal Size Analysis**
 
@@ -22,16 +22,16 @@ Version: 0.2.0
 
 ## Introduction
 
-### What is AXCSAS?
+### What is XRD-Analysis?
 
-AXCSAS (Advanced XRD Crystallite Size Analysis System) is a Python package for analyzing X-ray diffraction (XRD) data to determine:
+XRD-Analysis (Advanced XRD Crystallite Size Analysis System) is a Python package for analyzing X-ray diffraction (XRD) data to determine:
 
 - **Crystallite size** using the Scherrer equation
 - **Microstrain** using Williamson-Hall analysis  
 - **Preferred orientation** using Harris texture coefficients
 - **Stacking faults** and lattice parameter variations
 
-### Who Should Use AXCSAS?
+### Who Should Use xrd_analysis?
 
 - Materials scientists studying thin films and nanoparticles
 - Researchers analyzing electrodeposited copper
@@ -61,8 +61,8 @@ AXCSAS (Advanced XRD Crystallite Size Analysis System) is a Python package for a
 
 ```bash
 # Clone the repository
-git clone https://github.com/Shuruyue/AXCSAS.git
-cd AXCSAS
+git clone https://github.com/Shuruyue/XRD-Analysis.git
+cd xrd_analysis
 
 # Install in editable mode
 pip install -e .
@@ -72,10 +72,10 @@ pip install -e .
 
 ```bash
 # Check version
-axcsas --version
+xrd-analysis --version
 
 # Test with sample data (if available)
-axcsas analyze tests/data/sample.txt --output test_results/
+xrd-analysis analyze tests/data/sample.txt --output test_results/
 ```
 
 ### Dependencies
@@ -143,7 +143,7 @@ Where:
 **Step 2**: Run analysis
 
 ```bash
-axcsas analyze my_sample.txt --output results/
+xrd-analysis analyze my_sample.txt --output results/
 ```
 
 **What happens**:
@@ -169,7 +169,7 @@ results/
 ### Tutorial 2: Python Script
 
 ```python
-from axcsas.analysis import run_full_analysis
+from xrd_analysis.analysis import run_full_analysis
 
 # Run analysis
 result = run_full_analysis("data/sample.txt")
@@ -204,7 +204,7 @@ if result.texture_result:
 **Scenario**: You have XRD files from samples measured at 0h, 2h, 4h, 24h (self-annealing study).
 
 ```python
-from axcsas.analysis import batch_analyze
+from xrd_analysis.analysis import batch_analyze
 from pathlib import Path
 import pandas as pd
 
@@ -232,10 +232,10 @@ print(df)
 **Scenario**: Analyze preferred orientation in electrodeposited copper.
 
 ```python
-from axcsas.methods import TextureAnalyzer
-from axcsas.preprocessing import load_xrd_data
-from axcsas.fitting import find_peaks, LMOptimizer
-from axcsas.fitting import assign_hkl
+from xrd_analysis.methods import TextureAnalyzer
+from xrd_analysis.preprocessing import load_xrd_data
+from xrd_analysis.fitting import find_peaks, LMOptimizer
+from xrd_analysis.fitting import assign_hkl
 
 # Load data
 two_theta, intensity = load_xrd_data("sample.txt")
@@ -374,8 +374,8 @@ validation:
 **Use in Python**:
 
 ```python
-from axcsas.core import load_config
-from axcsas.analysis import AXCSASPipeline, AnalysisConfig
+from xrd_analysis.core import load_config
+from xrd_analysis.analysis import XRDAnalysisPipeline, AnalysisConfig
 
 # Load config
 config_dict = load_config("my_config.yaml")
@@ -388,7 +388,7 @@ analysis_config = AnalysisConfig(
 )
 
 # Run with custom config
-pipeline = AXCSASPipeline(analysis_config)
+pipeline = XRDAnalysisPipeline(analysis_config)
 result = pipeline.analyze("sample.txt")
 ```
 
@@ -465,16 +465,16 @@ result = pipeline.analyze("sample.txt")
 ---
 
 **Need Help?**  
-- GitHub Issues: https://github.com/Shuruyue/AXCSAS/issues
+- GitHub Issues: https://github.com/Shuruyue/XRD-Analysis/issues
 - Documentation: See `docs/` folder
 
 **Citation**:  
-If you use AXCSAS in your research, please cite:
+If you use xrd_analysis in your research, please cite:
 ```bibtex
-@software{axcsas2026,
-  title = {AXCSAS: Advanced XRD Crystallite Size Analysis System},
+@software{xrd_analysis2026,
+  title = {XRD-Analysis: Advanced XRD Crystallite Size Analysis System},
   author = {[Your Name]},
   year = {2026},
-  url = {https://github.com/Shuruyue/AXCSAS}
+  url = {https://github.com/Shuruyue/XRD-Analysis}
 }
 ```

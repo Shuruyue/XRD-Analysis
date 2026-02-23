@@ -1,5 +1,5 @@
-# AXCSAS Verification & Utility Scripts
-## AXCSAS 驗證與公用腳本
+# XRD-Analysis Verification & Utility Scripts
+## XRD-Analysis 驗證與公用腳本
 
 This directory contains standalone scripts for validating physical calculations, testing instrument calibration, and generating debug plots.
 此目錄包含用於驗證物理計算、測試儀器校準和生成除錯圖表的獨立腳本。

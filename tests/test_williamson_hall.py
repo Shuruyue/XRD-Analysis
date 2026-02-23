@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 
 
-from axcsas.methods.williamson_hall import (
+from xrd_analysis.methods.williamson_hall import (
     WilliamsonHallAnalyzer,
     WHResult,
     WHQualityLevel,
@@ -45,7 +45,7 @@ class TestWHConstants:
     def test_modulus_map_values(self):
         """Verify elastic modulus values are from reference."""
         # Check specific directions - use tolerance for floating point
-        import axcsas.core.copper_crystal as cc
+        import xrd_analysis.core.copper_crystal as cc
         assert abs(MODULUS_MAP[(1, 1, 1)] - cc.CopperElasticModuli.E_111) < 0.5
         assert abs(MODULUS_MAP[(2, 0, 0)] - cc.CopperElasticModuli.E_100) < 0.5
         assert abs(MODULUS_MAP[(2, 2, 0)] - cc.CopperElasticModuli.E_110) < 0.5

@@ -1,4 +1,4 @@
-# AXCSAS API Documentation
+# XRD-Analysis API Documentation
 
 **Advanced XRD Crystallite Size Analysis System**
 
@@ -24,12 +24,12 @@ Version: 0.2.0
 
 ```bash
 # From source
-git clone https://github.com/Shuruyue/AXCSAS.git
-cd AXCSAS
+git clone https://github.com/Shuruyue/XRD-Analysis.git
+cd xrd_analysis
 pip install -e .
 
 # Or install from PyPI (when available)
-pip install axcsas
+pip install xrd_analysis
 ```
 
 ### Requirements
@@ -47,7 +47,7 @@ pip install axcsas
 ### Basic Analysis
 
 ```python
-from axcsas.analysis import run_full_analysis
+from xrd_analysis.analysis import run_full_analysis
 
 # Analyze a single XRD file
 result = run_full_analysis("data/sample.txt")
@@ -63,7 +63,7 @@ print(f"Dominant texture: {result.texture_result.dominant_hkl}")
 ### Batch Processing
 
 ```python
-from axcsas.analysis import batch_analyze
+from xrd_analysis.analysis import batch_analyze
 from pathlib import Path
 
 # Process all files in directory
@@ -71,7 +71,7 @@ files = list(Path("data/raw").glob("*.txt"))
 results = batch_analyze(files)
 
 # Generate summary CSV
-from axcsas.analysis.report_generator import generate_csv_summary
+from xrd_analysis.analysis.report_generator import generate_csv_summary
 generate_csv_summary(results, "output/summary.csv")
 ```
 
@@ -79,14 +79,14 @@ generate_csv_summary(results, "output/summary.csv")
 
 ## Core Modules
 
-### `axcsas.core.constants`
+### `xrd_analysis.core.constants`
 
 Physical constants and empirical thresholds for XRD analysis.
 
 **Key Constants**:
 
 ```python
-from axcsas.core.constants import (
+from xrd_analysis.core.constants import (
     CU_KA1,           # 1.540562 Å (Bearden 1967)
     CU_KA2,           # 1.544390 Å
     KA2_KA1_RATIO,    # 0.5 (Burger-Dorgelo rule)
@@ -100,7 +100,7 @@ from axcsas.core.constants import (
 
 ```python
 # Modify for different quality standards
-from axcsas.core import constants
+from xrd_analysis.core import constants
 
 # For high-precision publication work
 constants.MIN_R_SQUARED = 0.99
@@ -111,12 +111,12 @@ constants.MIN_R_SQUARED = 0.90
 constants.MAX_RWP_PERCENT = 15.0
 ```
 
-### `axcsas.core.copper_crystal`
+### `xrd_analysis.core.copper_crystal`
 
 Copper-specific crystallographic parameters with full academic citations.
 
 ```python
-from axcsas.core.copper_crystal import (
+from xrd_analysis.core.copper_crystal import (
     CU_CRYSTAL,           # Crystal structure
     CU_JCPDS_EXTENDED,    # JCPDS 04-0836 peak data
     get_scherrer_k,       # Direction-dependent K values
@@ -135,12 +135,12 @@ print(f"d: {peak_111['d_spacing']:.4f} Å")
 print(f"I: {peak_111['intensity']}")
 ```
 
-### `axcsas.core.config_loader`
+### `xrd_analysis.core.config_loader`
 
 Load and merge YAML configuration files.
 
 ```python
-from axcsas.core.config_loader import load_config
+from xrd_analysis.core.config_loader import load_config
 
 # Load with custom config
 config = load_config("my_config.yaml")
@@ -149,12 +149,12 @@ config = load_config("my_config.yaml")
 smoothing_window = config['preprocessing']['smoothing']['window_size']
 ```
 
-### `axcsas.core.units`
+### `xrd_analysis.core.units`
 
 Unit conversion utilities for XRD calculations.
 
 ```python
-from axcsas.core.units import (
+from xrd_analysis.core.units import (
     degrees_to_radians,
     angstrom_to_nm,
     two_theta_to_d,      # Bragg's law
@@ -172,7 +172,7 @@ d_spacing = two_theta_to_d(43.3, wavelength=1.540562)  # Å
 ### Data Loading
 
 ```python
-from axcsas.preprocessing import load_xrd_data
+from xrd_analysis.preprocessing import load_xrd_data
 
 # Auto-detect format (.xy, .csv, .txt, .raw)
 two_theta, intensity = load_xrd_data("sample.txt")
@@ -181,7 +181,7 @@ two_theta, intensity = load_xrd_data("sample.txt")
 ### Smoothing
 
 ```python
-from axcsas.preprocessing import SavitzkyGolayFilter
+from xrd_analysis.preprocessing import SavitzkyGolayFilter
 
 filter = SavitzkyGolayFilter(window_size=11, poly_order=3)
 smoothed = filter.apply(intensity)
@@ -190,7 +190,7 @@ smoothed = filter.apply(intensity)
 ### Background Subtraction
 
 ```python
-from axcsas.preprocessing import BackgroundSubtractor
+from xrd_analysis.preprocessing import BackgroundSubtractor
 
 # Chebyshev polynomial method
 subtractor = BackgroundSubtractor(method="chebyshev", poly_degree=5)
@@ -204,7 +204,7 @@ corrected, background = subtractor.subtract(two_theta, intensity)
 ### Complete Pipeline
 
 ```python
-from axcsas.preprocessing import PreprocessingPipeline
+from xrd_analysis.preprocessing import PreprocessingPipeline
 
 pipeline = PreprocessingPipeline(
     enable_smoothing=True,
@@ -223,7 +223,7 @@ print(result.summary())
 ### Peak Detection
 
 ```python
-from axcsas.fitting import find_peaks
+from xrd_analysis.fitting import find_peaks
 
 peaks = find_peaks(two_theta, intensity, min_height=100, min_distance=0.5)
 
@@ -234,7 +234,7 @@ for peak in peaks:
 ### Pseudo-Voigt Fitting
 
 ```python
-from axcsas.fitting import LMOptimizer, PseudoVoigtParams
+from xrd_analysis.fitting import LMOptimizer, PseudoVoigtParams
 
 optimizer = LMOptimizer()
 
@@ -251,7 +251,7 @@ if result.success:
 ### Kα Doublet Fitting
 
 ```python
-from axcsas.fitting.ka_doublet import DoubletFitter
+from xrd_analysis.fitting.ka_doublet import DoubletFitter
 
 fitter = DoubletFitter()
 result = fitter.fit(theta_region, intensity_region)
@@ -264,7 +264,7 @@ print(f"FWHM: {result.fwhm:.3f}° (intrinsic)")
 ### HKL Assignment
 
 ```python
-from axcsas.fitting import assign_hkl, assign_hkl_detailed
+from xrd_analysis.fitting import assign_hkl, assign_hkl_detailed
 
 # Simple assignment
 hkl = assign_hkl(43.3, tolerance=0.5)  # (1, 1, 1)
@@ -282,7 +282,7 @@ print(f"Confidence: {assignment.confidence}")
 ### Scherrer Analysis
 
 ```python
-from axcsas.methods import ScherrerCalculator
+from xrd_analysis.methods import ScherrerCalculator
 
 calc = ScherrerCalculator()
 
@@ -301,7 +301,7 @@ print(f"Validity: {result.validity_flag.value}")
 ### Williamson-Hall Analysis
 
 ```python
-from axcsas.methods import WilliamsonHallAnalyzer
+from xrd_analysis.methods import WilliamsonHallAnalyzer
 
 analyzer = WilliamsonHallAnalyzer()
 
@@ -321,7 +321,7 @@ print(f"Quality: {result.quality_level.value}")
 ### Texture Analysis
 
 ```python
-from axcsas.methods import TextureAnalyzer
+from xrd_analysis.methods import TextureAnalyzer
 
 analyzer = TextureAnalyzer()
 
@@ -344,7 +344,7 @@ for detail in result.tc_details:
 ### Caglioti Correction
 
 ```python
-from axcsas.methods import CagliotiCorrection
+from xrd_analysis.methods import CagliotiCorrection
 
 correction = CagliotiCorrection(U=0.0, V=0.0, W=0.003)
 
@@ -370,7 +370,7 @@ else:
 ### Error Analysis
 
 ```python
-from axcsas.validation import ErrorAnalyzer
+from xrd_analysis.validation import ErrorAnalyzer
 
 analyzer = ErrorAnalyzer()
 
@@ -399,7 +399,7 @@ result = analyzer.validate_all(
 ### Goodness of Fit
 
 ```python
-from axcsas.validation import assess_fit_quality
+from xrd_analysis.validation import assess_fit_quality
 
 quality = assess_fit_quality(
     observed=intensity_data,
@@ -420,7 +420,7 @@ print(f"Acceptable: {quality.is_acceptable}")
 ### FWHM Plots
 
 ```python
-from axcsas.visualization import plot_fwhm_evolution
+from xrd_analysis.visualization import plot_fwhm_evolution
 
 plot_fwhm_evolution(
     results=analysis_results,
@@ -432,7 +432,7 @@ plot_fwhm_evolution(
 ### Scherrer Plots
 
 ```python
-from axcsas.visualization import plot_scherrer_evolution_by_peak
+from xrd_analysis.visualization import plot_scherrer_evolution_by_peak
 
 plot_scherrer_evolution_by_peak(
     results=analysis_results,
@@ -444,7 +444,7 @@ plot_scherrer_evolution_by_peak(
 ### Williamson-Hall Plot
 
 ```python
-from axcsas.visualization import plot_williamson_hall
+from xrd_analysis.visualization import plot_williamson_hall
 
 plot_williamson_hall(
     wh_result=wh_result,
@@ -455,7 +455,7 @@ plot_williamson_hall(
 ### Texture Polar Plot
 
 ```python
-from axcsas.visualization import plot_texture_polar
+from xrd_analysis.visualization import plot_texture_polar
 
 plot_texture_polar(
     texture_result=texture_result,
@@ -472,20 +472,20 @@ plot_texture_polar(
 
 ```bash
 # Single file analysis
-axcsas analyze sample.txt --output results/
+xrd-analysis analyze sample.txt --output results/
 
 # Batch analysis
-axcsas analyze data/*.txt --output results/
+xrd-analysis analyze data/*.txt --output results/
 
 # Generate comprehensive report
-axcsas report data/*.txt --output report/
+xrd-analysis report data/*.txt --output report/
 ```
 
 ### Instrument Calibration
 
 ```bash
 # Calibrate using LaB6 standard
-axcsas calibrate lab6_standard.txt --output calibration/
+xrd-analysis calibrate lab6_standard.txt --output calibration/
 
 # The calibration results (U, V, W) can be used in config.yaml
 ```
@@ -529,20 +529,20 @@ validation:
 
 | Module | Purpose |
 |--------|---------|
-| `axcsas.core.constants` | Physical constants and thresholds |
-| `axcsas.core.copper_crystal` | Copper crystallography |
-| `axcsas.core.config_loader` | Configuration management |
-| `axcsas.core.units` | Unit conversions |
-| `axcsas.preprocessing` | Data preprocessing pipeline |
-| `axcsas.fitting` | Peak detection and fitting |
-| `axcsas.methods.scherrer` | Scherrer equation |
-| `axcsas.methods.williamson_hall` | W-H strain analysis |
-| `axcsas.methods.texture` | Harris texture coefficients |
-| `axcsas.methods.caglioti` | Instrumental correction |
-| `axcsas.methods.defect_analysis` | Stacking faults & stress |
-| `axcsas.validation` | Result validation |
-| `axcsas.visualization` | Plotting functions |
-| `axcsas.analysis` | Complete pipeline |
+| `xrd_analysis.core.constants` | Physical constants and thresholds |
+| `xrd_analysis.core.copper_crystal` | Copper crystallography |
+| `xrd_analysis.core.config_loader` | Configuration management |
+| `xrd_analysis.core.units` | Unit conversions |
+| `xrd_analysis.preprocessing` | Data preprocessing pipeline |
+| `xrd_analysis.fitting` | Peak detection and fitting |
+| `xrd_analysis.methods.scherrer` | Scherrer equation |
+| `xrd_analysis.methods.williamson_hall` | W-H strain analysis |
+| `xrd_analysis.methods.texture` | Harris texture coefficients |
+| `xrd_analysis.methods.caglioti` | Instrumental correction |
+| `xrd_analysis.methods.defect_analysis` | Stacking faults & stress |
+| `xrd_analysis.validation` | Result validation |
+| `xrd_analysis.visualization` | Plotting functions |
+| `xrd_analysis.analysis` | Complete pipeline |
 
 ---
 
@@ -560,4 +560,4 @@ validation:
 
 ---
 
-**For more information**: See [GitHub Repository](https://github.com/Shuruyue/AXCSAS)
+**For more information**: See [GitHub Repository](https://github.com/Shuruyue/XRD-Analysis)
