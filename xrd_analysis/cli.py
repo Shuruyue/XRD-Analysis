@@ -44,6 +44,30 @@ LAB6_STANDARD_PEAKS = {
 MIN_CALIBRATION_PEAKS = 5
 
 
+def _positive_int(value: str) -> int:
+    """Argparse helper: positive integer."""
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def _positive_float(value: str) -> float:
+    """Argparse helper: positive float."""
+    parsed = float(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be > 0")
+    return parsed
+
+
+def _unit_interval(value: str) -> float:
+    """Argparse helper: float in [0, 1]."""
+    parsed = float(value)
+    if parsed < 0.0 or parsed > 1.0:
+        raise argparse.ArgumentTypeError("must be between 0 and 1")
+    return parsed
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     """
     Main CLI entry point.
@@ -111,6 +135,24 @@ Examples:
         default=Path("calibration.yaml"),
         help="Output calibration file 輸出校正檔案"
     )
+    cal_parser.add_argument(
+        "--peak-window",
+        type=_positive_float,
+        default=2.0,
+        help="Peak search/fitting window in degrees (default: 2.0)",
+    )
+    cal_parser.add_argument(
+        "--doublet-max-iterations",
+        type=_positive_int,
+        default=20000,
+        help="Maximum iterations for Kalpha doublet fitting (default: 20000)",
+    )
+    cal_parser.add_argument(
+        "--max-position-error-deg",
+        type=_positive_float,
+        default=0.40,
+        help="Maximum allowed |2theta_expected - 2theta_fitted| per peak (default: 0.40 deg)",
+    )
     
     args = parser.parse_args(argv)
     
@@ -165,11 +207,18 @@ def _build_analysis_config(config_path: Optional[Path]):
 
     fitting = loaded.get("fitting", {})
     if isinstance(fitting, dict):
+        max_iterations = fitting.get("max_iterations")
+        if isinstance(max_iterations, int) and max_iterations > 0:
+            config.doublet_max_iterations = max_iterations
+
         peak_detection = fitting.get("peak_detection", {})
         if isinstance(peak_detection, dict):
             min_height = peak_detection.get("min_height")
+            peak_window = peak_detection.get("peak_window")
             if isinstance(min_height, (int, float)):
                 config.min_intensity = float(min_height)
+            if isinstance(peak_window, (int, float)) and peak_window > 0:
+                config.peak_window = float(peak_window)
 
     peak_fitting = loaded.get("peak_fitting", {})
     if isinstance(peak_fitting, dict):
@@ -212,6 +261,22 @@ def _build_analysis_config(config_path: Optional[Path]):
             if isinstance(enable, bool):
                 config.enable_kalpha_strip = enable
 
+    validation = loaded.get("validation", {})
+    if isinstance(validation, dict):
+        min_r2 = validation.get("min_r_squared")
+        if isinstance(min_r2, (int, float)) and 0 <= float(min_r2) <= 1:
+            config.min_fit_r_squared = float(min_r2)
+
+    # Defensive normalization for Savitzky-Golay constraints.
+    if config.smoothing_window < 3:
+        config.smoothing_window = 3
+    if config.smoothing_window % 2 == 0:
+        config.smoothing_window += 1
+    if config.smoothing_poly_order < 1:
+        config.smoothing_poly_order = 1
+    if config.smoothing_poly_order >= config.smoothing_window:
+        config.smoothing_poly_order = max(1, config.smoothing_window - 1)
+
     return config
 
 
@@ -237,89 +302,6 @@ def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
     return [input_path]
 
 
-def _write_summary_csv(results, output_dir: Path) -> Optional[Path]:
-    """
-    Write one-row-per-sample summary CSV from pipeline results.
-    """
-    header = [
-        "Sample",
-        "SampleAge_h",
-        "Scherrer_nm",
-        "WH_Size_nm",
-        "WH_Strain",
-        "WH_R2",
-        "Dominant_hkl",
-        "TC_dominant",
-        "Peak_Sep_deg",
-        "SF_alpha_pct",
-        "Lattice_A",
-        "Anneal_State",
-        "Background_Method",
-        "Background_Fraction",
-        "Angle_Mean_Offset_deg",
-        "Angle_RMSE_deg",
-        "Angle_MaxAbs_deg",
-        "Angle_NPeaks",
-    ]
-
-    rows: List[str] = []
-    for result in results:
-        dom_hkl = ""
-        dom_tc = ""
-        if result.texture_result and result.texture_result.dominant_hkl:
-            h, k, l = result.texture_result.dominant_hkl
-            dom_hkl = f"({h}{k}{l})"
-            if result.texture_result.dominant_tc is not None:
-                dom_tc = f"{result.texture_result.dominant_tc:.2f}"
-
-        wh_size = ""
-        wh_strain = ""
-        wh_r2 = ""
-        if result.wh_result:
-            wh_size = f"{result.wh_result.crystallite_size_nm:.1f}"
-            wh_strain = f"{result.wh_result.microstrain:.2e}"
-            wh_r2 = f"{result.wh_result.r_squared:.3f}"
-
-        sf_sep = ""
-        sf_alpha = ""
-        if result.stacking_fault:
-            sf_sep = f"{result.stacking_fault.peak_separation_deg:.3f}"
-            sf_alpha = f"{result.stacking_fault.alpha_percent:.2f}"
-
-        lattice_a = ""
-        if result.lattice_result:
-            lattice_a = f"{result.lattice_result.lattice_constant:.4f}"
-
-        row = [
-            result.sample_name,
-            f"{result.sample_age_hours:.1f}" if result.sample_age_hours is not None else "",
-            f"{result.average_size_nm:.1f}" if result.average_size_nm is not None else "",
-            wh_size,
-            wh_strain,
-            wh_r2,
-            dom_hkl,
-            dom_tc,
-            sf_sep,
-            sf_alpha,
-            lattice_a,
-            result.annealing_state.value if hasattr(result.annealing_state, "value") else str(result.annealing_state),
-            result.background_method if result.background_applied else "none",
-            f"{result.background_fraction_mean:.4f}" if result.background_fraction_mean is not None else "",
-            f"{result.angle_offset_mean_deg:.4f}" if result.angle_offset_mean_deg is not None else "",
-            f"{result.angle_offset_rmse_deg:.4f}" if result.angle_offset_rmse_deg is not None else "",
-            f"{result.angle_offset_max_abs_deg:.4f}" if result.angle_offset_max_abs_deg is not None else "",
-            str(result.angle_validation_peaks) if result.angle_validation_peaks else "",
-        ]
-        rows.append(",".join(row))
-
-    if not rows:
-        return None
-
-    summary_path = output_dir / "summary.csv"
-    summary_path.write_text(",".join(header) + "\n" + "\n".join(rows) + "\n", encoding="utf-8")
-    return summary_path
-
-
 def _run_analyze(args) -> int:
     """
     Run analysis command.
@@ -327,7 +309,7 @@ def _run_analyze(args) -> int:
     """
     from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
     
-    print(f"Loading configuration... 載入配置...")
+    print("Loading configuration... 載入配置...")
     config = _build_analysis_config(args.config)
     
     print(f"Analyzing: {args.input}")
@@ -356,10 +338,6 @@ def _run_analyze(args) -> int:
         print("Error: No valid input files were processed.")
         return 1
 
-    summary_path = _write_summary_csv(results, args.output)
-    if summary_path:
-        print(f"Summary CSV written: {summary_path}")
-    
     print("Analysis complete. 分析完成。")
     return 0
 
@@ -401,7 +379,7 @@ def _run_calibrate(args) -> int:
     # Find peaks and measure FWHM
     peaks_data = []
     matched_peaks = []
-    max_position_error_deg = 0.40
+    max_position_error_deg = args.max_position_error_deg
     print("\nFitting standard peaks...")
     
     for hkl, expected_pos in LAB6_STANDARD_PEAKS.items():
@@ -410,9 +388,9 @@ def _run_calibrate(args) -> int:
                 two_theta,
                 intensity,
                 expected_pos,
-                window=2.0,
+                window=args.peak_window,
                 use_doublet_fitting=True,
-                doublet_max_iterations=8000,
+                doublet_max_iterations=args.doublet_max_iterations,
             )
             if peak is not None and peak.fwhm > 0:
                 delta_deg = float(peak.two_theta - expected_pos)
@@ -474,7 +452,7 @@ def _run_calibrate(args) -> int:
     print(f"  W = {W:.6f}")
     fwhm_43 = np.sqrt(max(U * np.tan(np.radians(21.5))**2 + V * np.tan(np.radians(21.5)) + W, 0.0))
     print(f"  FWHM at 43 deg ~ {fwhm_43:.4f} deg")
-    print(f"\nCalibration diagnostics:")
+    print("\nCalibration diagnostics:")
     print(f"  R² (FWHM² fit) = {r_squared:.6f}")
     print(f"  RMSE(FWHM²) = {rmse_fwhm_sq:.6e} deg²")
     print(f"  Max |residual| (FWHM²) = {max_abs_residual_sq:.6e} deg²")
@@ -511,6 +489,7 @@ def _run_calibrate(args) -> int:
         ],
     }
     
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, 'w', encoding='utf-8') as f:
         yaml.safe_dump(calibration, f, default_flow_style=False, sort_keys=False)
     

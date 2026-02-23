@@ -19,7 +19,6 @@ from xrd_analysis.methods.texture import (
     TextureAnalysisResult,
     OrientationType,
     analyze_texture,
-    generate_texture_report,
     JCPDS_STANDARD_INTENSITY,
 )
 
@@ -147,42 +146,6 @@ class TestStatisticalMeasures:
         
         # is_random is True if all TC are between 0.9-1.1
         assert isinstance(result.is_random, bool)
-
-
-class TestReportGeneration:
-    """Tests for report generation (DATA ONLY)."""
-    
-    def test_report_contains_key_info(self):
-        """Report should contain all key data information."""
-        intensities = {
-            (1, 1, 1): 15680,
-            (2, 0, 0): 5520,
-            (2, 2, 0): 4200,
-        }
-        
-        result = analyze_texture(intensities)
-        report = generate_texture_report(result, "Test Sample")
-        
-        assert "Texture" in report
-        assert "Test Sample" in report
-        assert "(111)" in report
-        assert "(220)" in report
-        assert "TC" in report
-    
-    def test_report_no_diagnosis(self):
-        """Report should NOT contain process diagnosis."""
-        intensities = {
-            (1, 1, 1): 15680,
-            (2, 0, 0): 5520,
-            (2, 2, 0): 4200,
-        }
-        
-        result = analyze_texture(intensities)
-        report = generate_texture_report(result, "Test Sample")
-        
-        # Should not contain judgment keywords
-        assert "PEG" not in report
-        assert "Diagnosis" not in report or "Process Diagnosis" not in report
 
 
 class TestEdgeCases:

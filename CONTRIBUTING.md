@@ -24,11 +24,13 @@ Be respectful, constructive, and professional in all interactions.
 ## Getting Started
 
 **Prerequisites**:
+
 - Python ≥ 3.9
 - Git
 - Basic knowledge of XRD analysis
 
 **Fork and Clone**:
+
 ```bash
 # Fork the repository on GitHub, then:
 git clone https://github.com/YOUR_USERNAME/xrd_analysis.git
@@ -40,22 +42,26 @@ cd xrd_analysis
 ## Development Setup
 
 **1. Create virtual environment**:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 **2. Install in editable mode**:
+
 ```bash
 pip install -e ".[dev]"
 ```
 
 **3. Install development tools**:
+
 ```bash
 pip install pytest ruff black mypy
 ```
 
 **4. Verify installation**:
+
 ```bash
 pytest tests/
 ```
@@ -65,6 +71,7 @@ pytest tests/
 ## Making Changes
 
 **1. Create a branch**:
+
 ```bash
 git checkout -b feature/your-feature-name
 # or
@@ -76,6 +83,7 @@ git checkout -b bugfix/issue-number
 **3. Write or update tests**
 
 **4. Run the test suite**:
+
 ```bash
 pytest tests/ -v
 ```
@@ -85,21 +93,25 @@ pytest tests/ -v
 ## Testing
 
 **Run all tests**:
+
 ```bash
 pytest tests/
 ```
 
 **Run specific test**:
+
 ```bash
 pytest tests/test_scherrer.py -v
 ```
 
 **Check coverage**:
+
 ```bash
 pytest --cov=xrd_analysis --cov-report=html
 ```
 
 **Writing Tests**:
+
 - Place tests in `tests/` directory
 - Use descriptive test names: `test_scherrer_calculates_size_correctly()`
 - Include edge cases and error conditions
@@ -110,33 +122,39 @@ pytest --cov=xrd_analysis --cov-report=html
 ## Code Style
 
 **Python Style**:
+
 - Follow PEP 8
 - Use type hints for function signatures
 - Maximum line length: 100 characters
 - Use double quotes for strings
 
 **Format code automatically**:
+
 ```bash
 black xrd_analysis/
 ```
 
 **Check linting**:
+
 ```bash
 ruff check xrd_analysis/
 ```
 
 **Type checking**:
+
 ```bash
 mypy xrd_analysis/
 ```
 
 **Documentation**:
+
 - All public functions must have docstrings
 - Use Google-style docstrings
 - Include Args, Returns, and Examples sections
 - Bilingual comments (English + Chinese) where helpful
 
 **Example**:
+
 ```python
 def calculate_size(
     two_theta: float,
@@ -145,15 +163,15 @@ def calculate_size(
 ) -> float:
     """
     Calculate crystallite size using Scherrer equation.
-    
+  
     Args:
         two_theta: Diffraction angle in degrees
         fwhm: Full width at half maximum in degrees
         wavelength: X-ray wavelength in Angstroms
-        
+      
     Returns:
         Crystallite size in nanometers
-        
+      
     Example:
         >>> size = calculate_size(43.3, 0.35)
         >>> print(f"{size:.1f} nm")
@@ -166,12 +184,14 @@ def calculate_size(
 ## Submitting Changes
 
 **1. Commit your changes**:
+
 ```bash
 git add .
 git commit -m "feat: Add support for aluminum analysis"
 ```
 
 **Commit Message Format**:
+
 ```
 <type>: <subject>
 
@@ -179,6 +199,7 @@ git commit -m "feat: Add support for aluminum analysis"
 ```
 
 **Types**:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -188,11 +209,13 @@ git commit -m "feat: Add support for aluminum analysis"
 - `chore`: Maintenance tasks
 
 **2. Push to your fork**:
+
 ```bash
 git push origin feature/your-feature-name
 ```
 
 **3. Create Pull Request**:
+
 - Go to the original repository on GitHub
 - Click "New Pull Request"
 - Select your branch
@@ -200,6 +223,7 @@ git push origin feature/your-feature-name
 - Wait for review
 
 **PR Checklist**:
+
 - [ ] Tests pass locally
 - [ ] Code follows style guidelines
 - [ ] Documentation updated
@@ -228,6 +252,7 @@ git push origin feature/your-feature-name
 7. Update CLI if needed
 
 **Example Structure**:
+
 ```python
 # XRD-Analysis/methods/new_method.py
 
@@ -244,11 +269,11 @@ class NewMethodResult:
 class NewMethodAnalyzer:
     """
     Analyzer for new XRD analysis method.
-    
+  
     Reference:
         Author, A. (Year). Title. Journal, vol(issue), pages.
     """
-    
+  
     def analyze(self, data) -> NewMethodResult:
         """Run analysis."""
         ...
@@ -260,8 +285,8 @@ class NewMethodAnalyzer:
 
 - Open an issue for bugs or feature requests
 - Start a discussion for questions
-- Email: [maintainer email]
+- Email: [zhongyue364@gmail.com]
 
 ---
 
-**Thank you for contributing to xrd_analysis!** 🎉
+**Thank you for contributing to xrd_analysis!**

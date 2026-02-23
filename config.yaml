@@ -94,7 +94,6 @@ validation:
 # Output Settings
 # -----------------------------------------------------------------------------
 output:
-  results_format: "csv"        # Options: "csv", "json", "xlsx"
   plot_format: "png"           # Options: "png", "svg", "pdf"
   plot_dpi: 300
   generate_report: true

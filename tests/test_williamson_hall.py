@@ -20,7 +20,6 @@ from xrd_analysis.methods.williamson_hall import (
     WHResult,
     WHQualityLevel,
     analyze_williamson_hall,
-    generate_wh_report,
     MODULUS_MAP,
     WH_K_FACTOR,
     R2_EXCELLENT,
@@ -173,24 +172,6 @@ class TestAnisotropyDiagnostics:
         if result.r_squared < R2_ACCEPTABLE:
             assert result.anisotropy_note
             assert "異方性" in result.anisotropy_note or "191" in result.anisotropy_note
-
-
-class TestReportGeneration:
-    """Tests for report generation."""
-    
-    def test_report_contains_key_info(self):
-        """Report should contain all key information."""
-        two_theta = np.array([43.32, 50.45, 74.16, 89.97])
-        fwhm = np.array([0.224, 0.251, 0.282, 0.305])
-        
-        result = analyze_williamson_hall(two_theta, fwhm)
-        report = generate_wh_report(result, "Test Sample")
-        
-        assert "Williamson-Hall" in report
-        assert "Test Sample" in report
-        assert "Crystallite Size" in report
-        assert "Microstrain" in report
-        assert "R²" in report
 
 
 class TestPlotData:

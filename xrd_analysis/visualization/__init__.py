@@ -44,7 +44,6 @@ from xrd_analysis.visualization.style import (
 )
 from xrd_analysis.visualization.texture_plots import (
     plot_tc_evolution,
-    plot_texture_polar,
 )
 from xrd_analysis.visualization.wh_plots import (
     plot_wh_residuals,
@@ -68,7 +67,6 @@ __all__ = [
     "plot_williamson_hall",
     "plot_wh_residuals",
     # Texture
-    "plot_texture_polar",
     "plot_tc_evolution",
     # Fitting
     "plot_peak_fit",

@@ -150,7 +150,7 @@ def plot_williamson_hall(
     quality_threshold = 0.95
     if r_squared > quality_threshold:
         quality = "Excellent"
-        box_facecolor = 'lightgreen'
+        quality_color = "green"
     elif r_squared > 0.85:
         quality = 'ACCEPTABLE'
         quality_color = 'orange'
@@ -346,8 +346,9 @@ def plot_strain_evolution(
         
     # Add Physical Limitation Footnote
     LIMITATION_NOTE = (
-        "Note: Microstrain (ε) assumes isotropic model. For Cu, (200) strain may be overestimated ~3x due to elastic anisotropy (E_111 ≈ 3*E_200).\n"
-        "註：微應變採用各向同性模型。銅具強烈各向異性，(200) 應變可能被高估約 3 倍。"
+        "Note: Microstrain (ε) assumes an isotropic model. For Cu, (200) strain may "
+        "be overestimated by about 3x because of elastic anisotropy "
+        "(E_111 ≈ 3*E_200)."
     )
     # Using slightly higher position to avoid cutting off x-axis label
     fig.text(0.5, 0.01, LIMITATION_NOTE, ha='center', va='bottom', 

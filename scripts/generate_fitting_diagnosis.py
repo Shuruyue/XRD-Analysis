@@ -1,72 +1,69 @@
-"""
-Generate comprehensive fitting diagnosis plots
-生成綜合峰擬合診斷圖
-"""
+#!/usr/bin/env python3
+"""Generate per-sample fitting diagnosis plots."""
 
+from __future__ import annotations
+
+import argparse
+import sys
 from pathlib import Path
-from xrd_analysis.analysis import batch_analyze
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from _script_utils import ensure_dir, get_project_root, resolve_data_dir, resolve_path
 from xrd_analysis.visualization.generate_fitting_diagnosis import generate_sample_fitting_plot
-import matplotlib.pyplot as plt
-import numpy as np
 
-from xrd_analysis.core.config_loader import load_config
 
-# Setup paths
-project_root = Path(__file__).resolve().parent.parent
-config_path = project_root / "config.yaml"
-config = load_config(config_path)
+def generate_diagnosis_plots(data_dir: Path, output_dir: Path, clean: bool = True) -> int:
+    if not data_dir.exists():
+        raise FileNotFoundError(f"Data directory not found: {data_dir}")
 
-data_dir = project_root / "data/raw/202511"
+    individual_dir = ensure_dir(output_dir / "individual")
+    if clean:
+        for file in individual_dir.glob("*.png"):
+            file.unlink()
 
-# Use standardized output path from config
-# Output directory
-plots_root = project_root / config["output"]["paths"]["plots"]
-dir_diagnosis = plots_root / "diagnosis"  # User requested removal of '03_' prefix
-dir_diagnosis.mkdir(parents=True, exist_ok=True)
+    data_files = sorted(data_dir.glob("*.txt"))
+    print(f"Found {len(data_files)} data files in {data_dir}")
+    if not data_files:
+        return 1
 
-# Individual fits
-GENERATE_INDIVIDUAL = True
-dir_individual = dir_diagnosis / "individual_fits" # User requested removal of "failed"
-if GENERATE_INDIVIDUAL:
-    dir_individual.mkdir(parents=True, exist_ok=True)
-    # Cleanup old diagnosis plots
-    for f in dir_individual.glob("*.png"):
-        f.unlink()
-    print(f"Cleaned up old diagnosis plots in {dir_individual}")
+    print(f"Generating {len(data_files)} diagnosis plots...")
+    for idx, filepath in enumerate(data_files, 1):
+        print(f"  {idx}/{len(data_files)}: {filepath.stem}")
+        try:
+            generate_sample_fitting_plot(filepath, output_dir=individual_dir)
+        except Exception as exc:
+            print(f"    [ERROR] {filepath.stem}: {exc}")
 
-# Get all data files
-data_files = sorted(data_dir.glob("*.txt"))
-print(f"Found {len(data_files)} data files")
+    print(f"Done! Plots saved to: {individual_dir}")
+    return 0
 
-# Analyze all samples
-print("Analyzing samples for fitting diagnosis...")
-results = batch_analyze([str(f) for f in data_files])
 
-# Generate individual fitting diagnosis plots
-print(f"\nGenerating {len(results)} individual fitting diagnosis plots...")
-for i, result in enumerate(results, 1):
-    print(f"  {i}/{len(results)}: {result.sample_name}")
-    
-    # Generate diagnosis plot for this sample
-    output_file = dir_individual / f"{result.sample_name}_fitting.png"
-    
-    try:
-        generate_sample_fitting_plot(
-            Path(result.filepath), # Pass Path object as expected by the new function
-            output_dir=dir_individual
-        )
-    except Exception as e:
-        print(f"    ⚠ Error: {e}")
+def main() -> int:
+    root = get_project_root()
+    parser = argparse.ArgumentParser(description="Generate fitting diagnosis plots.")
+    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("outputs/plots/diagnostics/fitting"),
+        help="Output diagnosis directory.",
+    )
+    parser.add_argument(
+        "--no-clean",
+        action="store_true",
+        help="Do not remove old png files before generation.",
+    )
+    args = parser.parse_args()
 
-print(f"\n✓ Individual plots saved to: {dir_individual}")
+    data_dir = resolve_data_dir(root, args.data_dir)
+    output_dir = resolve_path(root, args.output_dir)
+    assert output_dir is not None
+    ensure_dir(output_dir)
+    return generate_diagnosis_plots(data_dir, output_dir, clean=not args.no_clean)
 
-# Generate summary statistics plot
-# Summary plot generation disabled per user request
-# print("\nGenerating fitting quality summary...")
-# ... (code removed)
 
-print(f"\n{'='*60}")
-print("Fitting Diagnosis Complete!")
-print(f"{'='*60}")
-print(f"Individual plots: {len(results)} files in {dir_individual}")
-# print(f"Summary plots: {summary_dir}")
+if __name__ == "__main__":
+    raise SystemExit(main())

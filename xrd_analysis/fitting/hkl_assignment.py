@@ -53,8 +53,8 @@ def assign_hkl(
     將 (hkl) Miller 指標指派給峰位。
     
     The assignment uses JCPDS 04-0836 standard values with tolerance
-    for residual stress shifts (|Δ2θ| < 0.5° is normal for ED-Cu).
-    使用 JCPDS 04-0836 標準值，容許殘留應力偏移 (|Δ2θ| < 0.5° 對 ED-Cu 正常)。
+    for small lattice-shift offsets (|Δ2θ| < 0.5° is normal for ED-Cu).
+    使用 JCPDS 04-0836 標準值，容許小幅晶格偏移 (|Δ2θ| < 0.5° 對 ED-Cu 正常)。
     
     Args:
         two_theta: Measured 2θ position in degrees

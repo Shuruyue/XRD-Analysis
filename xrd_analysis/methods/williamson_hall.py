@@ -382,38 +382,6 @@ def analyze_williamson_hall(
     return analyzer.analyze(two_theta, fwhm_sample, hkl_list)
 
 
-def generate_wh_report(result: WHResult, sample_name: str = "Unknown") -> str:
-    """
-    Generate formatted W-H analysis report.
-    產生格式化的 W-H 分析報告。
-    """
-    lines = [
-        "=" * 60,
-        "Williamson-Hall Analysis",
-        f"Sample: {sample_name}",
-        "=" * 60,
-        "",
-        "Linear Regression:",
-        f"  Y-intercept: {result.intercept:.5f}",
-        f"  Slope: {result.slope:.5f}",
-        f"  R²: {result.r_squared:.3f} ({result.quality_level.value.upper()})",
-        "",
-        "Results:",
-        f"  Crystallite Size (D): {result.crystallite_size_nm:.1f} ± {result.size_error_nm:.1f} nm",
-        f"  Microstrain (ε): {result.microstrain:.2e} ± {result.strain_error:.2e}",
-        f"  Number of peaks: {result.n_peaks}",
-    ]
-
-    if result.warning_message:
-        lines.extend(["", f"Note: {result.warning_message}"])
-
-    if result.anisotropy_note:
-        lines.extend(["", result.anisotropy_note])
-
-    lines.append("=" * 60)
-    return "\n".join(lines)
-
-
 def get_modulus_for_hkl(hkl: Tuple[int, int, int]) -> float:
     """
     Get Young's modulus for a given hkl direction.

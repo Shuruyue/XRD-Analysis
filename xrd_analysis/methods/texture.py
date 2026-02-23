@@ -320,56 +320,6 @@ def analyze_texture(
     return analyzer.analyze(intensities)
 
 
-def generate_texture_report(
-    result: TextureAnalysisResult,
-    sample_name: str = "Unknown"
-) -> str:
-    """
-    Generate formatted texture analysis DATA report.
-    產生格式化的紋理分析資料報告。
-
-    NOTE: No automatic interpretation. Data only.
-    """
-    lines = [
-        "=" * 70,
-        "Texture Coefficient Analysis (Harris TC)",
-        f"Sample: {sample_name}",
-        f"Intensity Type: {result.intensity_type.upper()}",
-        f"Number of Peaks: {result.n_peaks}",
-        "=" * 70,
-        "",
-        f"{'Peak':^8} {'I_obs':>10} {'I_std':>8} {'I/I₀':>8} {'TC':>6} {'Type':^12}",
-        "-" * 70,
-    ]
-
-    for detail in sorted(result.tc_details, key=lambda x: -x.tc_value):
-        hkl_str = f"({detail.hkl[0]}{detail.hkl[1]}{detail.hkl[2]})"
-        cls = detail.orientation_type.value.upper()
-        lines.append(
-            f"{hkl_str:^8} {detail.intensity_observed:>10.0f} "
-            f"{detail.intensity_standard:>8.0f} {detail.ratio:>8.1f} "
-            f"{detail.tc_value:>6.2f} {cls:^12}"
-        )
-
-    lines.append("-" * 70)
-
-    if result.dominant_hkl:
-        dom = f"({result.dominant_hkl[0]}{result.dominant_hkl[1]}{result.dominant_hkl[2]})"
-    else:
-        dom = "N/A"
-
-    lines.extend([
-        "",
-        "Summary:",
-        f"  Highest TC: {dom} = {result.dominant_tc:.2f}",
-        f"  Degree of Texture (σ): {result.degree_of_texture:.3f}",
-        f"  Random Texture: {result.is_random}",
-        "=" * 70,
-    ])
-
-    return "\n".join(lines)
-
-
 def get_standard_intensity(hkl: Tuple[int, int, int]) -> float:
     """
     Get JCPDS standard intensity for given hkl.

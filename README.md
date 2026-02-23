@@ -60,9 +60,6 @@ python scripts/calibrate_instrument.py data/standards/lab6_standard.txt \
 # Verify 2-theta peak positions (Bragg's Law)
 python scripts/verify_physics.py
 
-# Verify directional Young's modulus (Ledbetter & Naimon)
-python scripts/verify_elastic_moduli.py
-
 # Verify peak-angle correctness (zero-shift sanity check)
 python scripts/verify_angle_accuracy.py data/raw/202511/20251125_0ml_2h.txt
 

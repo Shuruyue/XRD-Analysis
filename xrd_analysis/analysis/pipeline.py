@@ -10,7 +10,7 @@ Unified pipeline integrating all analysis phases.
 - Phase 04: Scherrer Size Calculation 晶粒尺寸計算
 - Phase 05: Williamson-Hall Strain Analysis 應變分析
 - Phase 06: Texture Analysis 織構分析
-- Phase 07: Defect and Stress Diagnosis 缺陷與應力診斷
+- Phase 07: Defect Diagnosis 缺陷診斷
 """
 
 import numpy as np
@@ -21,8 +21,6 @@ import re
 
 from xrd_analysis.core.constants import CU_KA1
 from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
-from xrd_analysis.fitting.ka_doublet import DoubletFitter
-
 from xrd_analysis.methods.scherrer import (
     ScherrerCalculator,
     ScherrerResult,
@@ -44,7 +42,6 @@ from xrd_analysis.methods.defect_analysis import (
     AnnealingState,
     determine_annealing_state,
 )
-from xrd_analysis.fitting.hkl_assignment import assign_hkl
 from xrd_analysis.fitting.lm_optimizer import LMOptimizer
 from xrd_analysis.fitting.pseudo_voigt import PseudoVoigt, PseudoVoigtParams
 from xrd_analysis.preprocessing.pipeline import PreprocessingPipeline
@@ -71,6 +68,9 @@ class AnalysisConfig:
     # Peak detection / 峰值偵測
     peak_window: float = 2.0  # degrees around expected position
     min_intensity: float = 100  # minimum counts
+    use_doublet_fitting: bool = True
+    doublet_max_iterations: int = 20000
+    min_fit_r_squared: float = 0.80
 
     # Preprocessing / 預處理
     enable_smoothing: bool = True
@@ -327,6 +327,7 @@ def find_peak_in_range(
     window: float = 2.5,
     use_doublet_fitting: bool = True,
     doublet_max_iterations: int = 20000,
+    min_fit_r_squared: float = 0.80,
 ) -> Optional[PeakData]:
     """
     Find peak near expected position using Kα doublet fitting.
@@ -337,6 +338,8 @@ def find_peak_in_range(
         center: Expected peak center position
         window: Search window (degrees)
         use_doublet_fitting: If True, use DoubletFitter (recommended)
+        doublet_max_iterations: Max iterations for doublet optimizer
+        min_fit_r_squared: Minimum accepted fit R²
         
     Returns:
         PeakData with fitted parameters (Kα₁ only), or None if no peak found
@@ -368,12 +371,12 @@ def find_peak_in_range(
                 two_theta,
                 intensity,
                 center,
-                window=2.5,
+                window=window,
                 use_doublet=True,
                 doublet_max_iterations=doublet_max_iterations,
             )
             
-            if fit_result['success'] and fit_result.get('r_squared', 0) > 0.8:
+            if fit_result['success'] and fit_result.get('r_squared', 0) > min_fit_r_squared:
                 from xrd_analysis.fitting.pv_area import calculate_pv_area
                 area = calculate_pv_area(
                      fit_result['amplitude'],
@@ -481,7 +484,13 @@ class XRDAnalysisPipeline:
         peaks = []
         for hkl, expected_pos in self.config.EXPECTED_PEAKS.items():
             peak = find_peak_in_range(
-                two_theta, intensity, expected_pos, self.config.peak_window
+                two_theta,
+                intensity,
+                expected_pos,
+                window=self.config.peak_window,
+                use_doublet_fitting=self.config.use_doublet_fitting,
+                doublet_max_iterations=self.config.doublet_max_iterations,
+                min_fit_r_squared=self.config.min_fit_r_squared,
             )
             if peak:
                 peak.hkl = hkl

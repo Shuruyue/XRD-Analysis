@@ -1,92 +1,87 @@
-"""
-Generate FWHM plots from XRD analysis results
-使用 XRD 分析結果生成 FWHM 圖表
-"""
+#!/usr/bin/env python3
+"""Generate FWHM evolution plots from pipeline results."""
 
+from __future__ import annotations
+
+import argparse
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from _script_utils import ensure_dir, get_project_root, resolve_data_dir, resolve_path
 from xrd_analysis.analysis import batch_analyze
-from xrd_analysis.visualization import plot_fwhm_evolution, plot_fwhm_by_concentration
+from xrd_analysis.visualization import plot_fwhm_by_concentration, plot_fwhm_evolution
 
-from xrd_analysis.core.config_loader import load_config
 
-# Setup paths
-project_root = Path(__file__).resolve().parent.parent
-config_path = project_root / "config.yaml"
-config = load_config(config_path)
+def generate_fwhm_plots(data_dir: Path, output_dir: Path) -> int:
+    if not data_dir.exists():
+        raise FileNotFoundError(f"Data directory not found: {data_dir}")
 
-# Find all data files
-data_dir = project_root / "data/raw/202511"
+    ensure_dir(output_dir)
+    for file in output_dir.glob("*.png"):
+        file.unlink()
 
-# Use standardized output path from config
-output_root = Path(config["output"]["paths"]["root"])
-# Convert string path to Path object if needed
-if isinstance(output_root, str):
-    output_root = project_root / output_root
+    data_files = sorted(data_dir.glob("*.txt"))
+    print(f"Found {len(data_files)} data files in {data_dir}")
+    if not data_files:
+        return 1
 
-# FWHM plots go to outputs/plots/analysis (or similar, based on plan: outputs/plots/analysis)
-# Plan said: outputs/plots/analysis
-# Setup output subdirectories
-plots_root = project_root / config["output"]["paths"]["plots"]
-dir_results = plots_root / "results"
-dir_results.mkdir(parents=True, exist_ok=True)
+    results = batch_analyze([str(f) for f in data_files])
+    plot_data = []
+    for result in results:
+        sample = {
+            "name": result.sample_name,
+            "concentration": result.leveler_concentration or 0.0,
+            "time": result.sample_age_hours or 0.0,
+            "peaks": [],
+        }
+        for peak in result.peaks:
+            hkl_str = f"({peak.hkl[0]}{peak.hkl[1]}{peak.hkl[2]})"
+            sample["peaks"].append(
+                {
+                    "hkl": hkl_str,
+                    "fwhm": peak.fwhm,
+                    "fwhm_error": 0.01,
+                }
+            )
+        plot_data.append(sample)
 
-# Cleanup old plots
-for f in dir_results.glob("*.png"):
-    f.unlink()
-print(f"Cleaned up old files in {dir_results}")
+    plot_fwhm_evolution(
+        plot_data,
+        x_param="time",
+        output_path=str(output_dir / "fwhm_evolution.png"),
+        show=False,
+    )
+    plot_fwhm_by_concentration(
+        plot_data,
+        output_path=str(output_dir / "fwhm_compare_grid.png"),
+        dpi=300,
+        show=False,
+    )
+    print(f"Done! Plots saved to: {output_dir}")
+    return 0
 
-# Get all .txt files
-data_files = sorted(data_dir.glob("*.txt"))
-print(f"Found {len(data_files)} data files")
 
-# Run batch analysis
-print("Analyzing all samples...")
-results = batch_analyze([str(f) for f in data_files])
+def main() -> int:
+    root = get_project_root()
+    parser = argparse.ArgumentParser(description="Generate FWHM plots from batch scans.")
+    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("outputs/plots/analysis/fwhm"),
+        help="Output plot directory.",
+    )
+    args = parser.parse_args()
 
-# Prepare data for plotting
-plot_data = []
-for result in results:
-    sample_data = {
-        'name': result.sample_name,
-        'concentration': result.leveler_concentration or 0,
-        'time': result.sample_age_hours or 0,
-        'peaks': []
-    }
-    
-    # Add peak data
-    for peak in result.peaks:
-        hkl_str = f"({peak.hkl[0]}{peak.hkl[1]}{peak.hkl[2]})"
-        sample_data['peaks'].append({
-            'hkl': hkl_str,
-            'fwhm': peak.fwhm,
-            'fwhm_error': 0.01  # Default uncertainty
-        })
-    
-    plot_data.append(sample_data)
+    data_dir = resolve_data_dir(root, args.data_dir)
+    output_dir = resolve_path(root, args.output_dir)
+    assert output_dir is not None
+    return generate_fwhm_plots(data_dir, output_dir)
 
-print(f"Prepared data for {len(plot_data)} samples")
 
-# 1. FWHM evolution by concentration
-print("1. FWHM vs Time (grouped by concentration)...")
-fig1 = plot_fwhm_evolution(
-    plot_data,
-    x_param='time',
-    output_path=str(dir_results / "fwhm_evolution.png"),
-    show=False
-)
-print("   Saved: fwhm_evolution.png")
-
-# 2. FWHM by concentration (2x2 grid)
-print("2. FWHM evolution grid (one subplot per concentration)...")
-fig2 = plot_fwhm_by_concentration(
-    plot_data,
-    output_path=str(dir_results / "fwhm_compare_grid.png"),
-    dpi=300,
-    show=False
-)
-print("   Saved: fwhm_compare_grid.png")
-
-print(f"\n✓ All plots saved to: {plots_root}")
-print(f"  - results/fwhm_evolution.png")
-print(f"  - results/fwhm_compare_grid.png")
-
+if __name__ == "__main__":
+    raise SystemExit(main())

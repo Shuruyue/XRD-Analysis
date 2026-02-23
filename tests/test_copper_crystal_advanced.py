@@ -19,7 +19,7 @@ class TestElasticModuliCalculation:
         """Test E_100 calculation matches verified value."""
         E_100 = calculate_youngs_modulus_from_stiffness(1, 0, 0)
         
-        # Verified from scripts/verify_elastic_moduli.py
+        # Verified by elastic-moduli unit tests.
         assert abs(E_100 - 66.7) < 0.5, f"E_100 should be ~66.7 GPa, got {E_100:.1f}"
         
         # Should match dataclass value
@@ -29,7 +29,7 @@ class TestElasticModuliCalculation:
         """Test E_111 calculation matches verified value."""
         E_111 = calculate_youngs_modulus_from_stiffness(1, 1, 1)
         
-        # Verified from scripts/verify_elastic_moduli.py
+        # Verified by elastic-moduli unit tests.
         assert abs(E_111 - 191.1) < 0.5, f"E_111 should be ~191.1 GPa, got {E_111:.1f}"
         
         # Should match dataclass value
@@ -39,7 +39,7 @@ class TestElasticModuliCalculation:
         """Test E_110 calculation matches verified value."""
         E_110 = calculate_youngs_modulus_from_stiffness(1, 1, 0)
         
-        # Verified from scripts/verify_elastic_moduli.py
+        # Verified by elastic-moduli unit tests.
         assert abs(E_110 - 130.3) < 0.5, f"E_110 should be ~130.3 GPa, got {E_110:.1f}"
         
         # Should match dataclass value

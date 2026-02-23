@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 
 from xrd_analysis.visualization.style import apply_xrd_analysis_style, PEAK_COLORS
 from xrd_analysis.visualization.wh_plots import plot_williamson_hall
-from xrd_analysis.visualization.texture_plots import plot_texture_polar
+from xrd_analysis.visualization.texture_plots import plot_tc_evolution
 from xrd_analysis.visualization.fitting_plots import plot_peak_fit
 from xrd_analysis.visualization.generate_fitting_diagnosis import fit_peak_with_diagnosis
 from xrd_analysis.core.constants import CU_KA1
@@ -47,15 +47,40 @@ class TestWHPlotting:
              fig = plot_williamson_hall(two_theta, fwhm, show=False)
              assert fig is not None
 
+    def test_wh_plot_high_r2_branch(self):
+        """High R^2 branch should render without unbound color variable errors."""
+        two_theta = np.array([43.32, 50.45, 74.16, 89.97])
+        fwhm = np.array([0.224, 0.251, 0.282, 0.305])
+        fit_result = {"slope": 0.01, "intercept": 0.003, "r_squared": 0.99}
+
+        with patch('matplotlib.pyplot.show'):
+            fig = plot_williamson_hall(two_theta, fwhm, fit_result=fit_result, show=False)
+            assert fig is not None
+
 class TestTexturePlotting:
     """Tests for Texture plotting function."""
     
     def test_texture_plot_execution(self):
-        """Should execute plot_texture_polar without error."""
-        tc_values = {'(111)': 1.35, '(200)': 0.72, '(220)': 0.93}
+        """Should execute plot_tc_evolution without error."""
+        samples = [
+            {
+                "name": "sample_a",
+                "concentration": 0.0,
+                "time": 0.0,
+                "tc_values": {"(111)": 1.35, "(200)": 0.72, "(220)": 0.93},
+                "high_quality": True,
+            },
+            {
+                "name": "sample_b",
+                "concentration": 0.0,
+                "time": 2.0,
+                "tc_values": {"(111)": 1.20, "(200)": 0.85, "(220)": 0.95},
+                "high_quality": True,
+            },
+        ]
         
         with patch('matplotlib.pyplot.show'):
-            fig = plot_texture_polar(tc_values, show=False)
+            fig = plot_tc_evolution(samples, x_param="time", show=False)
             assert fig is not None
 
 class TestFittingDiagnosis:

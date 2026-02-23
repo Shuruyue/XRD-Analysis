@@ -502,43 +502,5 @@ def calculate_scherrer(
     )
 
 
-def generate_scherrer_report(
-    results: List[ScherrerResult],
-    sample_name: str = "Unknown"
-) -> str:
-    """
-    Generate formatted Scherrer analysis report.
-    產生格式化的 Scherrer 分析報告。
-    """
-    lines = [
-        "=" * 70,
-        "Scherrer Crystallite Size Analysis",
-        f"Sample: {sample_name}",
-        "=" * 70,
-        "",
-        f"{'Peak':^8} {'2θ (°)':>8} {'FWHM (°)':>10} {'K':>6} {'D (nm)':>10} {'Flag':>12}",
-        "-" * 70,
-    ]
-
-    for r in results:
-        hkl_str = f"({r.hkl[0]}{r.hkl[1]}{r.hkl[2]})" if r.hkl else "N/A"
-        lines.append(
-            f"{hkl_str:^8} {r.two_theta:>8.2f} {r.fwhm_sample:>10.4f} "
-            f"{r.k_factor:>6.3f} {r.size_nm:>10.1f} {r.validity_flag.value:>12}"
-        )
-
-    lines.append("-" * 70)
-
-    valid_sizes = [r.size_nm for r in results if r.is_reliable]
-    if valid_sizes:
-        avg = np.mean(valid_sizes)
-        std = np.std(valid_sizes)
-        lines.append(f"Average (reliable): {avg:.1f} ± {std:.1f} nm")
-
-    lines.append("=" * 70)
-
-    return "\n".join(lines)
-
-
 
 

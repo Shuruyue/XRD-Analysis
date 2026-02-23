@@ -20,7 +20,6 @@ from xrd_analysis.methods.scherrer import (
     ScherrerResult,
     ValidityFlag,
     calculate_scherrer,
-    generate_scherrer_report,
     FWHM_RATIO_THRESHOLD,
 )
 from xrd_analysis.core.copper_crystal import (
@@ -210,25 +209,6 @@ class TestBatchCalculation:
         
         assert avg > 0
         assert std >= 0
-
-
-class TestReportGeneration:
-    """Tests for report generation."""
-    
-    def test_report_contains_headers(self):
-        """Report should contain expected headers."""
-        calc = ScherrerCalculator()
-        results = [
-            calc.calculate(43.32, 0.25, 0.08),
-            calc.calculate(50.45, 0.28, 0.08),
-        ]
-        
-        report = generate_scherrer_report(results, "Test Sample")
-        
-        assert "Scherrer Crystallite Size Analysis" in report
-        assert "Test Sample" in report
-        assert "(111)" in report
-        assert "(200)" in report
 
 
 if __name__ == "__main__":

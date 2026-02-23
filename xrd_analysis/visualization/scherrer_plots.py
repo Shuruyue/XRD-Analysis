@@ -66,7 +66,9 @@ def plot_scherrer_evolution_by_peak(
     group_values = sorted(set(sample.get('concentration', 0) for sample in data))
     colors_by_group = get_color_palette(len(group_values))
     group_color_map = dict(zip(group_values, colors_by_group))
-    label_format = lambda g: f'{g} mL/1.5L'
+
+    def label_format(group_value: float) -> str:
+        return f"{group_value} mL/1.5L"
     
     # Different line styles and markers for different concentrations
     line_styles_list = ['-', '--', '-.', ':']
@@ -223,9 +225,6 @@ def plot_scherrer_by_concentration(
             if val is not None and not np.isnan(val):
                 all_sizes.append(val)
     
-    y_min = 0
-    y_max = max(all_sizes) * 1.1 if all_sizes else 100.0
-    
     # Plot each concentration
     for idx, conc in enumerate(concentrations):
         ax = axes[idx]
@@ -245,47 +244,61 @@ def plot_scherrer_by_concentration(
                         if val is not None and not np.isnan(val):
                             x_values.append(time_val)
                             y_values.append(val)
-            
-                # Define styles using standard Miller Index notation (111)
-                # Matches style in compare_ka_methods.py
-                
-                # Format: (1, 1, 1) -> "(111)"
-                hkl_label = f"({hkl[0]}{hkl[1]}{hkl[2]})"
-                
-                color = hkl_color_map[hkl]
-                
-                marker_map = {
-                    '(111)': 'o', '(200)': 's', '(220)': '^', 
-                    '(311)': 'D', '(222)': 'v'
-                }
-                linestyle_map = {
-                    '(111)': '-', '(200)': '--', '(220)': ':', 
-                    '(311)': '-.', '(222)': '-'
-                }
-                
-                marker = marker_map.get(hkl_label, 'o')
-                linestyle = linestyle_map.get(hkl_label, '-')
 
-                # Sort by time
-                sorted_indices = np.argsort(x_values)
-                x_sorted = np.array(x_values)[sorted_indices]
-                y_sorted = np.array(y_values)[sorted_indices]
-                
-                # Retrieve errors
-                y_errs = []
-                for sample in data:
-                    if sample.get('concentration', 0) == conc:
-                         for peak in sample.get('peaks', []):
-                             if peak['hkl'] == hkl and peak.get('size_nm') is not None and not np.isnan(peak.get('size_nm')):
-                                 y_errs.append(peak.get('size_err', 0.0))
-                
-                if len(y_errs) == len(x_values):
-                    e_sorted = np.array(y_errs)[sorted_indices]
-                    
-                    ax.errorbar(x_sorted, y_sorted, yerr=e_sorted, fmt=marker, c=color, markersize=7,
-                                ecolor=color, elinewidth=1.5, capsize=4, alpha=0.8,
-                                markeredgecolor='black', markeredgewidth=0.5, label=hkl_label)
-                    ax.plot(x_sorted, y_sorted, c=color, alpha=0.7, linestyle=linestyle, linewidth=2.0)
+            if not x_values:
+                continue
+
+            # Define styles using standard Miller Index notation (111)
+            # Format: (1, 1, 1) -> "(111)"
+            hkl_label = f"({hkl[0]}{hkl[1]}{hkl[2]})"
+            color = hkl_color_map[hkl]
+
+            marker_map = {
+                '(111)': 'o', '(200)': 's', '(220)': '^',
+                '(311)': 'D', '(222)': 'v'
+            }
+            linestyle_map = {
+                '(111)': '-', '(200)': '--', '(220)': ':',
+                '(311)': '-.', '(222)': '-'
+            }
+
+            marker = marker_map.get(hkl_label, 'o')
+            linestyle = linestyle_map.get(hkl_label, '-')
+
+            # Sort by time
+            sorted_indices = np.argsort(x_values)
+            x_sorted = np.array(x_values)[sorted_indices]
+            y_sorted = np.array(y_values)[sorted_indices]
+
+            # Retrieve errors in the same traversal order as x/y collection
+            y_errs = []
+            for sample in data:
+                if sample.get('concentration', 0) != conc:
+                    continue
+                for peak in sample.get('peaks', []):
+                    if peak['hkl'] == hkl:
+                        val = peak.get('size_nm')
+                        if val is not None and not np.isnan(val):
+                            y_errs.append(peak.get('size_err', 0.0))
+
+            if len(y_errs) == len(x_values):
+                e_sorted = np.array(y_errs)[sorted_indices]
+                ax.errorbar(
+                    x_sorted,
+                    y_sorted,
+                    yerr=e_sorted,
+                    fmt=marker,
+                    c=color,
+                    markersize=7,
+                    ecolor=color,
+                    elinewidth=1.5,
+                    capsize=4,
+                    alpha=0.8,
+                    markeredgecolor='black',
+                    markeredgewidth=0.5,
+                    label=hkl_label,
+                )
+                ax.plot(x_sorted, y_sorted, c=color, alpha=0.7, linestyle=linestyle, linewidth=2.0)
         
         ax.set_xlabel('Annealing Time (hours)')
         ax.set_ylabel('Crystallite Size (nm)')
@@ -311,8 +324,8 @@ def plot_scherrer_by_concentration(
     fig.suptitle('Scherrer Size Evolution by Concentration', fontsize=16, fontweight='bold', y=1.02)
     # Add Physical Limitation Footnote
     LIMITATION_NOTE = (
-        "Note: Size > 200 nm approaches instrumental resolution limit (FWHM ≈ 0.04°).\n"
-        "註：晶粒尺寸 > 200 nm 接近儀器解析極限，數值僅供趨勢參考。"
+        "Note: Size > 200 nm approaches the instrumental resolution limit "
+        "(FWHM ≈ 0.04°)."
     )
     fig.text(0.5, 0.01, LIMITATION_NOTE, ha='center', va='bottom', 
              fontsize=10, style='italic', color='#555555', 

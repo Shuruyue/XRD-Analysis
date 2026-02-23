@@ -13,7 +13,6 @@ from xrd_analysis.methods.scherrer import (
     GrainShape,
     calculate_scherrer,
     calculate_crystallite_size,
-    generate_scherrer_report,
 )
 
 from xrd_analysis.methods.williamson_hall import (
@@ -21,7 +20,6 @@ from xrd_analysis.methods.williamson_hall import (
     WHResult,
     WHQualityLevel,
     analyze_williamson_hall,
-    generate_wh_report,
     get_modulus_for_hkl,
 )
 
@@ -31,7 +29,6 @@ from xrd_analysis.methods.texture import (
     TCResult,
     OrientationType,
     analyze_texture,
-    generate_texture_report,
     get_standard_intensity,
     calculate_texture_coefficient,
 )
@@ -50,13 +47,11 @@ __all__ = [
     "GrainShape",
     "calculate_scherrer",
     "calculate_crystallite_size",
-    "generate_scherrer_report",
     # W-H
     "WilliamsonHallAnalyzer",
     "WHResult",
     "WHQualityLevel",
     "analyze_williamson_hall",
-    "generate_wh_report",
     "get_modulus_for_hkl",
     # Texture
     "TextureAnalyzer",
@@ -64,7 +59,6 @@ __all__ = [
     "TCResult",
     "OrientationType",
     "analyze_texture",
-    "generate_texture_report",
     "get_standard_intensity",
     "calculate_texture_coefficient",
     # Caglioti

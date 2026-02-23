@@ -361,143 +361,6 @@ class CopperElasticModuli:
 CU_ELASTIC = CopperElasticModuli()
 
 
-# =============================================================================
-# Poisson Ratio 泊松比
-# =============================================================================
-
-@dataclass(frozen=True)
-class CopperPoissonRatio:
-    """
-    Direction-dependent Poisson's ratio for copper single crystal.
-    銅單晶方向相依泊松比。
-    
-    文獻出處 Reference:
-        Ledbetter, H. M., & Naimon, E. R. (1974).
-        "Elastic Properties of Metals and Alloys. II. Copper."
-        Journal of Physical and Chemical Reference Data, 3(4), 897-935.
-        DOI: 10.1063/1.3253150
-        
-        原始數據來源 Original data source:
-        Simmons, G., & Wang, H. (1971).
-        "Single Crystal Elastic Constants and Calculated Aggregate Properties: 
-        A Handbook."
-        MIT Press, Cambridge, Massachusetts.
-        ISBN: 978-0262190923
-    
-    ═══════════════════════════════════════════════════════════════════════════
-    理論推導 Theoretical Derivation
-    ═══════════════════════════════════════════════════════════════════════════
-    
-    柔度常數計算 Compliance constants calculation:
-        S11 = (C11 + C12) / [(C11 - C12)(C11 + 2C12)]
-            = (168.4 + 121.4) / [(168.4 - 121.4)(168.4 + 2×121.4)]
-            = 289.8 / [47.0 × 411.2]
-            = 0.0149951 GPa⁻¹
-            
-        S12 = -C12 / [(C11 - C12)(C11 + 2C12)]
-            = -121.4 / [47.0 × 411.2]
-            = -0.0062817 GPa⁻¹
-            
-        S44 = 1 / C44 = 1 / 75.4 = 0.0132626 GPa⁻¹
-    
-    各向異性輔助常數 Anisotropy helper:
-        S0 = S11 - S12 - S44/2
-           = 0.0149951 - (-0.0062817) - 0.0066313
-           = 0.0146455 GPa⁻¹
-    
-    方向相依泊松比（主要方向）公式 Direction-dependent formulas (principal directions):
-        ν_<100> = C12 / (C11 + C12)
-               = 121.4 / (168.4 + 121.4)
-               = 0.419
-
-        ν_<111> = (C11 + 2C12 - 2C44) / [2(C11 + 2C12 + C44)]
-               = (168.4 + 2*121.4 - 2*75.4) / [2*(168.4 + 2*121.4 + 75.4)]
-               = 0.268
-
-    實作值來源 Implementation note:
-        ν_220 與 ν_311 採用文獻表列值/近似值，
-        用於殘留應力估算的方向修正。
-        ν_220 and ν_311 are taken from tabulated/approximated literature values
-        for directional correction in residual stress estimation.
-        
-    多晶平均 Polycrystalline average:
-        ν_poly = 0.343 (Ledbetter & Naimon 1974 reported value)
-    
-    ═══════════════════════════════════════════════════════════════════════════
-    應用 Application
-    ═══════════════════════════════════════════════════════════════════════════
-    
-    用於 X-ray 殘留應力分析（平面應力、等雙軸）：
-    For X-ray residual stress analysis (plane-stress, equi-biaxial):
-    
-        σ = -E_hkl / (2ν_hkl) × (d - d₀) / d₀
-    
-    織構樣品應使用方向相依值以獲得準確應力數據。
-    For textured samples, use directional values for accurate stress data.
-    """
-    # 方向相依值 / Direction-dependent values
-    nu_111: float = 0.268   # (111) 方向 / 密排面，側向變形較小
-    nu_200: float = 0.419   # (200) 方向 / 軟方向，側向變形顯著
-    nu_220: float = 0.342   # (220) 方向 / 接近多晶平均值
-    nu_311: float = 0.340   # (311) 方向 / 近似值（內插）
-    nu_222: float = 0.268   # (222) 與 (111) 平行
-    
-    # 多晶平均值 / Polycrystalline average
-    nu_poly: float = 0.343  # Voigt-Reuss-Hill 平均 (Ledbetter 1974)
-
-
-# Default instance 預設實例
-CU_POISSON = CopperPoissonRatio()
-
-
-def get_poisson_ratio(
-    h: int, k: int, l: int,
-    use_directional: bool = True
-) -> float:
-    """
-    Get direction-dependent Poisson's ratio for copper.
-    取得銅的方向相依泊松比。
-    
-    用於殘留應力分析，特別是具有織構的 Cu 樣品。
-    For residual stress analysis, especially for textured Cu samples.
-    
-    Args:
-        h, k, l: Miller indices / Miller 指數
-        use_directional: If True, use direction-dependent values;
-                        otherwise return polycrystalline average.
-                        若為 True，使用方向相依值；否則使用多晶平均值。
-        
-    Returns:
-        Poisson's ratio (dimensionless) / 泊松比（無因次）
-        
-    Example:
-        >>> get_poisson_ratio(1, 1, 1)  # Returns 0.268
-        >>> get_poisson_ratio(2, 0, 0)  # Returns 0.419
-        >>> get_poisson_ratio(1, 1, 1, use_directional=False)  # Returns 0.343
-    """
-    if not use_directional:
-        return CU_POISSON.nu_poly
-    
-    # Normalize to simplest form / 正規化為最簡形式
-    from math import gcd
-    g = gcd(gcd(abs(h), abs(k)), abs(l)) if l != 0 else gcd(abs(h), abs(k))
-    if g == 0:
-        return CU_POISSON.nu_poly
-    h_n, k_n, l_n = abs(h) // g, abs(k) // g, abs(l) // g
-    hkl_sorted = tuple(sorted([h_n, k_n, l_n]))
-    
-    # Poisson ratio lookup table / 泊松比對照表
-    NU_MAP = {
-        (1, 1, 1): CU_POISSON.nu_111,   # (111), (222), etc.
-        (0, 0, 1): CU_POISSON.nu_200,   # (100), (200), etc.
-        (0, 1, 1): CU_POISSON.nu_220,   # (110), (220), etc.
-        (1, 1, 3): CU_POISSON.nu_311,   # (311)
-        (1, 2, 2): CU_POISSON.nu_222,   # (222) parallel to (111)
-    }
-    
-    return NU_MAP.get(hkl_sorted, CU_POISSON.nu_poly)
-
-
 def get_youngs_modulus(h: int, k: int, l: int) -> float:
     """
     Get direction-dependent Young's modulus for copper.
@@ -538,7 +401,7 @@ def get_youngs_modulus(h: int, k: int, l: int) -> float:
 
 # Standard lattice constant reference window for Cu datasets
 ELECTROPLATED_A_STANDARD = 3.6150  # Å (reference)
-ELECTROPLATED_A_MIN = 3.6150       # Å (pure, stress-free)
+ELECTROPLATED_A_MIN = 3.6150       # Å (pure, strain-free)
 ELECTROPLATED_A_MAX = 3.6200       # Å (with impurity expansion)
 
 
@@ -559,7 +422,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
     Processed Cu samples can exhibit lattice expansion due to:
     1. Impurity incorporation (S, Cl, C from additives)
     2. Vacancy accumulation
-    3. Residual stress
+    3. Internal lattice strain
     
     Args:
         measured_a: Measured lattice constant in Ångströms
@@ -598,7 +461,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
             warning_level="significant",
             explanation=(
                 f"Significant lattice expansion (+{deviation_percent:.3f}%). "
-                "Indicates high impurity content or strong residual stress. "
+                "Indicates high impurity content or strong lattice distortion. "
                 "Sample may be in 'as-deposited' state before self-annealing. "
                 "Consider recording storage time."
             )
@@ -611,7 +474,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
             warning_level="significant",
             explanation=(
                 f"Unusual lattice contraction ({deviation_percent:.3f}%). "
-                "May indicate tensile residual stress, measurement error, "
+                "May indicate tensile lattice strain, measurement error, "
                 "or sample displacement in XRD geometry. Verify instrument alignment."
             )
         )
@@ -623,7 +486,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
             warning_level="critical",
             explanation=(
                 f"Extreme lattice contraction ({deviation_percent:.3f}%). "
-                "Possible causes: severe tensile stress, instrument miscalibration, "
+                "Possible causes: severe tensile lattice strain, instrument miscalibration, "
                 "sample misalignment, or measurement artifact. Re-examine setup."
             )
         )
@@ -681,7 +544,7 @@ def explain_lattice_deviation(
         if sample_age_hours < 1:
             explanation_parts.append(
                 "Sample is in 'as-deposited' state. Expect fine grains (50-100 nm) "
-                "and high internal stress. Lattice expansion is typical."
+                "and high internal strain. Lattice expansion is typical."
             )
         elif sample_age_hours < 24:
             explanation_parts.append(
@@ -704,7 +567,7 @@ def explain_lattice_deviation(
             "2. Chloride incorporation from suppressor system",
             "3. Carbon/organic residue from leveler molecules",
             "4. High vacancy concentration from rapid deposition",
-            "5. Residual compressive stress (apparent expansion)",
+            "5. Residual compressive strain (apparent expansion)",
         ])
     
     return "\n".join(explanation_parts)
@@ -765,7 +628,7 @@ def calculate_youngs_modulus_from_stiffness(
         Elastic Properties of Metals and Alloys. II. Copper.
         Journal of Physical and Chemical Reference Data, 3(4), 897-935.
         
-        Calculation verified via scripts/verify_elastic_moduli.py
+        Calculation verified by unit tests in tests/test_copper_crystal_advanced.py
         
     Examples:
         >>> calculate_youngs_modulus_from_stiffness(1, 0, 0)  # [100] direction

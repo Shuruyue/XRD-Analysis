@@ -1,26 +1,23 @@
 """
-Defect and Stress Analysis Module 缺陷與應力分析模組
-====================================================
+Defect Analysis Module 缺陷分析模組
+===================================
 
-Stacking fault detection, lattice constant monitoring, and residual stress analysis.
-堆疊層錯檢測、晶格常數監控、殘留應力分析。
+Stacking fault detection and lattice constant monitoring.
+堆疊層錯檢測與晶格常數監控。
 
 References 出處:
 - Warren (1969), X-ray Diffraction, Chapter 13 (stacking faults)
-- Simmons & Wang (1971), Single Crystal Elastic Constants (Poisson ratio)
 """
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List
 from enum import Enum
 
 from xrd_analysis.core.constants import CU_KA1
 from xrd_analysis.core.copper_crystal import (
-    CU_JCPDS_EXTENDED, 
+    CU_JCPDS_EXTENDED,
     CU_CRYSTAL,
-    get_poisson_ratio,
-    CU_POISSON
 )
 
 
@@ -90,12 +87,6 @@ LATTICE_SEVERE_THRESHOLD = 3.618  # Å
 # 波長常數直接從 core.constants 使用 CU_KA1
 # Wavelength constant: use CU_KA1 directly from core.constants
 
-# Poisson's ratio 泊松比
-# 現在使用方向相依值，從 copper_crystal.get_poisson_ratio() 取得
-# Now using direction-dependent values from copper_crystal.get_poisson_ratio()
-# 多晶平均值 (legacy) / Polycrystalline average (legacy)
-POISSON_RATIO_CU = CU_POISSON.nu_poly  # 0.343
-
 
 # =============================================================================
 # Enums
@@ -123,13 +114,6 @@ class AnnealingState(Enum):
     ANNEALED = "annealed"           # 1-7 days
     STABLE = "stable"               # > 7 days
     UNKNOWN = "unknown"             # Not specified
-
-
-class StressType(Enum):
-    """Residual stress type."""
-    TENSILE = "tensile"         # d > d₀
-    COMPRESSIVE = "compressive" # d < d₀
-    NEUTRAL = "neutral"         # d ≈ d₀
 
 
 # =============================================================================
@@ -173,28 +157,13 @@ class LatticeConstantResult:
 
 
 @dataclass
-class ResidualStressResult:
-    """Result of residual stress estimation."""
-    stress_mpa: float
-    stress_type: StressType
-    d_measured: float
-    d_standard: float
-    hkl: Tuple[int, int, int]
-    youngs_modulus_gpa: float
-    message: str
-
-
-@dataclass
 class DefectAnalysisResult:
-    """Complete defect and stress analysis result."""
+    """Complete defect analysis result."""
     # Stacking fault
     stacking_fault: Optional[StackingFaultResult] = None
     
     # Lattice constant
     lattice_constant: Optional[LatticeConstantResult] = None
-    
-    # Residual stress
-    residual_stress: Optional[ResidualStressResult] = None
     
     # Self-annealing
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
@@ -337,8 +306,8 @@ def calculate_lattice_constant(
 
 class LatticeMonitor:
     """
-    Lattice constant and residual stress monitor.
-    晶格常數與殘留應力監控器。
+    Lattice constant monitor.
+    晶格常數監控器。
     
     Prefers high-angle peaks (311, 220) for better accuracy.
     偶好高角峰 (311, 220) 以提高精度。
@@ -351,11 +320,6 @@ class LatticeMonitor:
     ):
         self.standard_a = standard_a
         self.wavelength = wavelength
-        
-        # Dynamic lookup from SSOT
-        self.standard_d = {
-            hkl: data["d_spacing"] for hkl, data in CU_JCPDS_EXTENDED.items()
-        }
     
     def analyze_lattice(
         self,
@@ -385,7 +349,7 @@ class LatticeMonitor:
             message = "晶格常數在正常範圍"
         elif a <= LATTICE_SEVERE_THRESHOLD:
             status = LatticeStatus.MINOR_EXPANSION
-            message = "輕微晶格擴張，可能存在雜質或應力"
+            message = "輕微晶格擴張，可能存在雜質固溶或空孔效應"
         else:
             status = LatticeStatus.SEVERE_EXPANSION
             message = "嚴重晶格擴張，需檢查添加劑純度或雜質固溶"
@@ -397,78 +361,6 @@ class LatticeMonitor:
             hkl_used=hkl,
             two_theta_used=two_theta,
             status=status,
-            message=message
-        )
-    
-    def estimate_residual_stress(
-        self,
-        two_theta: float,
-        hkl: Tuple[int, int, int],
-        youngs_modulus_gpa: float
-    ) -> ResidualStressResult:
-        """
-        Estimate residual stress from peak shift.
-        從峰位偏移估算殘留應力。
-        
-        Plane-stress equi-biaxial model:
-        σ = -E / (2ν) × (d - d₀) / d₀
-        """
-        d_measured = calculate_d_spacing(two_theta, self.wavelength)
-        d_standard = self.standard_d.get(hkl, d_measured)
-        
-        delta_d_ratio = (d_measured - d_standard) / d_standard
-        
-        # Convert GPa to MPa
-        E_mpa = youngs_modulus_gpa * 1000
-        
-        # 使用方向相依泊松比 / Use direction-dependent Poisson ratio
-        poisson = get_poisson_ratio(*hkl, use_directional=True)
-        
-        # ═══════════════════════════════════════════════════════════════════════════
-        # Residual Stress Calculation / 殘留應力計算
-        # ═══════════════════════════════════════════════════════════════════════════
-        # Physical Model: Equi-biaxial Stress State (Standard for thin films)
-        # 物理模型：等雙軸應力狀態 (薄膜標準模型)
-        # Assumptions:
-        #   1. σx = σy = σ (In-plane stress is isotropic)
-        #   2. σz = 0 (Surface normal stress is zero, plane stress condition)
-        #
-        # Hooke's Law derivation:
-        #   εz = (1/E) * [σz - ν(σx + σy)]
-        #   εz = (1/E) * [0 - ν(2σ)]
-        #   εz = -(2ν/E) * σ
-        #
-        # Solved for σ:
-        #   σ = -E / (2ν) * εz
-        #
-        # Notes:
-        #   - εz = (d - d0) / d0 (measured lattice strain)
-        #   - Negative sign is crucial: Expansion (εz > 0) means In-plane Compression (σ < 0)
-        # ═══════════════════════════════════════════════════════════════════════════
-        if poisson == 0:
-            stress_mpa = 0.0
-        else:
-            stress_mpa = -E_mpa / (2 * poisson) * delta_d_ratio
-        
-        # Determine stress type
-        # Positive σ = Tensile (拉伸), Negative σ = Compressive (壓縮)
-        if stress_mpa > 10:
-            stress_type = StressType.TENSILE
-            message = f"拉伸應力 {stress_mpa:.0f} MPa"
-        elif stress_mpa < -10:
-            stress_type = StressType.COMPRESSIVE
-            message = f"壓縮應力 {abs(stress_mpa):.0f} MPa"
-        else:
-            stress_type = StressType.NEUTRAL
-            message = "應力接近中性"
-        
-        return ResidualStressResult(
-            stress_mpa=stress_mpa,
-            stress_type=stress_type,
-            d_measured=d_measured,
-            d_standard=d_standard,
-            hkl=hkl,
-            youngs_modulus_gpa=youngs_modulus_gpa,
             message=message
         )
 

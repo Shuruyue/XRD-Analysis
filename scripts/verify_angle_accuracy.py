@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from _script_utils import positive_float
 from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
 
 
@@ -28,7 +29,7 @@ def main() -> int:
     parser.add_argument("input", type=Path, help="XRD data file (.txt)")
     parser.add_argument(
         "--max-offset-threshold",
-        type=float,
+        type=positive_float,
         default=0.10,
         help="Maximum acceptable absolute peak offset in degrees (default: 0.10)",
     )
@@ -60,4 +61,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

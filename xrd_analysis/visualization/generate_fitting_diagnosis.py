@@ -250,7 +250,7 @@ def main():
     # Setup paths - go up 2 levels from visualization/ to project root
     project_root = Path(__file__).parent.parent.parent
     data_dir = project_root / "data" / "raw" / "202511"
-    output_dir = project_root / "outputs" / "plots" / "fitting_diagnosis"
+    output_dir = project_root / "outputs" / "plots" / "diagnostics" / "fitting"
     
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
