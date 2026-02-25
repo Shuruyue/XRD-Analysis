@@ -1,5 +1,4 @@
-"""
-Scherrer Crystallite Size Analysis Scherrer 晶粒尺寸分析
+"""Scherrer Crystallite Size Analysis Scherrer 晶粒尺寸分析
 =======================================================
 
 Implements the Scherrer equation with dynamic K values, validity flags,
@@ -11,21 +10,21 @@ Reference 出處:
     Scherrer after sixty years. J. Appl. Cryst., 11, 102-113.
 """
 
-import numpy as np
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Tuple
 
+import numpy as np
+
 from xrd_analysis.core.constants import (
     CU_KA1,
-    SCHERRER_K,
-    MIN_RELIABLE_SIZE,
     MAX_RELIABLE_SIZE,
     MIN_BROADENING_RATIO,
+    MIN_RELIABLE_SIZE,
+    SCHERRER_K,
 )
 from xrd_analysis.core.copper_crystal import get_k_for_hkl
 from xrd_analysis.fitting.hkl_assignment import assign_hkl
-
 
 # =============================================================================
 # Constants
@@ -39,35 +38,36 @@ FWHM_RATIO_THRESHOLD = MIN_BROADENING_RATIO
 # Validity Flag System
 # =============================================================================
 
+
 class ValidityFlag(Enum):
-    """
-    Scherrer calculation validity flags.
+    """Scherrer calculation validity flags.
     Scherrer 計算有效性旗標。
     """
-    VALID = "VALID"           # Normal calculation 正常計算
-    UNRELIABLE = "UNRELIABLE" # FWHM ratio below threshold 寬化比值過低
-    WARNING = "WARNING"       # Size exceeds limits 尺寸超出限制
-    ERROR = "ERROR"           # Calculation failed 計算失敗
+
+    VALID = "VALID"  # Normal calculation 正常計算
+    UNRELIABLE = "UNRELIABLE"  # FWHM ratio below threshold 寬化比值過低
+    WARNING = "WARNING"  # Size exceeds limits 尺寸超出限制
+    ERROR = "ERROR"  # Calculation failed 計算失敗
 
 
 class GrainShape(Enum):
-    """
-    Grain shape for Scherrer constant selection.
+    """Grain shape for Scherrer constant selection.
     晶粒形狀，用於選擇 Scherrer 常數。
     """
-    SPHERICAL = "spherical"   # 球形
-    CUBIC = "cubic"           # 立方
-    CUSTOM = "custom"         # 自訂
+
+    SPHERICAL = "spherical"  # 球形
+    CUBIC = "cubic"  # 立方
+    CUSTOM = "custom"  # 自訂
 
 
 # =============================================================================
 # Result Dataclass
 # =============================================================================
 
+
 @dataclass
 class ScherrerResult:
-    """
-    Result from Scherrer crystallite size calculation.
+    """Result from Scherrer crystallite size calculation.
     Scherrer 晶粒尺寸計算結果。
 
     Includes validity flags and complete metadata.
@@ -86,7 +86,9 @@ class ScherrerResult:
         validity_flag: Calculation validity status. 計算有效性狀態
         warning_message: Warning or error message. 警告或錯誤訊息
         is_reliable: True if result is reliable. 結果是否可靠
+
     """
+
     size_nm: float
     size_angstrom: float
     two_theta: float
@@ -112,9 +114,9 @@ class ScherrerResult:
 # Scherrer Calculator
 # =============================================================================
 
+
 class ScherrerCalculator:
-    """
-    Scherrer equation for crystallite size calculation.
+    """Scherrer equation for crystallite size calculation.
     使用 Scherrer 方程式計算晶粒尺寸。
 
     D = K × λ / (β × cos θ)
@@ -135,6 +137,7 @@ class ScherrerCalculator:
         >>> result = calc.calculate(43.32, 0.25, fwhm_instrumental=0.08)
         >>> print(f"D = {result.size_nm:.1f} nm")
         D = 49.0 nm
+
     """
 
     def __init__(
@@ -156,10 +159,9 @@ class ScherrerCalculator:
         fwhm_instrumental: Optional[float] = None,
         hkl: Optional[Tuple[int, int, int]] = None,
         correction_method: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> ScherrerResult:
-        """
-        Calculate crystallite size using Scherrer equation.
+        """Calculate crystallite size using Scherrer equation.
         使用 Scherrer 方程式計算晶粒尺寸。
 
         Args:
@@ -182,8 +184,19 @@ class ScherrerCalculator:
 
         Raises:
             ValueError: If fwhm_observed <= 0. 當 fwhm_observed <= 0。
+
         """
         warnings = []
+
+        # Input validation 輸入驗證
+        if fwhm_observed <= 0:
+            raise ValueError(
+                f"fwhm_observed must be positive, got {fwhm_observed}"
+            )
+        if not (0 < two_theta < 180):
+            raise ValueError(
+                f"two_theta must be between 0° and 180°, got {two_theta}"
+            )
 
         # Auto-assign hkl if not provided
         if hkl is None:
@@ -211,9 +224,9 @@ class ScherrerCalculator:
         # Algorithm References / 演算法文獻:
         #
         # 1. Deconvolution Principle (G & L separation):
-        #    Keijser, Th.H., Mittemeijer, E.J. & Rozendaal, H.C.F. (1983). 
-        #    "The determination of crystallite-size and lattice-strain parameters 
-        #     in conjunction with the profile-refinement method". 
+        #    Keijser, Th.H., Mittemeijer, E.J. & Rozendaal, H.C.F. (1983).
+        #    "The determination of crystallite-size and lattice-strain parameters
+        #     in conjunction with the profile-refinement method".
         #    J. Appl. Cryst. 16, 309-316.
         #    - Eq 8: β_C_structure = β_C_profile - β_C_standard
         #    - Eq 9: β_G_structure = sqrt(β_G_profile^2 - β_G_standard^2)
@@ -238,10 +251,12 @@ class ScherrerCalculator:
         #              fG_samp² = fG_obs² - fG_inst²
         # 3. Recombine: FWHM_samp ≈ 0.5346 fL + √(0.2166 fL² + fG²)
         # =========================================================================
-        
+
         # Respect pipeline argument names first, then backward-compatible aliases.
         eta_obs = kwargs.get("eta_observed", kwargs.get("eta"))
-        eta_inst = kwargs.get("eta_instrumental", 0.0)  # Instrument assumed Gaussian by default
+        eta_inst = kwargs.get(
+            "eta_instrumental", 0.0
+        )  # Instrument assumed Gaussian by default
         method = (correction_method or self.deconvolution_method or "auto").lower()
 
         if fwhm_instrumental > 0:
@@ -270,13 +285,17 @@ class ScherrerCalculator:
             elif method == "voigt":
                 if eta_obs is None:
                     eta_obs = 0.5
-                    warnings.append("eta_observed missing; fallback eta=0.5 for Voigt subtraction")
+                    warnings.append(
+                        "eta_observed missing; fallback eta=0.5 for Voigt subtraction"
+                    )
 
                 # 1. Decompose Observed
                 fG_obs, fL_obs = self._get_voigt_components(fwhm_observed, eta_obs)
 
                 # 2. Decompose Instrumental
-                fG_inst, fL_inst = self._get_voigt_components(fwhm_instrumental, eta_inst)
+                fG_inst, fL_inst = self._get_voigt_components(
+                    fwhm_instrumental, eta_inst
+                )
 
                 # 3. Component Subtraction
                 # Lorentzian: Linear subtraction
@@ -300,7 +319,9 @@ class ScherrerCalculator:
                     if fG_sq_diff < 0:
                         fG_sample = 0
                         if abs(fG_sq_diff) > 0.0001:  # Tolerance
-                            warnings.append("Gaussian component smaller than instrument")
+                            warnings.append(
+                                "Gaussian component smaller than instrument"
+                            )
                     else:
                         fG_sample = np.sqrt(fG_sq_diff)
 
@@ -308,10 +329,14 @@ class ScherrerCalculator:
                         fL_sample_raw = fL_sample
                         fL_sample = 0
                         if abs(fL_sample_raw) > 0.0001:
-                            warnings.append("Lorentzian component smaller than instrument")
+                            warnings.append(
+                                "Lorentzian component smaller than instrument"
+                            )
 
                     # 4. Recombine (Olivero-Longbothum approximation)
-                    fwhm_sample = 0.5346 * fL_sample + np.sqrt(0.2166 * fL_sample**2 + fG_sample**2)
+                    fwhm_sample = 0.5346 * fL_sample + np.sqrt(
+                        0.2166 * fL_sample**2 + fG_sample**2
+                    )
             else:
                 raise ValueError(f"Unknown correction_method: {method}")
         else:
@@ -324,7 +349,11 @@ class ScherrerCalculator:
 
         # Scherrer equation: D = K × λ / (β × cos θ)
         cos_theta = np.cos(theta_rad)
-        size_angstrom = (k_factor * self.wavelength) / (fwhm_sample_rad * cos_theta) if fwhm_sample_rad > 0 else 0
+        size_angstrom = (
+            (k_factor * self.wavelength) / (fwhm_sample_rad * cos_theta)
+            if fwhm_sample_rad > 0
+            else 0
+        )
         size_nm = size_angstrom / 10
 
         # Check size limits (only if valid calculation)
@@ -338,10 +367,10 @@ class ScherrerCalculator:
                     validity_flag = ValidityFlag.WARNING
                 warnings.append(f"Size {size_nm:.1f} nm below precision limit")
         else:
-             if is_reliable: # If marked reliable but size is nan/0
-                 size_nm = 0
-                 validity_flag = ValidityFlag.ERROR
-                 warnings.append("Calculation resulted in invalid size")
+            if is_reliable:  # If marked reliable but size is nan/0
+                size_nm = 0
+                validity_flag = ValidityFlag.ERROR
+                warnings.append("Calculation resulted in invalid size")
 
         return ScherrerResult(
             size_nm=size_nm,
@@ -359,32 +388,30 @@ class ScherrerCalculator:
         )
 
     def _get_voigt_components(self, fwhm: float, eta: float) -> Tuple[float, float]:
-        """
-        Convert Pseudo-Voigt FWHM and eta to Constituent Gaussian and Lorentzian FWHMs.
-        
+        """Convert Pseudo-Voigt FWHM and eta to Constituent Gaussian and Lorentzian FWHMs.
+
         Using approximation connecting PV parameters to Voigt:
         fL = eta * fwhm
         fG = (1 - eta) * fwhm   <-- Simple approximation, usually sufficient for subtraction logic
-                                    For strict accuracy one would reverse Olivero-Longbothum, 
+                                    For strict accuracy one would reverse Olivero-Longbothum,
                                     but that requires numerical root finding.
-                                    
+
         Detailed mapping for Pseudo-Voigt (Thompson et al. 1987):
         fG = fwhm * (1 - 0.74417*eta - 0.24781*eta^2 - 0.00810*eta^3)^(1/2) ? No, that's complex.
-        
+
         We use the standard simple mapping for PV->Voigt components often used in diffraction codes:
         fL ≈ FWHM * η
         fG ≈ FWHM * (1 - η)
-        
+
         This preserves the mixing ratio meaning directly.
         """
         fL = fwhm * eta
         # A slightly better approximation for fG from eta might be used, but (1-eta) is standard Linear PV definition.
-        fG = fwhm * (1.0 - eta) 
+        fG = fwhm * (1.0 - eta)
         return fG, fL
 
     def _calculate_caglioti(self, two_theta: float) -> float:
-        """
-        Calculate instrumental FWHM using Caglioti equation.
+        """Calculate instrumental FWHM using Caglioti equation.
         使用 Caglioti 方程式計算儀器 FWHM。
 
         FWHM²_inst = U·tan²θ + V·tanθ + W
@@ -402,10 +429,9 @@ class ScherrerCalculator:
     def batch_calculate(
         self,
         peaks: List[Tuple[float, float]],
-        fwhm_instrumental: Optional[float] = None
+        fwhm_instrumental: Optional[float] = None,
     ) -> List[ScherrerResult]:
-        """
-        Calculate crystallite sizes for multiple peaks.
+        """Calculate crystallite sizes for multiple peaks.
         批次計算多個峰的晶粒尺寸。
 
         Args:
@@ -414,6 +440,7 @@ class ScherrerCalculator:
 
         Returns:
             List of ScherrerResult objects.
+
         """
         return [
             self.calculate(two_theta, fwhm, fwhm_instrumental)
@@ -421,12 +448,9 @@ class ScherrerCalculator:
         ]
 
     def average_size(
-        self,
-        results: List[ScherrerResult],
-        include_unreliable: bool = False
+        self, results: List[ScherrerResult], include_unreliable: bool = False
     ) -> Tuple[float, float]:
-        """
-        Calculate average crystallite size from multiple peaks.
+        """Calculate average crystallite size from multiple peaks.
         從多個峰計算平均晶粒尺寸。
 
         Args:
@@ -435,10 +459,13 @@ class ScherrerCalculator:
 
         Returns:
             Tuple of (average_size_nm, std_dev_nm).
+
         """
         sizes = [
-            r.size_nm for r in results
-            if (r.is_reliable or include_unreliable) and r.validity_flag != ValidityFlag.ERROR
+            r.size_nm
+            for r in results
+            if (r.is_reliable or include_unreliable)
+            and r.validity_flag != ValidityFlag.ERROR
         ]
 
         if not sizes:
@@ -451,15 +478,15 @@ class ScherrerCalculator:
 # Convenience Functions
 # =============================================================================
 
+
 def calculate_crystallite_size(
     two_theta: float,
     fwhm: float,
     wavelength: float = CU_KA1,
     k_factor: float = 0.829,  # L&W 1978 spherical standard
-    fwhm_instrumental: float = 0.0
+    fwhm_instrumental: float = 0.0,
 ) -> float:
-    """
-    Quick crystallite size calculation.
+    """Quick crystallite size calculation.
     快速計算晶粒尺寸。
 
     Args:
@@ -471,6 +498,7 @@ def calculate_crystallite_size(
 
     Returns:
         Crystallite size in nanometers. 晶粒尺寸（奈米）
+
     """
     calc = ScherrerCalculator(wavelength=wavelength, use_cubic_habit=False)
     result = calc.calculate(two_theta, fwhm, fwhm_instrumental)
@@ -484,14 +512,14 @@ def calculate_scherrer(
     use_cubic_habit: bool = True,
     correction_method: str = "auto",
 ) -> ScherrerResult:
-    """
-    Convenience function for Scherrer calculation with full metadata.
+    """Convenience function for Scherrer calculation with full metadata.
     完整中繼資料的 Scherrer 計算便利函式。
 
     Example:
         >>> result = calculate_scherrer(43.32, 0.25, 0.08)
         >>> print(f"D = {result.size_nm:.1f} nm")
         D = 49.0 nm
+
     """
     calc = ScherrerCalculator(use_cubic_habit=use_cubic_habit)
     return calc.calculate(
@@ -500,7 +528,3 @@ def calculate_scherrer(
         fwhm_instrumental,
         correction_method=correction_method,
     )
-
-
-
-

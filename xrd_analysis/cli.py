@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-XRD-Analysis Command Line Interface
+"""XRD-Analysis Command Line Interface
 =============================
 
 Unified entry point for all analysis operations.
@@ -10,10 +9,9 @@ Unified entry point for all analysis operations.
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 from xrd_analysis.__version__ import __version__
-
 
 # =============================================================================
 # LaB6 Standard Reference Material Peak Positions
@@ -28,16 +26,16 @@ from xrd_analysis.__version__ import __version__
 # These values are used for instrument calibration (Caglioti parameters)
 # ═══════════════════════════════════════════════════════════════════════════
 LAB6_STANDARD_PEAKS = {
-    (1, 0, 0): 21.358,   # First reflection
-    (1, 1, 0): 30.385,   # Second reflection
-    (1, 1, 1): 37.442,   # Third reflection
-    (2, 0, 0): 43.507,   # Fourth reflection
-    (2, 1, 0): 48.957,   # Fifth reflection
-    (2, 1, 1): 53.989,   # Sixth reflection
-    (2, 2, 0): 63.218,   # Seventh reflection
-    (3, 0, 0): 67.548,   # Eighth reflection
-    (3, 1, 0): 71.745,   # Ninth reflection
-    (3, 1, 1): 75.844,   # Tenth reflection
+    (1, 0, 0): 21.358,  # First reflection
+    (1, 1, 0): 30.385,  # Second reflection
+    (1, 1, 1): 37.442,  # Third reflection
+    (2, 0, 0): 43.507,  # Fourth reflection
+    (2, 1, 0): 48.957,  # Fifth reflection
+    (2, 1, 1): 53.989,  # Sixth reflection
+    (2, 2, 0): 63.218,  # Seventh reflection
+    (3, 0, 0): 67.548,  # Eighth reflection
+    (3, 1, 0): 71.745,  # Ninth reflection
+    (3, 1, 1): 75.844,  # Tenth reflection
 }
 
 # Minimum peaks required for stable Caglioti regression
@@ -69,8 +67,7 @@ def _unit_interval(value: str) -> float:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    """
-    Main CLI entry point.
+    """Main CLI entry point.
     主 CLI 入口點。
     """
     parser = argparse.ArgumentParser(
@@ -81,59 +78,51 @@ def main(argv: Optional[List[str]] = None) -> int:
 Examples:
   xrd-analysis analyze data/sample.txt -o outputs/
   xrd-analysis calibrate data/LaB6_standard.txt
-        """
+        """,
     )
-    
+
     parser.add_argument(
-        "-V", "--version",
-        action="version",
-        version=f"%(prog)s {__version__}"
+        "-V", "--version", action="version", version=f"%(prog)s {__version__}"
     )
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands 可用指令")
-    
+
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands 可用指令"
+    )
+
     # analyze command
     analyze_parser = subparsers.add_parser(
-        "analyze",
-        help="Analyze XRD data 分析 XRD 資料"
+        "analyze", help="Analyze XRD data 分析 XRD 資料"
     )
     analyze_parser.add_argument(
-        "input",
-        type=Path,
-        help="Input file or directory 輸入檔案或目錄"
+        "input", type=Path, help="Input file or directory 輸入檔案或目錄"
     )
     analyze_parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=Path,
         default=Path("outputs"),
-        help="Output directory 輸出目錄"
+        help="Output directory 輸出目錄",
     )
     analyze_parser.add_argument(
-        "-c", "--config",
-        type=Path,
-        help="Config file path 配置檔案路徑"
+        "-c", "--config", type=Path, help="Config file path 配置檔案路徑"
     )
     analyze_parser.add_argument(
-        "--batch",
-        action="store_true",
-        help="Batch processing mode 批次處理模式"
+        "--batch", action="store_true", help="Batch processing mode 批次處理模式"
     )
-    
+
     # calibrate command
     cal_parser = subparsers.add_parser(
-        "calibrate",
-        help="Calibrate instrument 校準儀器"
+        "calibrate", help="Calibrate instrument 校準儀器"
     )
     cal_parser.add_argument(
-        "standard",
-        type=Path,
-        help="Standard material data file 標準樣品資料檔案"
+        "standard", type=Path, help="Standard material data file 標準樣品資料檔案"
     )
     cal_parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=Path,
         default=Path("calibration.yaml"),
-        help="Output calibration file 輸出校正檔案"
+        help="Output calibration file 輸出校正檔案",
     )
     cal_parser.add_argument(
         "--peak-window",
@@ -153,13 +142,13 @@ Examples:
         default=0.40,
         help="Maximum allowed |2theta_expected - 2theta_fitted| per peak (default: 0.40 deg)",
     )
-    
+
     args = parser.parse_args(argv)
-    
+
     if args.command is None:
         parser.print_help()
         return 0
-    
+
     try:
         if args.command == "analyze":
             return _run_analyze(args)
@@ -168,16 +157,14 @@ Examples:
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
-    
+
     return 0
 
 
 def _build_analysis_config(config_path: Optional[Path]):
-    """
-    Build AnalysisConfig from YAML config (best-effort mapping).
-    """
-    from xrd_analysis.core.config_loader import load_config
+    """Build AnalysisConfig from YAML config (best-effort mapping)."""
     from xrd_analysis.analysis.pipeline import AnalysisConfig
+    from xrd_analysis.core.config_loader import load_config
 
     loaded = load_config(config_path)
     config = AnalysisConfig()
@@ -281,9 +268,7 @@ def _build_analysis_config(config_path: Optional[Path]):
 
 
 def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
-    """
-    Resolve analyze input into concrete files.
-    """
+    """Resolve analyze input into concrete files."""
     input_str = str(input_path)
 
     if input_path.is_dir():
@@ -293,7 +278,9 @@ def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
         return files
 
     if any(ch in input_str for ch in "*?[]"):
-        base_dir = input_path.parent if str(input_path.parent) not in ("", ".") else Path(".")
+        base_dir = (
+            input_path.parent if str(input_path.parent) not in ("", ".") else Path(".")
+        )
         return sorted(base_dir.glob(input_path.name))
 
     if batch and input_path.exists():
@@ -303,21 +290,20 @@ def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
 
 
 def _run_analyze(args) -> int:
-    """
-    Run analysis command.
+    """Run analysis command.
     執行分析指令。
     """
     from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
-    
+
     print("Loading configuration... 載入配置...")
     config = _build_analysis_config(args.config)
-    
+
     print(f"Analyzing: {args.input}")
     print(f"Output to: {args.output}")
-    
+
     # Ensure output directory exists
     args.output.mkdir(parents=True, exist_ok=True)
-    
+
     pipeline = XRDAnalysisPipeline(config)
 
     files = _collect_input_files(args.input, args.batch)
@@ -343,10 +329,9 @@ def _run_analyze(args) -> int:
 
 
 def _run_calibrate(args) -> int:
-    """
-    Run calibration command.
+    """Run calibration command.
     執行校正指令。
-    
+
     Calibrates Caglioti parameters (U, V, W) using a standard material
     like LaB6 (NIST SRM 660c) or Si.
     使用標準樣品（如 LaB6 或 Si）校準 Caglioti 參數。
@@ -355,33 +340,34 @@ def _run_calibrate(args) -> int:
 
     import numpy as np
     import yaml
-    from xrd_analysis.analysis.pipeline import load_bruker_txt, find_peak_in_range
+
+    from xrd_analysis.analysis.pipeline import find_peak_in_range, load_bruker_txt
     from xrd_analysis.methods.caglioti import CagliotiCorrection
-    
+
     print(f"Calibrating with standard: {args.standard}")
-    
+
     # Load standard data
     try:
         two_theta, intensity = load_bruker_txt(str(args.standard))
     except Exception as e:
         print(f"Error loading file: {e}")
         return 1
-    
+
     if len(two_theta) == 0:
         print("Error: No data found in file")
         return 1
-    
+
     print(f"  Loaded {len(two_theta)} data points")
     print(f"  2θ range: {two_theta.min():.1f}° - {two_theta.max():.1f}°")
-    
+
     # Use module-level LAB6_STANDARD_PEAKS constant (defined at top of file)
-    
+
     # Find peaks and measure FWHM
     peaks_data = []
     matched_peaks = []
     max_position_error_deg = args.max_position_error_deg
     print("\nFitting standard peaks...")
-    
+
     for hkl, expected_pos in LAB6_STANDARD_PEAKS.items():
         if two_theta.min() <= expected_pos <= two_theta.max():
             peak = find_peak_in_range(
@@ -395,12 +381,12 @@ def _run_calibrate(args) -> int:
             if peak is not None and peak.fwhm > 0:
                 delta_deg = float(peak.two_theta - expected_pos)
                 peak_info = {
-                    'hkl': hkl,
-                    'expected_two_theta': float(expected_pos),
-                    'two_theta': peak.two_theta,
-                    'fwhm': peak.fwhm,
-                    'intensity': peak.intensity,
-                    'delta_two_theta': delta_deg,
+                    "hkl": hkl,
+                    "expected_two_theta": float(expected_pos),
+                    "two_theta": peak.two_theta,
+                    "fwhm": peak.fwhm,
+                    "intensity": peak.intensity,
+                    "delta_two_theta": delta_deg,
                 }
                 peaks_data.append(peak_info)
                 if abs(delta_deg) <= max_position_error_deg:
@@ -410,13 +396,15 @@ def _run_calibrate(args) -> int:
                     f"fitted={peak.two_theta:.3f} deg, "
                     f"delta={delta_deg:+.3f} deg, FWHM={peak.fwhm:.4f} deg"
                 )
-    
+
     if len(matched_peaks) < MIN_CALIBRATION_PEAKS:
         print(
             f"\nError: Only {len(matched_peaks)} peaks match the standard position tolerance "
             f"(±{max_position_error_deg:.2f} deg). Need at least {MIN_CALIBRATION_PEAKS}."
         )
-        print("Calibration aborted. Verify that input is a true standard scan (LaB6/Si).")
+        print(
+            "Calibration aborted. Verify that input is a true standard scan (LaB6/Si)."
+        )
         return 1
 
     # Fit Caglioti using calibrated class
@@ -435,7 +423,7 @@ def _run_calibrate(args) -> int:
     residual_sq = fwhm_sq_measured - fwhm_sq_pred
 
     ss_res = float(np.sum(residual_sq**2))
-    ss_tot = float(np.sum((fwhm_sq_measured - np.mean(fwhm_sq_measured))**2))
+    ss_tot = float(np.sum((fwhm_sq_measured - np.mean(fwhm_sq_measured)) ** 2))
     r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
     rmse_fwhm_sq = float(np.sqrt(np.mean(residual_sq**2)))
     max_abs_residual_sq = float(np.max(np.abs(residual_sq)))
@@ -443,56 +431,64 @@ def _run_calibrate(args) -> int:
     # Sanity check over measured angular window
     tt_grid = np.linspace(float(two_theta.min()), float(two_theta.max()), 200)
     tt_grid = tt_grid[(tt_grid >= 15.0) & (tt_grid <= 120.0)]
-    grid_fwhm_sq = U * np.tan(np.radians(tt_grid / 2.0))**2 + V * np.tan(np.radians(tt_grid / 2.0)) + W
+    grid_fwhm_sq = (
+        U * np.tan(np.radians(tt_grid / 2.0)) ** 2
+        + V * np.tan(np.radians(tt_grid / 2.0))
+        + W
+    )
     has_negative_region = bool(np.any(grid_fwhm_sq <= 0))
 
     print(f"\nCaglioti parameters fitted from {len(matched_peaks)} matched peaks:")
     print(f"  U = {U:.6f}")
     print(f"  V = {V:.6f}")
     print(f"  W = {W:.6f}")
-    fwhm_43 = np.sqrt(max(U * np.tan(np.radians(21.5))**2 + V * np.tan(np.radians(21.5)) + W, 0.0))
+    fwhm_43 = np.sqrt(
+        max(U * np.tan(np.radians(21.5)) ** 2 + V * np.tan(np.radians(21.5)) + W, 0.0)
+    )
     print(f"  FWHM at 43 deg ~ {fwhm_43:.4f} deg")
     print("\nCalibration diagnostics:")
     print(f"  R² (FWHM² fit) = {r_squared:.6f}")
     print(f"  RMSE(FWHM²) = {rmse_fwhm_sq:.6e} deg²")
     print(f"  Max |residual| (FWHM²) = {max_abs_residual_sq:.6e} deg²")
     if has_negative_region:
-        print("  WARNING: FWHM² becomes non-positive in part of scan range; verify standard data quality.")
-    
+        print(
+            "  WARNING: FWHM² becomes non-positive in part of scan range; verify standard data quality."
+        )
+
     # Save calibration
     calibration = {
-        'caglioti': {
-            'U': float(U),
-            'V': float(V),
-            'W': float(W),
+        "caglioti": {
+            "U": float(U),
+            "V": float(V),
+            "W": float(W),
         },
-        'standard': str(args.standard),
-        'n_peaks_used': len(matched_peaks),
-        'n_peaks_found': len(peaks_data),
-        'position_tolerance_deg': max_position_error_deg,
-        'calibrated_at': datetime.now().isoformat(timespec="seconds"),
-        'fit_quality': {
-            'r_squared_fwhm_sq': r_squared,
-            'rmse_fwhm_sq_deg2': rmse_fwhm_sq,
-            'max_abs_residual_fwhm_sq_deg2': max_abs_residual_sq,
-            'has_non_positive_fwhm_sq_region': has_negative_region,
+        "standard": str(args.standard),
+        "n_peaks_used": len(matched_peaks),
+        "n_peaks_found": len(peaks_data),
+        "position_tolerance_deg": max_position_error_deg,
+        "calibrated_at": datetime.now().isoformat(timespec="seconds"),
+        "fit_quality": {
+            "r_squared_fwhm_sq": r_squared,
+            "rmse_fwhm_sq_deg2": rmse_fwhm_sq,
+            "max_abs_residual_fwhm_sq_deg2": max_abs_residual_sq,
+            "has_non_positive_fwhm_sq_region": has_negative_region,
         },
-        'peaks': [
+        "peaks": [
             {
-                'hkl': f"({p['hkl'][0]}{p['hkl'][1]}{p['hkl'][2]})",
-                'expected_two_theta_deg': float(p['expected_two_theta']),
-                'two_theta_deg': float(p['two_theta']),
-                'delta_two_theta_deg': float(p['delta_two_theta']),
-                'fwhm_deg': float(p['fwhm']),
+                "hkl": f"({p['hkl'][0]}{p['hkl'][1]}{p['hkl'][2]})",
+                "expected_two_theta_deg": float(p["expected_two_theta"]),
+                "two_theta_deg": float(p["two_theta"]),
+                "delta_two_theta_deg": float(p["delta_two_theta"]),
+                "fwhm_deg": float(p["fwhm"]),
             }
             for p in matched_peaks
         ],
     }
-    
+
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    with open(args.output, 'w', encoding='utf-8') as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         yaml.safe_dump(calibration, f, default_flow_style=False, sort_keys=False)
-    
+
     print(f"\nCalibration saved to: {args.output}")
     print("Calibration complete. 校正完成。")
     return 0

@@ -1,5 +1,4 @@
-"""
-Defect Analysis Plots Module
+"""Defect Analysis Plots Module
 ============================
 
 Visualization for stacking fault analysis.

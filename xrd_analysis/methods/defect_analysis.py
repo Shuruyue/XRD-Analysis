@@ -1,5 +1,4 @@
-"""
-Defect Analysis Module 缺陷分析模組
+"""Defect Analysis Module 缺陷分析模組
 ===================================
 
 Stacking fault detection and lattice constant monitoring.
@@ -9,17 +8,17 @@ References 出處:
 - Warren (1969), X-ray Diffraction, Chapter 13 (stacking faults)
 """
 
-import numpy as np
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, List
 from enum import Enum
+from typing import List, Optional, Tuple
+
+import numpy as np
 
 from xrd_analysis.core.constants import CU_KA1
 from xrd_analysis.core.copper_crystal import (
-    CU_JCPDS_EXTENDED,
     CU_CRYSTAL,
+    CU_JCPDS_EXTENDED,
 )
-
 
 # =============================================================================
 # Constants 常數
@@ -28,8 +27,8 @@ from xrd_analysis.core.copper_crystal import (
 # Standard peak separation (111)-(200) / 標準峰間距 (111)-(200)
 # Calculated dynamically from JCPDS data to match updated high-precision values
 STANDARD_PEAK_SEPARATION = (
-    CU_JCPDS_EXTENDED[(2, 0, 0)]["two_theta"] - 
-    CU_JCPDS_EXTENDED[(1, 1, 1)]["two_theta"]
+    CU_JCPDS_EXTENDED[(2, 0, 0)]["two_theta"]
+    - CU_JCPDS_EXTENDED[(1, 1, 1)]["two_theta"]
 )
 
 # Warren geometric coefficient for FCC (111)-(200) stacking fault
@@ -71,7 +70,8 @@ STANDARD_PEAK_SEPARATION = (
 #
 # ═══════════════════════════════════════════════════════════════════════════
 import math
-_WARREN_G_THEORETICAL = -45 * math.sqrt(3) / (math.pi ** 2)  # = -7.897
+
+_WARREN_G_THEORETICAL = -45 * math.sqrt(3) / (math.pi**2)  # = -7.897
 
 WARREN_G_COEFFICIENT = _WARREN_G_THEORETICAL  # 理論推導值 / Theoretical value
 
@@ -92,45 +92,51 @@ LATTICE_SEVERE_THRESHOLD = 3.618  # Å
 # Enums
 # =============================================================================
 
+
 class StackingFaultSeverity(Enum):
     """Stacking fault severity classification."""
-    NORMAL = "normal"           # α < 0.5%
-    MILD = "mild"               # 0.5% ≤ α < 1%
-    MODERATE = "moderate"       # 1% ≤ α < 2%
-    SEVERE = "severe"           # α ≥ 2%
+
+    NORMAL = "normal"  # α < 0.5%
+    MILD = "mild"  # 0.5% ≤ α < 1%
+    MODERATE = "moderate"  # 1% ≤ α < 2%
+    SEVERE = "severe"  # α ≥ 2%
 
 
 class LatticeStatus(Enum):
     """Lattice constant status classification."""
-    NORMAL = "normal"           # a ≈ 3.615 Å
-    MINOR_EXPANSION = "minor"   # 3.616-3.618 Å
-    SEVERE_EXPANSION = "severe" # > 3.618 Å
+
+    NORMAL = "normal"  # a ≈ 3.615 Å
+    MINOR_EXPANSION = "minor"  # 3.616-3.618 Å
+    SEVERE_EXPANSION = "severe"  # > 3.618 Å
 
 
 class AnnealingState(Enum):
     """Self-annealing state classification."""
-    AS_DEPOSITED = "as-deposited"   # < 1 hour
-    PARTIAL = "partial"             # 1-24 hours
-    ANNEALED = "annealed"           # 1-7 days
-    STABLE = "stable"               # > 7 days
-    UNKNOWN = "unknown"             # Not specified
+
+    AS_DEPOSITED = "as-deposited"  # < 1 hour
+    PARTIAL = "partial"  # 1-24 hours
+    ANNEALED = "annealed"  # 1-7 days
+    STABLE = "stable"  # > 7 days
+    UNKNOWN = "unknown"  # Not specified
 
 
 # =============================================================================
 # Result Dataclasses
 # =============================================================================
 
+
 @dataclass
 class StackingFaultResult:
     """Result of stacking fault analysis."""
+
     peak_separation_deg: float
     deviation_deg: float
     alpha_probability: float  # Stacking fault probability (0-1)
-    alpha_percent: float      # As percentage
+    alpha_percent: float  # As percentage
     severity: StackingFaultSeverity
     sps_warning: bool
     message: str
-    
+
     def __repr__(self) -> str:
         return (
             f"StackingFault: Δ2θ={self.peak_separation_deg:.3f}°, "
@@ -141,14 +147,15 @@ class StackingFaultResult:
 @dataclass
 class LatticeConstantResult:
     """Result of lattice constant analysis."""
-    lattice_constant: float   # Å
-    deviation: float          # From standard
-    d_spacing: float          # Å
+
+    lattice_constant: float  # Å
+    deviation: float  # From standard
+    d_spacing: float  # Å
     hkl_used: Tuple[int, int, int]
     two_theta_used: float
     status: LatticeStatus
     message: str
-    
+
     def __repr__(self) -> str:
         return (
             f"Lattice: a={self.lattice_constant:.4f} Å "
@@ -159,17 +166,18 @@ class LatticeConstantResult:
 @dataclass
 class DefectAnalysisResult:
     """Complete defect analysis result."""
+
     # Stacking fault
     stacking_fault: Optional[StackingFaultResult] = None
-    
+
     # Lattice constant
     lattice_constant: Optional[LatticeConstantResult] = None
-    
+
     # Self-annealing
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
     sample_age_hours: Optional[float] = None
     annealing_note: str = ""
-    
+
     # Overall
     overall_status: str = ""
     recommendations: List[str] = field(default_factory=list)
@@ -179,63 +187,61 @@ class DefectAnalysisResult:
 # Module Q: Stacking Fault Analyzer
 # =============================================================================
 
+
 class StackingFaultAnalyzer:
-    """
-    Warren-based stacking fault analyzer.
+    """Warren-based stacking fault analyzer.
     基於Warren分析的堆疊層錯分析器。
-    
+
     Reference: Warren (1969), X-ray Diffraction, Ch.13
-    
+
     For FCC metals with intrinsic stacking faults:
     - (111) peak shifts to higher angles
     - (200) peak shifts to lower angles
     - Peak separation decreases
-    
+
     Warren formula:
         α = (Δ2θ_exp - Δ2θ_std) / G
-        
+
     where G ≈ -7.897 for FCC (111)-(200) in degree-based implementation
     """
-    
+
     def __init__(self, g_coefficient: float = WARREN_G_COEFFICIENT):
-        """
-        Initialize stacking fault analyzer.
-        
+        """Initialize stacking fault analyzer.
+
         Args:
             g_coefficient: Warren geometric coefficient (default: -7.897)
+
         """
         self.g_coefficient = g_coefficient
-    
+
     def analyze(
-        self,
-        two_theta_111: float,
-        two_theta_200: float
+        self, two_theta_111: float, two_theta_200: float
     ) -> StackingFaultResult:
-        """
-        Analyze stacking fault probability.
-        
+        """Analyze stacking fault probability.
+
         Args:
             two_theta_111: Measured 2θ position of (111) peak
             two_theta_200: Measured 2θ position of (200) peak
-            
+
         Returns:
             StackingFaultResult with α probability
+
         """
         # Q.1.3: Calculate peak separation
         peak_separation = two_theta_200 - two_theta_111
-        
+
         # Q.1.4: Calculate deviation from standard
         deviation = peak_separation - STANDARD_PEAK_SEPARATION
-        
+
         # Warren formula for α / Warren 公式計算 α
         # α = deviation / G
         # G is negative, deviation is negative when SF present
         # So α comes out positive
         alpha = deviation / self.g_coefficient if self.g_coefficient != 0 else 0
         alpha = max(0, alpha)  # α cannot be negative
-        
+
         alpha_percent = alpha * 100
-        
+
         # Determine severity / 判定嚴重程度
         if alpha_percent < 0.5:
             severity = StackingFaultSeverity.NORMAL
@@ -245,10 +251,10 @@ class StackingFaultAnalyzer:
             severity = StackingFaultSeverity.MODERATE
         else:
             severity = StackingFaultSeverity.SEVERE
-        
+
         # SPS warning check / SPS 警告檢查
         sps_warning = peak_separation < 7.0
-        
+
         # Generate message
         if sps_warning:
             message = (
@@ -259,7 +265,7 @@ class StackingFaultAnalyzer:
             message = "堆垛層錯在正常範圍內"
         else:
             message = f"檢測到堆垛層錯 α ≈ {alpha_percent:.2f}%"
-        
+
         return StackingFaultResult(
             peak_separation_deg=peak_separation,
             deviation_deg=deviation,
@@ -267,7 +273,7 @@ class StackingFaultAnalyzer:
             alpha_percent=alpha_percent,
             severity=severity,
             sps_warning=sps_warning,
-            message=message
+            message=message,
         )
 
 
@@ -275,13 +281,10 @@ class StackingFaultAnalyzer:
 # Module R: Lattice Constant Calculator
 # =============================================================================
 
-def calculate_d_spacing(
-    two_theta: float,
-    wavelength: float = CU_KA1
-) -> float:
-    """
-    Calculate d-spacing from Bragg's law.
-    
+
+def calculate_d_spacing(two_theta: float, wavelength: float = CU_KA1) -> float:
+    """Calculate d-spacing from Bragg's law.
+
     d = λ / (2 sin θ)
     """
     theta_rad = two_theta / 2 * np.pi / 180
@@ -289,14 +292,11 @@ def calculate_d_spacing(
 
 
 def calculate_lattice_constant(
-    two_theta: float,
-    hkl: Tuple[int, int, int],
-    wavelength: float = CU_KA1
+    two_theta: float, hkl: Tuple[int, int, int], wavelength: float = CU_KA1
 ) -> float:
-    """
-    Calculate lattice constant from peak position.
+    """Calculate lattice constant from peak position.
     從峰位計算晶格常數。
-    
+
     a = d × √(h² + k² + l²)
     """
     d = calculate_d_spacing(two_theta, wavelength)
@@ -305,44 +305,39 @@ def calculate_lattice_constant(
 
 
 class LatticeMonitor:
-    """
-    Lattice constant monitor.
+    """Lattice constant monitor.
     晶格常數監控器。
-    
+
     Prefers high-angle peaks (311, 220) for better accuracy.
     偶好高角峰 (311, 220) 以提高精度。
     """
-    
+
     def __init__(
-        self,
-        standard_a: float = STANDARD_LATTICE_CONSTANT,
-        wavelength: float = CU_KA1
+        self, standard_a: float = STANDARD_LATTICE_CONSTANT, wavelength: float = CU_KA1
     ):
         self.standard_a = standard_a
         self.wavelength = wavelength
-    
+
     def analyze_lattice(
-        self,
-        two_theta: float,
-        hkl: Tuple[int, int, int]
+        self, two_theta: float, hkl: Tuple[int, int, int]
     ) -> LatticeConstantResult:
-        """
-        Analyze lattice constant from peak position.
-        
+        """Analyze lattice constant from peak position.
+
         Args:
             two_theta: Measured 2θ position
             hkl: Miller indices of the peak
-            
+
         Returns:
             LatticeConstantResult
+
         """
         # R.1.2-3: Calculate d and a
         d = calculate_d_spacing(two_theta, self.wavelength)
         a = calculate_lattice_constant(two_theta, hkl, self.wavelength)
-        
+
         # Calculate deviation
         deviation = a - self.standard_a
-        
+
         # R.1.4: Determine status
         if a <= LATTICE_MINOR_THRESHOLD:
             status = LatticeStatus.NORMAL
@@ -353,7 +348,7 @@ class LatticeMonitor:
         else:
             status = LatticeStatus.SEVERE_EXPANSION
             message = "嚴重晶格擴張，需檢查添加劑純度或雜質固溶"
-        
+
         return LatticeConstantResult(
             lattice_constant=a,
             deviation=deviation,
@@ -361,7 +356,7 @@ class LatticeMonitor:
             hkl_used=hkl,
             two_theta_used=two_theta,
             status=status,
-            message=message
+            message=message,
         )
 
 
@@ -369,31 +364,28 @@ class LatticeMonitor:
 # Self-Annealing State Machine
 # =============================================================================
 
+
 def determine_annealing_state(
-    sample_age_hours: Optional[float] = None,
-    fwhm_narrowing_detected: bool = False
+    sample_age_hours: Optional[float] = None, fwhm_narrowing_detected: bool = False
 ) -> Tuple[AnnealingState, str]:
-    """
-    Determine self-annealing state from sample age.
+    """Determine self-annealing state from sample age.
     根據樣品存放時間判定自退火狀態。
-    
+
     Args:
         sample_age_hours: Time since deposition (hours), None for unknown
         fwhm_narrowing_detected: True if FWHM is narrower than expected
-        
+
     Returns:
         Tuple of (AnnealingState, recommendation_note)
+
     """
     if sample_age_hours is None:
-        return (
-            AnnealingState.UNKNOWN,
-            "樣品存放時間未知，無法判定自退火狀態"
-        )
-    
+        return (AnnealingState.UNKNOWN, "樣品存放時間未知，無法判定自退火狀態")
+
     if sample_age_hours < 1:
         return (
             AnnealingState.AS_DEPOSITED,
-            "初始態樣品：預期細晶粒、高缺陷密度。建議 7 天後重測以獲得穩定結構"
+            "初始態樣品：預期細晶粒、高缺陷密度。建議 7 天後重測以獲得穩定結構",
         )
     elif sample_age_hours < 24:
         state = AnnealingState.PARTIAL
@@ -403,24 +395,18 @@ def determine_annealing_state(
             note = "自退火初期：晶粒可能正在長大"
         return (state, note)
     elif sample_age_hours < 168:  # 7 days
-        return (
-            AnnealingState.ANNEALED,
-            "自退火中：結構尚未完全穩定"
-        )
+        return (AnnealingState.ANNEALED, "自退火中：結構尚未完全穩定")
     else:
-        return (
-            AnnealingState.STABLE,
-            "穩定態：結構已達穩定，分析結果可靠"
-        )
+        return (AnnealingState.STABLE, "穩定態：結構已達穩定，分析結果可靠")
 
 
 # =============================================================================
 # Convenience Functions
 # =============================================================================
 
+
 def analyze_stacking_faults(
-    two_theta_111: float,
-    two_theta_200: float
+    two_theta_111: float, two_theta_200: float
 ) -> StackingFaultResult:
     """Convenience function for stacking fault analysis."""
     analyzer = StackingFaultAnalyzer()
@@ -428,8 +414,7 @@ def analyze_stacking_faults(
 
 
 def analyze_lattice(
-    two_theta: float,
-    hkl: Tuple[int, int, int]
+    two_theta: float, hkl: Tuple[int, int, int]
 ) -> LatticeConstantResult:
     """Convenience function for lattice constant analysis."""
     monitor = LatticeMonitor()

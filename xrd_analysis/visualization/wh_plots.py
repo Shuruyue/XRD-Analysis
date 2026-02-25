@@ -10,13 +10,14 @@ from typing import Any, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
+from xrd_analysis.core.constants import CU_KA1, SCHERRER_K
+
 from .style import (
     COLORBLIND_SAFE,
     apply_xrd_analysis_style,
     get_color_palette,
     save_figure,
 )
-from xrd_analysis.core.constants import CU_KA1, SCHERRER_K
 
 
 def plot_williamson_hall(
@@ -33,9 +34,9 @@ def plot_williamson_hall(
 ) -> plt.Figure:
     """Plot Williamson-Hall linear fit diagram.
     繪製 Williamson-Hall 線性擬合圖。
-    
+
     W-H Equation: β cos θ = (Kλ/D) + 4ε sin θ
-    
+
     Args:
         two_theta: Array of 2θ peak positions (degrees).
         fwhm_sample: Array of sample FWHM values (degrees).
@@ -48,10 +49,10 @@ def plot_williamson_hall(
         show: Whether to display figure.
         figsize: Figure size.
         sample_name: Name for title.
-        
+
     Returns:
         Matplotlib Figure object.
-        
+
     Example:
         >>> two_theta = np.array([43.32, 50.45, 74.16, 89.97])
         >>> fwhm = np.array([0.224, 0.251, 0.282, 0.305])
@@ -70,45 +71,61 @@ def plot_williamson_hall(
     fig, ax = plt.subplots(figsize=figsize)
 
     # Scatter plot with data points
-    scatter = ax.scatter(
-        x_data, y_data,
-        s=100, c=COLORBLIND_SAFE[0],
-        edgecolors='black', linewidths=1,
-        zorder=5, label='Experimental data'
+    ax.scatter(
+        x_data,
+        y_data,
+        s=100,
+        c=COLORBLIND_SAFE[0],
+        edgecolors="black",
+        linewidths=1,
+        zorder=5,
+        label="Experimental data",
     )
 
     # Add hkl labels if provided
     if hkl_labels:
         for i, label in enumerate(hkl_labels):
             ax.annotate(
-                label, (x_data[i], y_data[i]),
-                xytext=(5, 5), textcoords='offset points',
-                fontsize=10, fontweight='bold'
+                label,
+                (x_data[i], y_data[i]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=10,
+                fontweight="bold",
             )
 
     # Perform or use provided linear fit
     if fit_result is None:
         # Perform linear regression
         from scipy.stats import linregress
+
         reg = linregress(x_data, y_data)
         slope = reg.slope
         intercept = reg.intercept
-        r_squared = reg.rvalue ** 2
+        r_squared = reg.rvalue**2
     else:
-        slope = fit_result.get('slope', 0)
-        intercept = fit_result.get('intercept', 0)
-        r_squared = fit_result.get('r_squared', 0)
+        slope = fit_result.get("slope", 0)
+        intercept = fit_result.get("intercept", 0)
+        r_squared = fit_result.get("r_squared", 0)
 
     # Plot regression line
     x_fit = np.linspace(x_data.min() * 0.9, x_data.max() * 1.1, 100)
     y_fit = slope * x_fit + intercept
 
-    ax.plot(x_fit, y_fit, color=COLORBLIND_SAFE[1], linewidth=2,
-           linestyle='--', label='Linear fit', zorder=3)
+    ax.plot(
+        x_fit,
+        y_fit,
+        color=COLORBLIND_SAFE[1],
+        linewidth=2,
+        linestyle="--",
+        label="Linear fit",
+        zorder=3,
+    )
 
     # Fill confidence region (optional visualization)
-    ax.fill_between(x_fit, y_fit * 0.95, y_fit * 1.05,
-                   alpha=0.1, color=COLORBLIND_SAFE[1])
+    ax.fill_between(
+        x_fit, y_fit * 0.95, y_fit * 1.05, alpha=0.1, color=COLORBLIND_SAFE[1]
+    )
 
     # Calculate physical quantities
     # Calculate physical quantities
@@ -119,32 +136,42 @@ def plot_williamson_hall(
         size_angstrom = K * wavelength / intercept
         size_nm = size_angstrom / 10.0
     else:
-        size_nm = float('inf')
+        size_nm = float("inf")
 
     microstrain = slope / 4.0
 
     # Axis labels
-    ax.set_xlabel(r'sin($\theta$)', fontsize=14)
-    ax.set_ylabel(r'$\beta$ cos($\theta$) (rad)', fontsize=14)
-    ax.set_title(f'Williamson-Hall Analysis - {sample_name}', fontsize=16)
+    ax.set_xlabel(r"sin($\theta$)", fontsize=14)
+    ax.set_ylabel(r"$\beta$ cos($\theta$) (rad)", fontsize=14)
+    ax.set_title(f"Williamson-Hall Analysis - {sample_name}", fontsize=16)
 
     # Legend
-    ax.legend(loc='upper left', fontsize=11)
+    ax.legend(loc="upper left", fontsize=11)
 
     # Results text box
-    textstr = '\n'.join([
-        'Results:',
-        f'  Slope = {slope:.5f}',
-        f'  Intercept = {intercept:.5f}',
-        f'  R² = {r_squared:.4f}',
-        '',
-        f'  D = {size_nm:.1f} nm',
-        f'  ε = {microstrain:.2e}',
-    ])
-    props = dict(boxstyle='round', facecolor='lightyellow', alpha=0.9, edgecolor='gray')
-    ax.text(0.98, 0.02, textstr, transform=ax.transAxes, fontsize=10,
-           verticalalignment='bottom', horizontalalignment='right',
-           bbox=props, family='monospace')
+    textstr = "\n".join(
+        [
+            "Results:",
+            f"  Slope = {slope:.5f}",
+            f"  Intercept = {intercept:.5f}",
+            f"  R² = {r_squared:.4f}",
+            "",
+            f"  D = {size_nm:.1f} nm",
+            f"  ε = {microstrain:.2e}",
+        ]
+    )
+    props = dict(boxstyle="round", facecolor="lightyellow", alpha=0.9, edgecolor="gray")
+    ax.text(
+        0.98,
+        0.02,
+        textstr,
+        transform=ax.transAxes,
+        fontsize=10,
+        verticalalignment="bottom",
+        horizontalalignment="right",
+        bbox=props,
+        family="monospace",
+    )
 
     # Quality indicator
     quality_threshold = 0.95
@@ -152,15 +179,22 @@ def plot_williamson_hall(
         quality = "Excellent"
         quality_color = "green"
     elif r_squared > 0.85:
-        quality = 'ACCEPTABLE'
-        quality_color = 'orange'
+        quality = "ACCEPTABLE"
+        quality_color = "orange"
     else:
-        quality = 'POOR (Anisotropy?)'
-        quality_color = 'red'
+        quality = "POOR (Anisotropy?)"
+        quality_color = "red"
 
-    ax.text(0.02, 0.98, f'Quality: {quality}', transform=ax.transAxes,
-           fontsize=11, fontweight='bold', color=quality_color,
-           verticalalignment='top')
+    ax.text(
+        0.02,
+        0.98,
+        f"Quality: {quality}",
+        transform=ax.transAxes,
+        fontsize=11,
+        fontweight="bold",
+        color=quality_color,
+        verticalalignment="top",
+    )
 
     plt.tight_layout()
 
@@ -186,7 +220,7 @@ def plot_wh_residuals(
 ) -> plt.Figure:
     """Plot Williamson-Hall fit residuals.
     繪製 Williamson-Hall 擬合殘差圖。
-    
+
     Args:
         two_theta: Array of 2θ peak positions (degrees).
         fwhm_sample: Array of sample FWHM values (degrees).
@@ -197,7 +231,7 @@ def plot_wh_residuals(
         format: Output format.
         show: Whether to display figure.
         figsize: Figure size.
-        
+
     Returns:
         Matplotlib Figure object.
 
@@ -214,12 +248,13 @@ def plot_wh_residuals(
     # Get or calculate fit
     if fit_result is None:
         from scipy.stats import linregress
+
         reg = linregress(x_data, y_data)
         slope = reg.slope
         intercept = reg.intercept
     else:
-        slope = fit_result.get('slope', 0)
-        intercept = fit_result.get('intercept', 0)
+        slope = fit_result.get("slope", 0)
+        intercept = fit_result.get("intercept", 0)
 
     # Calculate residuals
     y_pred = slope * x_data + intercept
@@ -229,33 +264,47 @@ def plot_wh_residuals(
 
     # Stem plot for residuals
     markerline, stemlines, baseline = ax.stem(
-        x_data, residuals * 1000,  # Convert to mrad for visibility
-        basefmt='k-', linefmt='gray', markerfmt='o'
+        x_data,
+        residuals * 1000,  # Convert to mrad for visibility
+        basefmt="k-",
+        linefmt="gray",
+        markerfmt="o",
     )
     plt.setp(markerline, markersize=10, color=COLORBLIND_SAFE[0])
 
     # Zero line
-    ax.axhline(y=0, color='red', linestyle='-', linewidth=1.5)
+    ax.axhline(y=0, color="red", linestyle="-", linewidth=1.5)
 
     # Add hkl labels if provided
     if hkl_labels:
         for i, label in enumerate(hkl_labels):
             offset = 5 if residuals[i] >= 0 else -15
             ax.annotate(
-                label, (x_data[i], residuals[i] * 1000),
-                xytext=(0, offset), textcoords='offset points',
-                fontsize=10, fontweight='bold', ha='center'
+                label,
+                (x_data[i], residuals[i] * 1000),
+                xytext=(0, offset),
+                textcoords="offset points",
+                fontsize=10,
+                fontweight="bold",
+                ha="center",
             )
 
-    ax.set_xlabel(r'sin($\theta$)', fontsize=14)
-    ax.set_ylabel('Residual (mrad)', fontsize=14)
-    ax.set_title('Williamson-Hall Fit Residuals')
+    ax.set_xlabel(r"sin($\theta$)", fontsize=14)
+    ax.set_ylabel("Residual (mrad)", fontsize=14)
+    ax.set_title("Williamson-Hall Fit Residuals")
 
     # Statistics
     rmse = np.sqrt(np.mean(residuals**2)) * 1000
-    ax.text(0.98, 0.98, f'RMSE = {rmse:.3f} mrad', transform=ax.transAxes,
-           fontsize=11, verticalalignment='top', horizontalalignment='right',
-           bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    ax.text(
+        0.98,
+        0.98,
+        f"RMSE = {rmse:.3f} mrad",
+        transform=ax.transAxes,
+        fontsize=11,
+        verticalalignment="top",
+        horizontalalignment="right",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+    )
 
     plt.tight_layout()
 
@@ -277,73 +326,86 @@ def plot_strain_evolution(
     figsize: Tuple[float, float] = (10, 8),
 ) -> plt.Figure:
     """Plot Microstrain evolution by concentration.
-    
+
     X-axis: Annealing Time
     Y-axis: Microstrain (dimensionless)
     Grouped by Concentration.
     """
     apply_xrd_analysis_style()
-    
+
     # Get unique concentrations
-    concentrations = sorted(set(sample.get('concentration', 0) for sample in data))
-    
+    concentrations = sorted(set(sample.get("concentration", 0) for sample in data))
+
     fig, ax = plt.subplots(figsize=figsize)
-    
+
     # Colors/Markers for concentrations using new palette
     colors = get_color_palette(len(concentrations))
-    markers = ['o', 's', '^', 'D', 'v', '<', '>']
-    linestyles = ['-', '--', '-.', ':']
-    
+    markers = ["o", "s", "^", "D", "v", "<", ">"]
+    linestyles = ["-", "--", "-.", ":"]
+
     for i, conc in enumerate(concentrations):
         x_values = []
         y_values = []
         y_errs = []
-        
+
         for sample in data:
-            if sample.get('concentration', 0) == conc:
-                val = sample.get('microstrain')
+            if sample.get("concentration", 0) == conc:
+                val = sample.get("microstrain")
                 # Filter out invalid or zero strain
                 if val is not None and not np.isnan(val) and val > 1e-10:
-                    x_values.append(sample.get('time', 0))
+                    x_values.append(sample.get("time", 0))
                     y_values.append(val)
-                    y_errs.append(sample.get('strain_error', 0.0))
-        
+                    y_errs.append(sample.get("strain_error", 0.0))
+
         if x_values:
             # Sort
             sorted_idx = np.argsort(x_values)
             x_sorted = np.array(x_values)[sorted_idx]
             y_sorted = np.array(y_values)[sorted_idx]
             e_sorted = np.array(y_errs)[sorted_idx]
-            
+
             color = colors[i % len(colors)]
             marker = markers[i % len(markers)]
             ls = linestyles[i % len(linestyles)]
-            
+
             label = f"{conc} mL/1.5L"
-            
+
             error_kw = dict(ecolor=color, elinewidth=1.5, capsize=4, alpha=0.6)
-            
-            ax.errorbar(x_sorted, y_sorted, yerr=e_sorted, fmt=marker, 
-                       color=color, label=label, markersize=8,
-                       markeredgecolor='black', markeredgewidth=0.5, **error_kw)
-            ax.plot(x_sorted, y_sorted, color=color, linestyle=ls, linewidth=2, alpha=0.7)
+
+            ax.errorbar(
+                x_sorted,
+                y_sorted,
+                yerr=e_sorted,
+                fmt=marker,
+                color=color,
+                label=label,
+                markersize=8,
+                markeredgecolor="black",
+                markeredgewidth=0.5,
+                **error_kw,
+            )
+            ax.plot(
+                x_sorted, y_sorted, color=color, linestyle=ls, linewidth=2, alpha=0.7
+            )
 
     # Styling
-    ax.set_xlabel('Annealing Time (hours)', fontsize=14)
-    ax.set_ylabel('Microstrain (ε)', fontsize=14)
-    ax.set_title('Microstrain Evolution during Annealing', fontsize=16, fontweight='bold')
-    
+    ax.set_xlabel("Annealing Time (hours)", fontsize=14)
+    ax.set_ylabel("Microstrain (ε)", fontsize=14)
+    ax.set_title(
+        "Microstrain Evolution during Annealing", fontsize=16, fontweight="bold"
+    )
+
     # Scientific notation for strain
-    ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
-    
-    ax.legend(fontsize=12, loc='upper right')
-    ax.grid(True, alpha=0.3, linestyle=':')
-    
+    ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+    ax.legend(fontsize=12, loc="upper right")
+    ax.grid(True, alpha=0.3, linestyle=":")
+
     # Start Y from 0 if feasible
     current_ymin, current_ymax = ax.get_ylim()
     if current_ymin > 0:
         ax.set_ylim(bottom=0)
-        
+
     # Add Physical Limitation Footnote
     LIMITATION_NOTE = (
         "Note: Microstrain (ε) assumes an isotropic model. For Cu, (200) strain may "
@@ -351,16 +413,24 @@ def plot_strain_evolution(
         "(E_111 ≈ 3*E_200)."
     )
     # Using slightly higher position to avoid cutting off x-axis label
-    fig.text(0.5, 0.01, LIMITATION_NOTE, ha='center', va='bottom', 
-             fontsize=10, style='italic', color='#555555', 
-             bbox=dict(facecolor='#f0f0f0', alpha=0.5, edgecolor='none', pad=5))
-    
-    plt.tight_layout(rect=[0, 0.06, 1, 0.96]) # Adjust for footer
-    
+    fig.text(
+        0.5,
+        0.01,
+        LIMITATION_NOTE,
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        style="italic",
+        color="#555555",
+        bbox=dict(facecolor="#f0f0f0", alpha=0.5, edgecolor="none", pad=5),
+    )
+
+    plt.tight_layout(rect=[0, 0.06, 1, 0.96])  # Adjust for footer
+
     if output_path:
         save_figure(fig, output_path, dpi=dpi, format=format)
-        
+
     if show:
         plt.show()
-        
+
     return fig

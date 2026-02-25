@@ -56,6 +56,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
+coverage.json
+coverage_report.txt
 
 # Translations
 *.mo

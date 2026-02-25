@@ -1,5 +1,4 @@
-"""
-Physical Constants Module 物理常數模組
+"""Physical Constants Module 物理常數模組
 ======================================
 Centralized physical constants for XRD analysis.
 集中管理 XRD 分析所需的物理常數。
@@ -10,7 +9,6 @@ All parameters are verified with paper citations.
 
 from dataclasses import dataclass
 from typing import Dict, Tuple
-
 
 # =============================================================================
 # X-ray Wavelengths (Ångströms) / X-ray 波長 (埃)
@@ -45,30 +43,31 @@ KA2_KA1_RATIO = 0.5
 # Reference 出處: Langford & Wilson (1978), J. Appl. Cryst. 11, 102-113
 # =============================================================================
 
+
 @dataclass
 class ScherrerConstants:
-    """
-    Scherrer constant K values for different grain shapes.
+    """Scherrer constant K values for different grain shapes.
     不同晶粒形狀的 Scherrer 常數 K 值。
-    
+
     IMPORTANT 重要:
     - These are K_w values for FWHM (half-width) definition
     - 這些是 K_w 值，適用於 FWHM（半高寬）定義
     - For integral breadth, use K_β values from L&W Table 1
     - 若使用積分寬度，請參考 L&W 論文 Table 1 的 K_β 值
-    
+
     Reference 出處: L&W (1978), Table 1, p.107
     """
+
     # Sphere 球形: K_w = 0.8290 (L&W Table 1, p.107, Line 846)
     spherical: float = 0.829
-    
+
     # Generic cubic habit 一般立方晶體: approximation for mixed orientations
     # Reference: Warren (1969), X-ray Diffraction
     cubic: float = 0.94
-    
+
     # Octahedron 八面體: K_w = 0.83 (L&W p.107, same as sphere for 110)
     octahedral: float = 0.83
-    
+
     # Default value 預設值: L&W 1978 spherical standard
     default: float = 0.829
 
@@ -76,26 +75,24 @@ class ScherrerConstants:
 SCHERRER_K = ScherrerConstants()
 
 
-
-
-
 def get_jcpds_data(material: str = "Cu") -> Dict[Tuple[int, int, int], Dict]:
-    """
-    Get JCPDS standard data for copper.
+    """Get JCPDS standard data for copper.
     取得銅的 JCPDS 標準數據。
-    
+
     Args:
         material: Material name (only "Cu" supported)
-        
+
     Returns:
         Dictionary of JCPDS data keyed by (h, k, l)
+
     """
     if material.upper() != "CU":
         raise ValueError(f"Only Cu is supported. Got: {material}")
-    
+
     # Import here to avoid circular dependencies (low-level constants vs high-level crystal)
     # 在此導入以避免循環依賴
     from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
+
     return CU_JCPDS_EXTENDED
 
 
@@ -121,7 +118,7 @@ def get_jcpds_data(material: str = "Cu") -> Dict[Tuple[int, int, int], Dict]:
 #
 # Reference: Klug & Alexander (1974), "X-ray Diffraction Procedures" (general guidance)
 #            Commonly accepted values in XRD community
-MIN_RELIABLE_SIZE = 2.0    # nm, minimum detectable crystallite size
+MIN_RELIABLE_SIZE = 2.0  # nm, minimum detectable crystallite size
 MAX_RELIABLE_SIZE = 200.0  # nm, maximum reliable crystallite size
 
 # FWHM quality threshold / FWHM 品質閾值
@@ -134,7 +131,9 @@ MAX_RELIABLE_SIZE = 200.0  # nm, maximum reliable crystallite size
 #
 # Reference: Commonly used threshold in Rietveld refinement and XRD analysis
 #            Young (1993), "The Rietveld Method" (general guidance)
-MIN_BROADENING_RATIO = 1.2  # Minimum sample/instrumental FWHM ratio for reliable analysis
+MIN_BROADENING_RATIO = (
+    1.2  # Minimum sample/instrumental FWHM ratio for reliable analysis
+)
 
 # Fit quality thresholds / 擬合品質閾值
 # ═══════════════════════════════════════════════════════════════════════════
@@ -153,5 +152,5 @@ MIN_BROADENING_RATIO = 1.2  # Minimum sample/instrumental FWHM ratio for reliabl
 #   Young, R. A. (1993). "The Rietveld Method." Oxford University Press.
 #   (R_wp < 10% is generally acceptable for Rietveld refinement)
 # ═══════════════════════════════════════════════════════════════════════════
-MAX_RWP_PERCENT = 10.0       # Maximum acceptable R_wp (%) - ADJUSTABLE
-MIN_R_SQUARED = 0.95         # Minimum acceptable R² - ADJUSTABLE
+MAX_RWP_PERCENT = 10.0  # Maximum acceptable R_wp (%) - ADJUSTABLE
+MIN_R_SQUARED = 0.95  # Minimum acceptable R² - ADJUSTABLE

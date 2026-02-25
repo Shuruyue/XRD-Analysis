@@ -28,17 +28,17 @@ from xrd_analysis.visualization.fitting_plots import (
     plot_peak_fit,
 )
 from xrd_analysis.visualization.fwhm_plots import (
+    plot_fwhm_by_concentration,
     plot_fwhm_by_peak,
     plot_fwhm_evolution,
-    plot_fwhm_by_concentration,
 )
 from xrd_analysis.visualization.scherrer_plots import (
-    plot_scherrer_evolution_by_peak,
     plot_scherrer_by_concentration,
+    plot_scherrer_evolution_by_peak,
 )
 from xrd_analysis.visualization.style import (
-    XRD_ANALYSIS_STYLE,
     COLORBLIND_SAFE,
+    XRD_ANALYSIS_STYLE,
     apply_xrd_analysis_style,
     get_color_palette,
 )

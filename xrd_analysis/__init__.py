@@ -1,5 +1,4 @@
-"""
-XRD-Analysis: Advanced XRD Crystallite Size Analysis System
+"""XRD-Analysis: Advanced XRD Crystallite Size Analysis System
 =====================================================
 
 A comprehensive toolkit for XRD data analysis including:
@@ -12,29 +11,33 @@ Example:
     >>> import xrd_analysis
     >>> print(xrd_analysis.__version__)
     0.1.0
+
 """
 
-from xrd_analysis.__version__ import __version__, __version_info__
+import logging
 
+# Library best practice: add NullHandler to prevent "No handlers" warnings.
+# Consuming applications configure their own handlers.
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+from xrd_analysis.__version__ import __version__, __version_info__
 from xrd_analysis.methods.scherrer import (
     ScherrerCalculator,
     ScherrerResult,
     ValidityFlag,
-    calculate_scherrer,
     calculate_crystallite_size,
+    calculate_scherrer,
 )
-
-from xrd_analysis.methods.williamson_hall import (
-    WilliamsonHallAnalyzer,
-    WHResult,
-    WHQualityLevel,
-    analyze_williamson_hall,
-)
-
 from xrd_analysis.methods.texture import (
-    TextureAnalyzer,
     TextureAnalysisResult,
+    TextureAnalyzer,
     analyze_texture,
+)
+from xrd_analysis.methods.williamson_hall import (
+    WHQualityLevel,
+    WHResult,
+    WilliamsonHallAnalyzer,
+    analyze_williamson_hall,
 )
 
 __all__ = [

@@ -1,5 +1,4 @@
-"""
-Williamson-Hall Analysis Module
+"""Williamson-Hall Analysis Module
 ===============================
 
 Separates crystallite size and microstrain contributions to peak broadening.
@@ -11,14 +10,14 @@ Reference:
     Acta Metallurgica, 1(1), 22-31.
 """
 
-import numpy as np
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 from scipy.stats import linregress
 
-from xrd_analysis.core.constants import CU_KA1, SCHERRER_K
-
+from xrd_analysis.core.constants import CU_KA1
 
 # =============================================================================
 # Constants
@@ -51,14 +50,14 @@ WH_K_FACTOR = 0.9
 # 可根據需求調整（如改為 0.99 以獲得更嚴格的品質要求）
 # Can be adjusted based on requirements (e.g., 0.99 for stricter criteria)
 # ═══════════════════════════════════════════════════════════════════════════
-R2_EXCELLENT = 0.95    # 優良 / Excellent
-R2_ACCEPTABLE = 0.85   # 可接受 / Acceptable
-MIN_PEAKS = 3          # W-H 線性迴歸最少需要 3 點 / Minimum 3 peaks for linear regression
+R2_EXCELLENT = 0.95  # 優良 / Excellent
+R2_ACCEPTABLE = 0.85  # 可接受 / Acceptable
+MIN_PEAKS = 3  # W-H 線性迴歸最少需要 3 點 / Minimum 3 peaks for linear regression
 
 # Copper elastic anisotropy
 MODULUS_MAP: Dict[Tuple[int, int, int], float] = {
     (1, 1, 1): 191.0,  # GPa, hardest direction
-    (2, 0, 0): 67.0,   # GPa, softest direction
+    (2, 0, 0): 67.0,  # GPa, softest direction
     (2, 2, 0): 130.0,  # GPa, intermediate
     (3, 1, 1): 128.0,  # GPa
 }
@@ -70,24 +69,25 @@ ZENER_ANISOTROPY = 3.21
 # Quality Level Enum
 # =============================================================================
 
+
 class WHQualityLevel(Enum):
-    """
-    Williamson-Hall analysis quality classification.
+    """Williamson-Hall analysis quality classification.
     Williamson-Hall 分析品質分類。
     """
-    EXCELLENT = "excellent"     # R² > 0.95
-    ACCEPTABLE = "acceptable"   # 0.85 ≤ R² ≤ 0.95
-    POOR = "poor"               # R² < 0.85
+
+    EXCELLENT = "excellent"  # R² > 0.95
+    ACCEPTABLE = "acceptable"  # 0.85 ≤ R² ≤ 0.95
+    POOR = "poor"  # R² < 0.85
 
 
 # =============================================================================
 # Result Dataclass
 # =============================================================================
 
+
 @dataclass
 class WHResult:
-    """
-    Result from Williamson-Hall analysis.
+    """Result from Williamson-Hall analysis.
     Williamson-Hall 分析結果。
 
     Attributes:
@@ -106,7 +106,9 @@ class WHResult:
         peak_hkls: List of hkl indices. hkl 索引列表
         warning_message: Warning message. 警告訊息
         anisotropy_note: Anisotropy diagnostic. 異向性診斷
+
     """
+
     crystallite_size_nm: float
     microstrain: float
     r_squared: float
@@ -135,9 +137,9 @@ class WHResult:
 # Williamson-Hall Analyzer
 # =============================================================================
 
+
 class WilliamsonHallAnalyzer:
-    """
-    Williamson-Hall analysis for separating size and strain broadening.
+    """Williamson-Hall analysis for separating size and strain broadening.
     用於分離尺寸與應變展寬的 Williamson-Hall 分析。
 
     W-H Equation:
@@ -164,12 +166,11 @@ class WilliamsonHallAnalyzer:
         >>> analyzer = WilliamsonHallAnalyzer()
         >>> result = analyzer.analyze(two_theta, fwhm_sample)
         >>> print(f"D = {result.crystallite_size_nm:.1f} nm")
+
     """
 
     def __init__(
-        self,
-        wavelength: float = CU_KA1,
-        k_factor: float = WH_K_FACTOR
+        self, wavelength: float = CU_KA1, k_factor: float = WH_K_FACTOR
     ) -> None:
         self.wavelength = wavelength
         self.k_factor = k_factor
@@ -179,10 +180,9 @@ class WilliamsonHallAnalyzer:
         two_theta: np.ndarray,
         fwhm_sample: np.ndarray,
         hkl_list: Optional[List[Tuple[int, int, int]]] = None,
-        fwhm_in_radians: bool = False
+        fwhm_in_radians: bool = False,
     ) -> WHResult:
-        """
-        Perform Williamson-Hall analysis.
+        """Perform Williamson-Hall analysis.
         執行 Williamson-Hall 分析。
 
         Args:
@@ -193,6 +193,7 @@ class WilliamsonHallAnalyzer:
 
         Returns:
             WHResult with size, strain, and quality metrics.
+
         """
         two_theta = np.asarray(two_theta)
         fwhm_sample = np.asarray(fwhm_sample)
@@ -221,17 +222,21 @@ class WilliamsonHallAnalyzer:
         reg_result = linregress(x_data, y_data)
         slope = reg_result.slope
         intercept = reg_result.intercept
-        r_squared = reg_result.rvalue ** 2
+        r_squared = reg_result.rvalue**2
         slope_stderr = reg_result.stderr
-        intercept_stderr = getattr(reg_result, 'intercept_stderr', 0.0)
+        intercept_stderr = getattr(reg_result, "intercept_stderr", 0.0)
 
         # Calculate physical quantities: D = Kλ / intercept, ε = slope / 4
         if intercept > 0:
             size_angstrom = self.k_factor * self.wavelength / intercept
             size_nm = size_angstrom / 10.0
-            size_error_nm = (size_angstrom / 10.0) * (intercept_stderr / intercept) if intercept_stderr > 0 else 0.0
+            size_error_nm = (
+                (size_angstrom / 10.0) * (intercept_stderr / intercept)
+                if intercept_stderr > 0
+                else 0.0
+            )
         else:
-            size_nm = float('inf')
+            size_nm = float("inf")
             size_error_nm = 0.0
 
         microstrain = slope / 4.0
@@ -258,17 +263,16 @@ class WilliamsonHallAnalyzer:
             n_peaks=n_peaks,
             peak_hkls=hkl_list or [],
             warning_message=warning,
-            anisotropy_note=anisotropy_note
+            anisotropy_note=anisotropy_note,
         )
 
     def analyze_with_correction(
         self,
         two_theta: np.ndarray,
         fwhm_observed: np.ndarray,
-        fwhm_instrumental: np.ndarray
+        fwhm_instrumental: np.ndarray,
     ) -> WHResult:
-        """
-        Perform W-H analysis with instrumental broadening correction.
+        """Perform W-H analysis with instrumental broadening correction.
         執行含儀器寬化校正的 W-H 分析。
 
         Uses geometric approximation: β_sample = β_obs - β²_inst / β_obs
@@ -283,17 +287,19 @@ class WilliamsonHallAnalyzer:
         self,
         two_theta: np.ndarray,
         fwhm_sample: np.ndarray,
-        fwhm_in_radians: bool = False
+        fwhm_in_radians: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Get data for W-H plot.
+        """Get data for W-H plot.
         取得 W-H 圖資料。
 
         Returns:
             Tuple of (x_data, y_data, x_fit_line, y_fit_line).
+
         """
         theta_rad = np.radians(np.asarray(two_theta) / 2.0)
-        beta_rad = fwhm_sample if fwhm_in_radians else np.radians(np.asarray(fwhm_sample))
+        beta_rad = (
+            fwhm_sample if fwhm_in_radians else np.radians(np.asarray(fwhm_sample))
+        )
 
         x_data = np.sin(theta_rad)
         y_data = beta_rad * np.cos(theta_rad)
@@ -317,9 +323,7 @@ class WilliamsonHallAnalyzer:
             )
 
     def _generate_anisotropy_note(
-        self,
-        r_squared: float,
-        hkl_list: Optional[List[Tuple[int, int, int]]]
+        self, r_squared: float, hkl_list: Optional[List[Tuple[int, int, int]]]
     ) -> str:
         """Generate anisotropy diagnostic note."""
         if r_squared > R2_ACCEPTABLE:
@@ -329,18 +333,20 @@ class WilliamsonHallAnalyzer:
             "【Elastic Anisotropy Diagnostic 彈性異向性診斷】",
             f"Cu Zener ratio A = {ZENER_ANISOTROPY} (extreme anisotropy)",
             "",
-            "Direction-dependent Young's modulus 各方向楊氏模數:"
+            "Direction-dependent Young's modulus 各方向楊氏模數:",
         ]
 
         for hkl, E in sorted(MODULUS_MAP.items(), key=lambda x: -x[1]):
             hkl_str = f"({hkl[0]}{hkl[1]}{hkl[2]})"
             lines.append(f"  E{hkl_str} = {E:.0f} GPa")
 
-        lines.extend([
-            "",
-            f"E(111)/E(200) = {MODULUS_MAP[(1,1,1)]/MODULUS_MAP[(2,0,0)]:.1f}",
-            "  → (200) strain broadening may be overestimated ~3x"
-        ])
+        lines.extend(
+            [
+                "",
+                f"E(111)/E(200) = {MODULUS_MAP[(1,1,1)]/MODULUS_MAP[(2,0,0)]:.1f}",
+                "  → (200) strain broadening may be overestimated ~3x",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -355,7 +361,7 @@ class WilliamsonHallAnalyzer:
             quality_level=WHQualityLevel.POOR,
             is_reliable=False,
             n_peaks=n_peaks,
-            warning_message=message
+            warning_message=message,
         )
 
 
@@ -363,13 +369,13 @@ class WilliamsonHallAnalyzer:
 # Convenience Functions
 # =============================================================================
 
+
 def analyze_williamson_hall(
     two_theta: np.ndarray,
     fwhm_sample: np.ndarray,
-    hkl_list: Optional[List[Tuple[int, int, int]]] = None
+    hkl_list: Optional[List[Tuple[int, int, int]]] = None,
 ) -> WHResult:
-    """
-    Convenience function for Williamson-Hall analysis.
+    """Convenience function for Williamson-Hall analysis.
     Williamson-Hall 分析便利函式。
 
     Example:
@@ -377,18 +383,19 @@ def analyze_williamson_hall(
         >>> fwhm = np.array([0.224, 0.251, 0.282, 0.305])
         >>> result = analyze_williamson_hall(two_theta, fwhm)
         >>> print(f"D = {result.crystallite_size_nm:.1f} nm")
+
     """
     analyzer = WilliamsonHallAnalyzer()
     return analyzer.analyze(two_theta, fwhm_sample, hkl_list)
 
 
 def get_modulus_for_hkl(hkl: Tuple[int, int, int]) -> float:
-    """
-    Get Young's modulus for a given hkl direction.
+    """Get Young's modulus for a given hkl direction.
     取得指定 hkl 方向的楊氏模數。
 
     Returns:
         Young's modulus in GPa, or 120 GPa (average) if not found.
+
     """
     return MODULUS_MAP.get(hkl, 120.0)
 

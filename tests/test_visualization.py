@@ -10,7 +10,7 @@ correct constants and rigorous fitting methods.
 import pytest
 import numpy as np
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from xrd_analysis.visualization.style import apply_xrd_analysis_style, PEAK_COLORS
 from xrd_analysis.visualization.wh_plots import plot_williamson_hall
@@ -85,38 +85,23 @@ class TestTexturePlotting:
 
 class TestFittingDiagnosis:
     """Tests for fitting diagnosis logic (without actual plotting)."""
-    
-    @patch('xrd_analysis.visualization.generate_fitting_diagnosis.LMOptimizer')
-    def test_fitting_logic_structure(self, MockOptimizer):
-        """Verify fit_peak_with_diagnosis returns correct dictionary structure."""
-        # Setup mock optimizer result
-        mock_result = MagicMock()
-        mock_result.success = True
-        mock_result.params.center = 43.3
-        mock_result.params.amplitude = 1000
-        mock_result.params.fwhm = 0.2
-        mock_result.params.eta = 0.5
-        mock_result.r_squared = 0.99
-        
-        MockOptimizer.return_value.fit_peak.return_value = mock_result
-        MockOptimizer.return_value.fit_doublet.return_value = mock_result # For doublet call if applicable
 
-        # Create dummy data
-        two_theta = np.linspace(40, 46, 100)
-        intensity = 1000 * np.exp(-(two_theta - 43.3)**2 / (2 * 0.1**2))
-        
-        # Test function
+    def test_fitting_logic_structure(self):
+        """Verify fit_peak_with_diagnosis returns correct dictionary structure."""
+        # Create synthetic Gaussian peak data
+        two_theta = np.linspace(40, 46, 200)
+        intensity = 1000 * np.exp(-(two_theta - 43.3)**2 / (2 * 0.1**2)) + 50
+
+        # Test function — fitting should succeed on clean synthetic data
         result = fit_peak_with_diagnosis(two_theta, intensity, 43.3, use_doublet=False)
-        
-        # Verify keys
+
+        # Verify required keys are present
         expected_keys = {
-            'success', 'center', 'amplitude', 'fwhm', 'eta', 'r_squared', 
+            'success', 'center', 'amplitude', 'fwhm', 'eta', 'r_squared',
             'theta_range', 'int_range', 'fitted_curve', 'method'
         }
         assert expected_keys.issubset(result.keys())
-        # Note: success might be False because we mocked the optimizer but maybe not the data alignment perfectly,
-        # or because fit_peak_with_diagnosis does its own data extraction.
-        # But we primarily check if it runs and returns the dict.
+
         
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

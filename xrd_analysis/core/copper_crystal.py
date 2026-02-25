@@ -1,5 +1,4 @@
-"""
-Copper Crystal Physical Constants Module 銅晶體物理常數模組
+"""Copper Crystal Physical Constants Module 銅晶體物理常數模組
 ============================================================
 
 Physical parameters for FCC copper crystallography.
@@ -12,28 +11,29 @@ References 出處:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Tuple, Optional, List
 from math import gcd, sqrt
-
+from typing import Dict, List, Optional, Tuple
 
 # =============================================================================
 # FCC Copper Crystal Structure Constants (298K Standard)
 # =============================================================================
 
+
 @dataclass(frozen=True)
 class CopperCrystal:
-    """
-    Copper FCC crystal structure constants at 298K.
-    
+    """Copper FCC crystal structure constants at 298K.
+
     Reference: JCPDS 04-0836
-    
+
     Attributes:
         space_group: Hermann-Mauguin symbol (Fm-3m)
         space_group_number: International Tables number (225)
         lattice_constant: Standard lattice parameter in Ångströms
         density: Density in g/cm³
         packing_factor: Atomic packing factor (FCC theoretical limit)
+
     """
+
     space_group: str = "Fm-3m"
     space_group_number: int = 225
     lattice_constant: float = 3.6150  # Å (298K standard)
@@ -69,39 +69,39 @@ CU_CRYSTAL = CopperCrystal()
 
 CU_JCPDS_EXTENDED: Dict[Tuple[int, int, int], Dict] = {
     (1, 1, 1): {
-        "two_theta": 43.316,      # Calculated from a=3.6150, λ=1.540562
-        "d_spacing": 2.087,       # Å, d = a₀/√3
-        "intensity": 100,         # Relative intensity (I/I₀)
-        "multiplicity": 8,        # Number of equivalent planes {111}
-        "description": "Strongest peak, most commonly observed"
+        "two_theta": 43.316,  # Calculated from a=3.6150, λ=1.540562
+        "d_spacing": 2.087,  # Å, d = a₀/√3
+        "intensity": 100,  # Relative intensity (I/I₀)
+        "multiplicity": 8,  # Number of equivalent planes {111}
+        "description": "Strongest peak, most commonly observed",
     },
     (2, 0, 0): {
-        "two_theta": 50.448,      # Calculated
-        "d_spacing": 1.808,       # Å, d = a₀/2
+        "two_theta": 50.448,  # Calculated
+        "d_spacing": 1.808,  # Å, d = a₀/2
         "intensity": 46,
-        "multiplicity": 6,        # {200}
-        "description": "Second strongest peak"
+        "multiplicity": 6,  # {200}
+        "description": "Second strongest peak",
     },
     (2, 2, 0): {
-        "two_theta": 74.124,      # Calculated
-        "d_spacing": 1.278,       # Å, d = a₀/√8
+        "two_theta": 74.124,  # Calculated
+        "d_spacing": 1.278,  # Å, d = a₀/√8
         "intensity": 20,
-        "multiplicity": 12,       # {220}
-        "description": "Third major peak"
+        "multiplicity": 12,  # {220}
+        "description": "Third major peak",
     },
     (3, 1, 1): {
-        "two_theta": 89.935,      # Calculated
-        "d_spacing": 1.090,       # Å
+        "two_theta": 89.935,  # Calculated
+        "d_spacing": 1.090,  # Å
         "intensity": 17,
-        "multiplicity": 24,       # {311}
-        "description": "Fourth peak (often weak in ED-Cu)"
+        "multiplicity": 24,  # {311}
+        "description": "Fourth peak (often weak in ED-Cu)",
     },
     (2, 2, 2): {
-        "two_theta": 95.144,      # Calculated
-        "d_spacing": 1.044,       # Å, d = a₀/√12
+        "two_theta": 95.144,  # Calculated
+        "d_spacing": 1.044,  # Å, d = a₀/√12
         "intensity": 5,
-        "multiplicity": 8,        # {222}
-        "description": "Fifth peak (may be absent in textured films)"
+        "multiplicity": 8,  # {222}
+        "description": "Fifth peak (may be absent in textured films)",
     },
 }
 
@@ -109,27 +109,26 @@ CU_JCPDS_EXTENDED: Dict[Tuple[int, int, int], Dict] = {
 def get_standard_peaks(
     hkl_list: Optional[List[Tuple[int, int, int]]] = None
 ) -> Dict[Tuple[int, int, int], float]:
-    """
-    Get standard peak positions for specified (hkl) indices.
+    """Get standard peak positions for specified (hkl) indices.
     取得指定 (hkl) 的標準峰位。
-    
+
     Args:
-        hkl_list: List of (h, k, l) tuples. 
+        hkl_list: List of (h, k, l) tuples.
                   If None, returns the three most commonly used peaks:
                   (1,1,1), (2,0,0), (2,2,0)
-                  
+
     Returns:
         Dictionary mapping (hkl) -> 2θ position (degrees)
-        
+
     Data Source 資料來源:
         JCPDS Card 04-0836 (Copper, FCC)
         Joint Committee on Powder Diffraction Standards
-        
+
         Peak positions calculated from:
         - Lattice constant a = 3.6150 Å (JCPDS 04-0836)
         - Cu Kα₁ wavelength λ = 1.540562 Å (Bearden 1967)
         - Bragg's Law: 2d sin θ = nλ
-        
+
     Example:
         >>> peaks = get_standard_peaks()
         >>> peaks[(1, 1, 1)]
@@ -137,37 +136,37 @@ def get_standard_peaks(
         >>> peaks = get_standard_peaks([(1,1,1), (3,1,1)])
         >>> len(peaks)
         2
+
     """
     if hkl_list is None:
         # Default: three most commonly used peaks for XRD analysis
         hkl_list = [(1, 1, 1), (2, 0, 0), (2, 2, 0)]
-    
+
     result = {}
     for hkl in hkl_list:
         if hkl in CU_JCPDS_EXTENDED:
-            result[hkl] = CU_JCPDS_EXTENDED[hkl]['two_theta']
+            result[hkl] = CU_JCPDS_EXTENDED[hkl]["two_theta"]
         else:
             # If requested hkl not in standard data, skip it
             # Could raise warning or error, but silent skip is safer
             pass
-    
+
     return result
 
 
 def is_fcc_allowed(h: int, k: int, l: int) -> bool:
-    """
-    Check if (hkl) reflection is allowed by FCC extinction rules.
-    
+    """Check if (hkl) reflection is allowed by FCC extinction rules.
+
     FCC Selection Rule:
     - Diffraction occurs only when h, k, l are ALL ODD or ALL EVEN
     - Mixed indices are forbidden (systematically absent)
-    
+
     Args:
         h, k, l: Miller indices
-        
+
     Returns:
         True if reflection is allowed, False if forbidden
-        
+
     Examples:
         >>> is_fcc_allowed(1, 1, 1)  # All odd
         True
@@ -175,6 +174,7 @@ def is_fcc_allowed(h: int, k: int, l: int) -> bool:
         True
         >>> is_fcc_allowed(1, 0, 0)  # Mixed - forbidden
         False
+
     """
     parities = [x % 2 for x in (h, k, l)]
     return len(set(parities)) == 1  # All same parity
@@ -184,49 +184,49 @@ def is_fcc_allowed(h: int, k: int, l: int) -> bool:
 # Scherrer K Constants for Cubic Habit Grains
 # =============================================================================
 
+
 @dataclass(frozen=True)
 class ScherrerCubicK:
-    """
-    Scherrer constant K values for cubic habit crystallites.
+    """Scherrer constant K values for cubic habit crystallites.
     立方晶習晶粒的 Scherrer 常數 K 值。
-    
+
     ═══════════════════════════════════════════════════════════════════════════
     文獻出處 Reference (完整引用)
     ═══════════════════════════════════════════════════════════════════════════
-    
+
     Langford, J. I., & Wilson, A. J. C. (1978).
     "Scherrer after Sixty Years: A Survey and Some New Results in the
     Determination of Crystallite Size."
     Journal of Applied Crystallography, Volume 11, Issue 2, Pages 102-113.
     DOI: 10.1107/S0021889878012844
-    
+
     數據來源 Data Source:
         Table 2, Page 104 — $K_w$ (FWHM) 欄位
         Table 2, Page 104 — $K_w$ (FWHM) column
-    
+
     ═══════════════════════════════════════════════════════════════════════════
     重要說明 IMPORTANT
     ═══════════════════════════════════════════════════════════════════════════
-    
+
     1. 這些是 $K_w$ 值，適用於 FWHM（半高寬）定義
        These are $K_w$ values for FWHM definition
-       
+
     2. 若使用積分寬度，請參考原論文 Table 2 的 $K_β$ 欄位
        For integral breadth, see $K_β$ column in original Table 2
-       
+
     3. Cu 薄膜/鍍層等實務案例常見柱狀晶粒與立方晶習，非球形晶粒
        Cu thin-film/plated cases often show columnar grains with cubic habit
-    
+
     ═══════════════════════════════════════════════════════════════════════════
     物理意義 Physical Meaning
     ═══════════════════════════════════════════════════════════════════════════
-    
+
     K 值關聯量測的 FWHM 與晶粒尺寸：D = Kλ / (β cos θ)
     K relates measured FWHM to crystallite dimension: D = Kλ / (β cos θ)
-    
+
     對於立方晶粒，投影形狀隨觀察方向變化：
     For cubic grains, projected shape varies with viewing direction:
-    
+
     | 方向 Direction | 投影 Projection | $K_w$ | 來源 Source |
     |----------------|-----------------|-------|-------------|
     | (111) 體對角線 | 六邊形 Hexagon | 0.8551 | L&W Table 2 |
@@ -235,16 +235,17 @@ class ScherrerCubicK:
     | (311) 複雜方向 | 複雜形 Complex | 0.9082 | L&W Table 2 |
     | 球形 Sphere | 圓形 Circle | 0.8290 | L&W Table 1 |
     """
+
     # 立方晶習方向相依 K 值 / Direction-dependent K for cubic habit
-    K_111: float = 0.855     # 體對角線 / Body diagonal (L&W 1978 Table 2: 0.8551)
-    K_200: float = 0.886     # 立方體邊 / Cube edge (L&W 1978 Table 2: 0.8859)
-    K_220: float = 0.834     # 面對角線 / Face diagonal (L&W 1978 Table 2: 0.8340)
-    K_311: float = 0.908     # 複雜方向 / Complex (L&W 1978 Table 2: 0.9082)
-    K_222: float = 0.855     # 與 (111) 平行 / Parallel to (111)
-    
+    K_111: float = 0.855  # 體對角線 / Body diagonal (L&W 1978 Table 2: 0.8551)
+    K_200: float = 0.886  # 立方體邊 / Cube edge (L&W 1978 Table 2: 0.8859)
+    K_220: float = 0.834  # 面對角線 / Face diagonal (L&W 1978 Table 2: 0.8340)
+    K_311: float = 0.908  # 複雜方向 / Complex (L&W 1978 Table 2: 0.9082)
+    K_222: float = 0.855  # 與 (111) 平行 / Parallel to (111)
+
     # 參考值 / Reference values
-    K_SPHERICAL: float = 0.829    # 球形晶粒 / Spherical (L&W 1978 Table 1: 0.8290)
-    K_CUBIC_GENERAL: float = 0.94 # 立方體平均 / Cubic average (Warren 1969)
+    K_SPHERICAL: float = 0.829  # 球形晶粒 / Spherical (L&W 1978 Table 1: 0.8290)
+    K_CUBIC_GENERAL: float = 0.94  # 立方體平均 / Cubic average (Warren 1969)
 
 
 # Default instance
@@ -252,32 +253,33 @@ SCHERRER_CUBIC_K = ScherrerCubicK()
 
 
 def get_k_for_hkl(
-    h: int, k: int, l: int, 
+    h: int,
+    k: int,
+    l: int,
     use_cubic_habit: bool = True,
-    fallback_value: float = 0.829  # L&W 1978 spherical standard
+    fallback_value: float = 0.829,  # L&W 1978 spherical standard
 ) -> float:
-    """
-    Get appropriate Scherrer K value for given (hkl) direction.
-    
+    """Get appropriate Scherrer K value for given (hkl) direction.
+
     For copper systems with cubic-habit grains, the Scherrer
-    constant varies with crystallographic direction due to the 
+    constant varies with crystallographic direction due to the
     non-spherical grain shape.
-    
+
     Args:
         h, k, l: Miller indices of the diffraction peak
         use_cubic_habit: If True, use direction-dependent K for cubic grains
                         If False, return L&W 1978 spherical K=0.829
         fallback_value: K value for unmapped directions
-        
+
     Returns:
         Appropriate Scherrer K value (dimensionless)
-        
+
     Physical Rationale (Langford & Wilson 1978):
         For a cube-shaped crystallite, using FWHM ($K_w$):
         - (111): K = 0.855
         - (200): K = 0.886
         - (220): K = 0.834 (from 110 data)
-        
+
     Examples:
         >>> get_k_for_hkl(1, 1, 1)  # Cubic habit
         0.855
@@ -285,29 +287,30 @@ def get_k_for_hkl(
         0.886
         >>> get_k_for_hkl(1, 1, 1, use_cubic_habit=False)  # Spherical default (0.829)
         0.829
+
     """
     if not use_cubic_habit:
         return 0.829  # L&W 1978 Spherical Standard
-    
+
     # Normalize to simplest form for matching
     g = gcd(gcd(abs(h), abs(k)), abs(l)) if l != 0 else gcd(abs(h), abs(k))
     if g == 0:
         return fallback_value
     h_n, k_n, l_n = abs(h) // g, abs(k) // g, abs(l) // g
-    
+
     # Sort for canonical representation
     hkl_sorted = tuple(sorted([h_n, k_n, l_n]))
-    
+
     # K value mapping for Scherrer size calculation (FWHM)
     # Reference: Langford & Wilson 1978, Table 2 ($K_w$)
     K_MAP = {
-        (1, 1, 1): 0.855,   # Body diagonal
-        (0, 0, 1): 0.886,   # (100), (200) - cube edge
-        (0, 1, 1): 0.834,   # (110), (220) - face diagonal
-        (1, 1, 3): 0.908,   # (311)
-        (1, 2, 2): 0.855,   # (222) parallel to (111)
+        (1, 1, 1): 0.855,  # Body diagonal
+        (0, 0, 1): 0.886,  # (100), (200) - cube edge
+        (0, 1, 1): 0.834,  # (110), (220) - face diagonal
+        (1, 1, 3): 0.908,  # (311)
+        (1, 2, 2): 0.855,  # (222) parallel to (111)
     }
-    
+
     return K_MAP.get(hkl_sorted, fallback_value)
 
 
@@ -315,42 +318,43 @@ def get_k_for_hkl(
 # Elastic Anisotropy Parameters (for Williamson-Hall Analysis)
 # =============================================================================
 
+
 @dataclass(frozen=True)
 class CopperElasticModuli:
-    """
-    Direction-dependent Young's modulus for copper single crystal.
+    """Direction-dependent Young's modulus for copper single crystal.
     銅單晶方向相依楽氏模量。
-    
+
     CRITICAL for Williamson-Hall Analysis 重要:
     Copper is elastically anisotropic. The elastic modulus varies by
     nearly 3x between the softest <100> and hardest <111> directions.
     銅具彈性各向異性，模量在最軟 <100> 與最硬 <111> 方向之間差異近 3 倍。
-    
+
     Reference 出處:
     - Ledbetter & Naimon (1974), "Elastic Properties of Metals and Alloys.
       II. Copper", J. Phys. Chem. Ref. Data, 3(4), 897-935.
     - Original data from Simmons & Wang (1971) handbook.
-    
+
     Stiffness constants 勁度常數 (Ledbetter & Naimon 1974, recommended values):
         C11 = 168.4 GPa, C12 = 121.4 GPa, C44 = 75.4 GPa
-    
+
     Zener Anisotropy Ratio 各向異性比:
         A = 2C₄₄/(C₁₁-C₁₂) = 2×75.4 / (168.4-121.4) = 3.21
-    
+
     Directional E calculation 方向模量計算:
         1/E_hkl = S11 - 2(S11 - S12 - S44/2)Γ
         where Γ = (h²k² + k²l² + l²h²) / (h² + k² + l²)²
-    
+
     Calculated values 計算值:
         E_111 = 191.1 GPa (Γ = 1/3)
         E_100 = 66.7 GPa  (Γ = 0)
         E_110 = 130.3 GPa (Γ = 1/4)
     """
+
     # Directional Young's moduli 方向模量
-    E_111: float = 191.1    # GPa, hardest direction 最硬方向
-    E_100: float = 66.7     # GPa, softest direction 最軟方向
-    E_110: float = 130.3    # GPa, intermediate 中間
-    
+    E_111: float = 191.1  # GPa, hardest direction 最硬方向
+    E_100: float = 66.7  # GPa, softest direction 最軟方向
+    E_110: float = 130.3  # GPa, intermediate 中間
+
     # Polycrystalline average (Voigt-Reuss-Hill) 多晶平均 (VRH)
     # Calculation: G_VRH = (G_Voigt + G_Reuss)/2 = 47.3 GPa
     #              E = 9BG / (3B + G) where B = (C11 + 2C12)/3 = 137.1 GPa
@@ -362,20 +366,20 @@ CU_ELASTIC = CopperElasticModuli()
 
 
 def get_youngs_modulus(h: int, k: int, l: int) -> float:
-    """
-    Get direction-dependent Young's modulus for copper.
-    
+    """Get direction-dependent Young's modulus for copper.
+
     Required for proper Williamson-Hall analysis of textured films.
-    
+
     Args:
         h, k, l: Miller indices of the diffraction peak
-        
+
     Returns:
         Young's modulus in GPa
-        
+
     Note:
         For directions not explicitly mapped, returns isotropic average.
         More precise calculations require the full elastic tensor.
+
     """
     # Normalize
     g = gcd(gcd(abs(h), abs(k)), abs(l)) if l != 0 else gcd(abs(h), abs(k))
@@ -383,15 +387,15 @@ def get_youngs_modulus(h: int, k: int, l: int) -> float:
         return CU_ELASTIC.E_isotropic
     h_n, k_n, l_n = abs(h) // g, abs(k) // g, abs(l) // g
     hkl_sorted = tuple(sorted([h_n, k_n, l_n]))
-    
+
     E_MAP = {
-        (1, 1, 1): 191.0,   # <111> - hardest
-        (0, 0, 1): 66.0,    # <100> - softest
-        (0, 1, 1): 130.0,   # <110> - intermediate
-        (1, 1, 3): 130.0,   # <311> - approximation
-        (1, 2, 2): 191.0,   # <222> parallel to <111>
+        (1, 1, 1): 191.0,  # <111> - hardest
+        (0, 0, 1): 66.0,  # <100> - softest
+        (0, 1, 1): 130.0,  # <110> - intermediate
+        (1, 1, 3): 130.0,  # <311> - approximation
+        (1, 2, 2): 191.0,  # <222> parallel to <111>
     }
-    
+
     return E_MAP.get(hkl_sorted, CU_ELASTIC.E_isotropic)
 
 
@@ -401,13 +405,14 @@ def get_youngs_modulus(h: int, k: int, l: int) -> float:
 
 # Standard lattice constant reference window for Cu datasets
 ELECTROPLATED_A_STANDARD = 3.6150  # Å (reference)
-ELECTROPLATED_A_MIN = 3.6150       # Å (pure, strain-free)
-ELECTROPLATED_A_MAX = 3.6200       # Å (with impurity expansion)
+ELECTROPLATED_A_MIN = 3.6150  # Å (pure, strain-free)
+ELECTROPLATED_A_MAX = 3.6200  # Å (with impurity expansion)
 
 
 @dataclass
 class LatticeValidationResult:
     """Result of lattice constant validation."""
+
     measured_value: float
     is_normal: bool
     deviation_percent: float
@@ -416,30 +421,30 @@ class LatticeValidationResult:
 
 
 def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
-    """
-    Validate measured lattice constant against expected range.
-    
+    """Validate measured lattice constant against expected range.
+
     Processed Cu samples can exhibit lattice expansion due to:
     1. Impurity incorporation (S, Cl, C from additives)
     2. Vacancy accumulation
     3. Internal lattice strain
-    
+
     Args:
         measured_a: Measured lattice constant in Ångströms
-        
+
     Returns:
         LatticeValidationResult with validation status and explanation
+
     """
     deviation = measured_a - ELECTROPLATED_A_STANDARD
     deviation_percent = (deviation / ELECTROPLATED_A_STANDARD) * 100
-    
+
     if abs(deviation_percent) < 0.05:
         return LatticeValidationResult(
             measured_value=measured_a,
             is_normal=True,
             deviation_percent=deviation_percent,
             warning_level="none",
-            explanation="Lattice constant within normal range for pure copper."
+            explanation="Lattice constant within normal range for pure copper.",
         )
     elif deviation_percent > 0 and deviation_percent < 0.12:
         return LatticeValidationResult(
@@ -451,7 +456,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
                 f"Slight lattice expansion (+{deviation_percent:.3f}%). "
                 "Common in freshly deposited copper due to impurity incorporation "
                 "(S, Cl from additives) or vacancy accumulation."
-            )
+            ),
         )
     elif deviation_percent >= 0.12 and deviation_percent < 0.3:
         return LatticeValidationResult(
@@ -464,7 +469,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
                 "Indicates high impurity content or strong lattice distortion. "
                 "Sample may be in 'as-deposited' state before self-annealing. "
                 "Consider recording storage time."
-            )
+            ),
         )
     elif deviation_percent < 0 and deviation_percent >= -0.3:
         return LatticeValidationResult(
@@ -476,7 +481,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
                 f"Unusual lattice contraction ({deviation_percent:.3f}%). "
                 "May indicate tensile lattice strain, measurement error, "
                 "or sample displacement in XRD geometry. Verify instrument alignment."
-            )
+            ),
         )
     elif deviation_percent < -0.3:
         return LatticeValidationResult(
@@ -488,7 +493,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
                 f"Extreme lattice contraction ({deviation_percent:.3f}%). "
                 "Possible causes: severe tensile lattice strain, instrument miscalibration, "
                 "sample misalignment, or measurement artifact. Re-examine setup."
-            )
+            ),
         )
     else:
         return LatticeValidationResult(
@@ -501,29 +506,28 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
                 "Possible causes: severe contamination, phase impurity, "
                 "or measurement artifact. Re-examine sample purity and "
                 "instrument calibration."
-            )
+            ),
         )
 
 
 def explain_lattice_deviation(
-    measured_a: float,
-    sample_age_hours: Optional[float] = None
+    measured_a: float, sample_age_hours: Optional[float] = None
 ) -> str:
-    """
-    Generate detailed explanation for observed lattice constant deviation.
-    
+    """Generate detailed explanation for observed lattice constant deviation.
+
     This function provides physical interpretation when the measured
     lattice constant differs from the standard value (3.6150 Å).
-    
+
     Args:
         measured_a: Measured lattice constant in Ångströms
         sample_age_hours: Hours since electrodeposition (for self-annealing context)
-        
+
     Returns:
         Human-readable explanation string
+
     """
     result = validate_lattice_constant(measured_a)
-    
+
     explanation_parts = [
         f"Measured Lattice Constant: {measured_a:.4f} Å",
         f"Reference Value: {ELECTROPLATED_A_STANDARD:.4f} Å",
@@ -533,14 +537,16 @@ def explain_lattice_deviation(
         "-" * 40,
         result.explanation,
     ]
-    
+
     # Add self-annealing context if sample age is provided
     if sample_age_hours is not None:
-        explanation_parts.extend([
-            "",
-            "Self-Annealing Context:",
-            "-" * 40,
-        ])
+        explanation_parts.extend(
+            [
+                "",
+                "Self-Annealing Context:",
+                "-" * 40,
+            ]
+        )
         if sample_age_hours < 1:
             explanation_parts.append(
                 "Sample is in 'as-deposited' state. Expect fine grains (50-100 nm) "
@@ -557,25 +563,28 @@ def explain_lattice_deviation(
                 "significant. Grains may have grown to micron scale. "
                 "Lattice should approach standard value."
             )
-    
+
     # Add possible causes for expansion
     if result.deviation_percent > 0.05:
-        explanation_parts.extend([
-            "",
-            "Possible Causes of Lattice Expansion:",
-            "1. Sulfur incorporation from SPS accelerator",
-            "2. Chloride incorporation from suppressor system",
-            "3. Carbon/organic residue from leveler molecules",
-            "4. High vacancy concentration from rapid deposition",
-            "5. Residual compressive strain (apparent expansion)",
-        ])
-    
+        explanation_parts.extend(
+            [
+                "",
+                "Possible Causes of Lattice Expansion:",
+                "1. Sulfur incorporation from SPS accelerator",
+                "2. Chloride incorporation from suppressor system",
+                "3. Carbon/organic residue from leveler molecules",
+                "4. High vacancy concentration from rapid deposition",
+                "5. Residual compressive strain (apparent expansion)",
+            ]
+        )
+
     return "\n".join(explanation_parts)
 
 
 # =============================================================================
 # Convenience Functions
 # =============================================================================
+
 
 def get_jcpds_peak(hkl: Tuple[int, int, int]) -> Optional[Dict]:
     """Get JCPDS data for a specific (hkl) reflection."""
@@ -588,68 +597,64 @@ def get_all_peaks() -> List[Tuple[int, int, int]]:
 
 
 def calculate_d_spacing(h: int, k: int, l: int, a: float = 3.6150) -> float:
-    """
-    Calculate d-spacing for cubic crystal.
-    
+    """Calculate d-spacing for cubic crystal.
+
     d = a / √(h² + k² + l²)
     """
     return a / sqrt(h**2 + k**2 + l**2)
 
 
 def calculate_youngs_modulus_from_stiffness(
-    h: int, k: int, l: int,
-    C11: float = 168.4,
-    C12: float = 121.4,
-    C44: float = 75.4
+    h: int, k: int, l: int, C11: float = 168.4, C12: float = 121.4, C44: float = 75.4
 ) -> float:
-    """
-    Calculate direction-dependent Young's modulus from elastic stiffness constants.
+    """Calculate direction-dependent Young's modulus from elastic stiffness constants.
     從彈性勁度常數計算方向相依楊氏模數。
-    
+
     Formula (Ledbetter & Naimon 1974):
         1/E_hkl = S11 - 2(S11 - S12 - S44/2) × Γ
         where Γ = (h²k² + k²l² + l²h²) / (h² + k² + l²)²
-    
+
     Compliance constants from stiffness:
         S11 = (C11 + C12) / [(C11 - C12)(C11 + 2C12)]
         S12 = -C12 / [(C11 - C12)(C11 + 2C12)]
         S44 = 1 / C44
-    
+
     Args:
         h, k, l: Miller indices
         C11, C12, C44: Elastic stiffness constants (GPa)
             Default values from Ledbetter & Naimon (1974), Table II, p.898
-        
+
     Returns:
         Young's modulus in GPa
-        
+
     Reference:
         Ledbetter, H. M., & Naimon, E. R. (1974).
         Elastic Properties of Metals and Alloys. II. Copper.
         Journal of Physical and Chemical Reference Data, 3(4), 897-935.
-        
+
         Calculation verified by unit tests in tests/test_copper_crystal_advanced.py
-        
+
     Examples:
         >>> calculate_youngs_modulus_from_stiffness(1, 0, 0)  # [100] direction
         66.7
         >>> calculate_youngs_modulus_from_stiffness(1, 1, 1)  # [111] direction
         191.1
+
     """
     # Calculate compliance constants from stiffness
-    denominator = (C11 - C12) * (C11 + 2*C12)
+    denominator = (C11 - C12) * (C11 + 2 * C12)
     S11 = (C11 + C12) / denominator
     S12 = -C12 / denominator
     S44 = 1 / C44
-    
+
     # Calculate Γ factor
     h2, k2, l2 = h**2, k**2, l**2
-    numerator_gamma = h2*k2 + k2*l2 + l2*h2
-    denominator_gamma = (h2 + k2 + l2)**2
+    numerator_gamma = h2 * k2 + k2 * l2 + l2 * h2
+    denominator_gamma = (h2 + k2 + l2) ** 2
     gamma = numerator_gamma / denominator_gamma if denominator_gamma > 0 else 0
-    
+
     # Calculate 1/E
-    compliance_E = S11 - 2 * (S11 - S12 - S44/2) * gamma
-    
+    compliance_E = S11 - 2 * (S11 - S12 - S44 / 2) * gamma
+
     # Return E
     return 1 / compliance_E if compliance_E > 0 else 0.0
