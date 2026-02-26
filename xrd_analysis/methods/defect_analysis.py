@@ -8,6 +8,7 @@ References 出處:
 - Warren (1969), X-ray Diffraction, Chapter 13 (stacking faults)
 """
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Tuple
@@ -68,9 +69,6 @@ STANDARD_PEAK_SEPARATION = (
 #   - (111) 峰向高角度偏移，(200) 峰向低角度偏移
 #   - (111) peak shifts to higher angles, (200) shifts to lower angles
 #
-# ═══════════════════════════════════════════════════════════════════════════
-import math
-
 _WARREN_G_THEORETICAL = -45 * math.sqrt(3) / (math.pi**2)  # = -7.897
 
 WARREN_G_COEFFICIENT = _WARREN_G_THEORETICAL  # 理論推導值 / Theoretical value

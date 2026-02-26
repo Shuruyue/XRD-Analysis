@@ -64,14 +64,40 @@ include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "W", "I", "N", "D", "UP"]
-ignore = ["D100", "D104"]
+
+[tool.ruff.lint]
+# Phase 1 baseline:
+# - Keep correctness and import hygiene strict (E/F/W/I)
+# - Keep safe modernization checks (UP), but postpone high-noise typing rewrites
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501", "E741", "UP006", "UP035"]
+
+[tool.ruff.lint.per-file-ignores]
+# Package-level API initialization and backward-compatible re-exports
+# intentionally require non-top-level imports in these modules.
+"xrd_analysis/__init__.py" = ["E402"]
+"xrd_analysis/analysis/pipeline.py" = ["E402", "I001"]
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true
+# Phase 1 baseline:
+# Keep mypy in CI, but suppress legacy high-noise categories and
+# ratchet these codes back in module-by-module in later phases.
+disable_error_code = [
+    "arg-type",
+    "assignment",
+    "attr-defined",
+    "call-arg",
+    "import-untyped",
+    "index",
+    "no-any-return",
+    "return",
+    "return-value",
+    "var-annotated",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

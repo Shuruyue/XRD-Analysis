@@ -23,6 +23,8 @@ from xrd_analysis.analysis.pipeline import (
     load_bruker_txt,
     parse_filename,
 )
+from xrd_analysis.core.copper_crystal import get_standard_peaks
+from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 
 # Import new visualization module
 from xrd_analysis.visualization.style import (
@@ -36,13 +38,8 @@ apply_xrd_analysis_style()
 
 
 # Cu peak positions (JCPDS) - use unified function
-from xrd_analysis.core.copper_crystal import get_standard_peaks
-
 PEAK_POSITIONS = get_standard_peaks()  # Returns (111), (200), (220)
 PEAK_LABELS = [f"({h[0]}{h[1]}{h[2]})" for h in PEAK_POSITIONS.keys()]
-
-
-from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 
 
 def generate_sample_fitting_plot(
