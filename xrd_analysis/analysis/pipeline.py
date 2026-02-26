@@ -7,9 +7,8 @@ Unified pipeline integrating all analysis phases.
 - Phase 02: Preprocessing 預處理
 - Phase 03: Peak Fitting 峰値擬合
 - Phase 04: Scherrer Size Calculation 晶粒尺寸計算
-- Phase 05: Williamson-Hall Strain Analysis 應變分析
-- Phase 06: Texture Analysis 織構分析
-- Phase 07: Defect Diagnosis 缺陷診斷
+- Phase 05: Texture Analysis 織構分析
+- Phase 06: Defect Diagnosis 缺陷診斷
 """
 
 import logging
@@ -37,10 +36,6 @@ from xrd_analysis.methods.scherrer import (
 from xrd_analysis.methods.texture import (
     TextureAnalysisResult,
     TextureAnalyzer,
-)
-from xrd_analysis.methods.williamson_hall import (
-    WHResult,
-    WilliamsonHallAnalyzer,
 )
 from xrd_analysis.preprocessing.pipeline import PreprocessingPipeline
 
@@ -157,13 +152,10 @@ class PipelineResult:
     scherrer_results: List[ScherrerResult] = field(default_factory=list)
     average_size_nm: Optional[float] = None
 
-    # Phase 05: W-H
-    wh_result: Optional[WHResult] = None
-
-    # Phase 06: Texture
+    # Phase 05: Texture
     texture_result: Optional[TextureAnalysisResult] = None
 
-    # Phase 07: Defects
+    # Phase 06: Defects
     stacking_fault: Optional[StackingFaultResult] = None
     lattice_result: Optional[LatticeConstantResult] = None
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
@@ -177,7 +169,7 @@ class PipelineResult:
 class XRDAnalysisPipeline:
     """Complete xrd_analysis analysis pipeline.
 
-    Integrates all Phase 04-07 analysis modules into a unified workflow.
+    Integrates all Phase 04-06 analysis modules into a unified workflow.
     """
 
     def __init__(self, config: Optional[AnalysisConfig] = None):
@@ -194,10 +186,6 @@ class XRDAnalysisPipeline:
                 self.config.caglioti_w,
             ),
         )
-
-        # Initialize Williamson-Hall analyzer
-        # 初始化 Williamson-Hall 分析器
-        self.wh = WilliamsonHallAnalyzer()
 
         # Initialize Texture analyzer
         # 初始化紋理分析器
@@ -309,23 +297,6 @@ class XRDAnalysisPipeline:
         avg_size = np.mean(valid_sizes) if valid_sizes else None
         return scherrer_results, avg_size
 
-    def _prepare_wh_input(self, peaks, scherrer_results):
-        """Prepare W-H input using instrument-corrected sample broadening.
-
-        Methodology rationale:
-        - W-H should use sample broadening (beta_sample), not raw observed FWHM.
-        - We therefore reuse Scherrer pathway deconvolution output (fwhm_sample).
-        """
-        if not scherrer_results or len(peaks) != len(scherrer_results):
-            return None, None, None
-
-        two_theta_arr = np.array([p.two_theta for p in peaks], dtype=float)
-        fwhm_sample_arr = np.array(
-            [r.fwhm_sample for r in scherrer_results], dtype=float
-        )
-        hkl_list = [p.hkl for p in peaks]
-        return two_theta_arr, fwhm_sample_arr, hkl_list
-
     def _run_defect_analysis(self, peaks):
         """Run defect and lattice analysis. Returns (stacking_fault, lattice)."""
         # Stacking fault
@@ -416,24 +387,16 @@ class XRDAnalysisPipeline:
             result.peaks
         )
 
-        # Step 4: W-H analysis (if enough peaks)
-        if len(result.peaks) >= 3:
-            two_theta_arr, fwhm_arr, hkl_list = self._prepare_wh_input(
-                result.peaks, result.scherrer_results
-            )
-            if two_theta_arr is not None:
-                result.wh_result = self.wh.analyze(two_theta_arr, fwhm_arr, hkl_list)
-
-        # Step 5: Texture analysis
+        # Step 4: Texture analysis
         intensities = {p.hkl: p.intensity for p in result.peaks}
         result.texture_result = self.texture.analyze(intensities)
 
-        # Step 6: Defect analysis
+        # Step 5: Defect analysis
         result.stacking_fault, result.lattice_result = self._run_defect_analysis(
             result.peaks
         )
 
-        # Step 7: Annealing state
+        # Step 6: Annealing state
         result.annealing_state, _ = determine_annealing_state(effective_sample_age)
 
         return result

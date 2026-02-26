@@ -77,7 +77,7 @@ class TrueVoigt:
     You do NOT need instrument parameters to perform this fit. The optimizer
     will find the effective σ_total and γ_total from the raw data.
     Instrumental correction is performed *after* fitting during the
-    analysis stage (e.g., in Williamson-Hall or Scherrer methods).
+    analysis stage (e.g., Scherrer size analysis).
 
     References
     ----------

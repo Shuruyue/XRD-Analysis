@@ -27,13 +27,6 @@ from xrd_analysis.methods.texture import (
     calculate_texture_coefficient,
     get_standard_intensity,
 )
-from xrd_analysis.methods.williamson_hall import (
-    WHQualityLevel,
-    WHResult,
-    WilliamsonHallAnalyzer,
-    analyze_williamson_hall,
-    get_modulus_for_hkl,
-)
 
 __all__ = [
     # Scherrer
@@ -43,12 +36,6 @@ __all__ = [
     "GrainShape",
     "calculate_scherrer",
     "calculate_crystallite_size",
-    # W-H
-    "WilliamsonHallAnalyzer",
-    "WHResult",
-    "WHQualityLevel",
-    "analyze_williamson_hall",
-    "get_modulus_for_hkl",
     # Texture
     "TextureAnalyzer",
     "TextureAnalysisResult",

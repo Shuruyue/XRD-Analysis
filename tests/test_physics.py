@@ -1,21 +1,15 @@
 """
 Unit Tests for Physics Module
-Tests Scherrer, Williamson-Hall, and Texture calculations.
+Tests Scherrer and Texture calculations.
 
 Run with: pytest tests/test_physics.py -v
 """
 
 import pytest
 import numpy as np
-import sys
-from pathlib import Path
-
-# Add src to path
-
 
 from xrd_analysis.methods import (
     ScherrerCalculator,
-    WilliamsonHallAnalyzer,
     TextureAnalyzer,
     CagliotiCorrection,
     calculate_crystallite_size,
@@ -137,69 +131,6 @@ class TestScherrerCalculator:
         
         result = calc.calculate(89.0, fwhm_observed=0.25)
         assert result.size_nm > 0
-
-
-class TestWilliamsonHallAnalyzer:
-    """Tests for Williamson-Hall analysis."""
-    
-    def test_basic_analysis(self):
-        """Test basic W-H analysis with synthetic data."""
-        wh = WilliamsonHallAnalyzer()
-        
-        # Sample data with known linear relationship
-        two_theta = np.array([43.3, 50.4, 74.1, 89.9])
-        fwhm = np.array([0.25, 0.27, 0.35, 0.42])
-        
-        result = wh.analyze(two_theta, fwhm)
-        
-        assert result.crystallite_size_nm > 0
-        assert result.microstrain >= 0
-        assert 0 <= result.r_squared <= 1
-        
-    def test_zero_strain_case(self):
-        """Test case with no strain broadening."""
-        wh = WilliamsonHallAnalyzer(wavelength=1.540562, k_factor=0.89)
-        
-        # Pure size broadening (constant β)
-        two_theta = np.array([43.3, 50.4, 74.1, 89.9])
-        
-        # Calculate β that gives constant βcosθ (no strain)
-        theta = np.radians(two_theta / 2)
-        target_intercept = 0.01  # Constant
-        fwhm = target_intercept / np.cos(theta)
-        fwhm_deg = np.degrees(fwhm)
-        
-        result = wh.analyze(two_theta, fwhm_deg)
-        
-        # Strain should be near zero
-        assert abs(result.microstrain) < 0.01
-        
-    def test_reliability_with_few_peaks(self):
-        """Test warning for insufficient peaks."""
-        wh = WilliamsonHallAnalyzer()
-        
-        # Only 2 peaks - should flag as unreliable
-        two_theta = np.array([43.3, 50.4])
-        fwhm = np.array([0.25, 0.27])
-        
-        result = wh.analyze(two_theta, fwhm)
-        
-        assert not result.is_reliable
-        # Merged module uses warning_message instead of warning
-        assert result.warning_message != ""
-        
-    def test_plot_data(self):
-        """Test plot data generation."""
-        wh = WilliamsonHallAnalyzer()
-        
-        two_theta = np.array([43.3, 50.4, 74.1, 89.9])
-        fwhm = np.array([0.25, 0.27, 0.35, 0.42])
-        
-        x_data, y_data, x_fit, y_fit = wh.get_plot_data(two_theta, fwhm)
-        
-        assert len(x_data) == len(two_theta)
-        # Merged module returns 100 points for fit line, not 2
-        assert len(x_fit) >= 2
 
 
 class TestTextureAnalyzer:

@@ -8,7 +8,6 @@ Submodules:
     - style: Common styling configuration and color palettes
     - fwhm_plots: FWHM evolution and comparison plots
     - scherrer_plots: Crystallite size visualizations
-    - wh_plots: Williamson-Hall analysis plots
     - texture_plots: Texture coefficient visualizations
     - fitting_plots: Peak fitting diagnosis plots
 """
@@ -45,10 +44,6 @@ from xrd_analysis.visualization.style import (
 from xrd_analysis.visualization.texture_plots import (
     plot_tc_evolution,
 )
-from xrd_analysis.visualization.wh_plots import (
-    plot_wh_residuals,
-    plot_williamson_hall,
-)
 
 __all__ = [
     # Style
@@ -63,9 +58,6 @@ __all__ = [
     # Scherrer
     "plot_scherrer_evolution_by_peak",
     "plot_scherrer_by_concentration",
-    # Williamson-Hall
-    "plot_williamson_hall",
-    "plot_wh_residuals",
     # Texture
     "plot_tc_evolution",
     # Fitting

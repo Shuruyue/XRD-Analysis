@@ -315,7 +315,7 @@ def get_k_for_hkl(
 
 
 # =============================================================================
-# Elastic Anisotropy Parameters (for Williamson-Hall Analysis)
+# Elastic Anisotropy Parameters (for crystallographic analysis)
 # =============================================================================
 
 
@@ -324,7 +324,7 @@ class CopperElasticModuli:
     """Direction-dependent Young's modulus for copper single crystal.
     銅單晶方向相依楽氏模量。
 
-    CRITICAL for Williamson-Hall Analysis 重要:
+    Important for anisotropic strain/stress interpretation 重要:
     Copper is elastically anisotropic. The elastic modulus varies by
     nearly 3x between the softest <100> and hardest <111> directions.
     銅具彈性各向異性，模量在最軟 <100> 與最硬 <111> 方向之間差異近 3 倍。
@@ -368,7 +368,7 @@ CU_ELASTIC = CopperElasticModuli()
 def get_youngs_modulus(h: int, k: int, l: int) -> float:
     """Get direction-dependent Young's modulus for copper.
 
-    Required for proper Williamson-Hall analysis of textured films.
+    Useful when interpreting direction-dependent elastic response in textured films.
 
     Args:
         h, k, l: Miller indices of the diffraction peak
