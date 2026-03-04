@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import yaml
 import numpy as np
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -24,12 +24,15 @@ from _script_utils import (
     resolve_path,
     unit_interval,
 )
+
 from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
 from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 from xrd_analysis.methods.scherrer import ScherrerCalculator
 from xrd_analysis.methods.williamson_hall import analyze_williamson_hall
-from xrd_analysis.visualization.wh_plots import plot_strain_evolution, plot_williamson_hall
-
+from xrd_analysis.visualization.wh_plots import (
+    plot_strain_evolution,
+    plot_williamson_hall,
+)
 
 TARGET_PEAKS = {
     (1, 1, 1): 43.316,

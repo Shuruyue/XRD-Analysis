@@ -1,4 +1,4 @@
-"""Kα Doublet Handling Module Kα 雙峰處理模組
+"""Kα Doublet Handling Module Kα 雙峰處理模組.
 ==========================================
 
 Two approaches for handling Cu Kα₁/Kα₂ doublet in XRD data.
@@ -15,7 +15,7 @@ Cu Kα wavelengths 波長 (Bearden 1967, Rev. Mod. Phys. 39, 78):
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -114,7 +114,7 @@ class Ka2Stripper:
 
     def strip(
         self, two_theta: np.ndarray, intensity: np.ndarray, smooth_sigma: float = 0.0
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Strip Kα₂ from spectrum using Rachinger correction.
 
         Algorithm:
@@ -178,7 +178,7 @@ class Ka2Stripper:
         intensity: np.ndarray,
         peak_center: float,
         window: float = 3.0,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Strip Kα₂ from a specific peak region.
 
         Args:
@@ -470,7 +470,7 @@ def compare_fitting_methods(
     intensity: np.ndarray,
     peak_center: float,
     window: float = 2.5,
-) -> Dict:
+) -> dict:
     """Compare single peak, Ka2-stripped, and doublet fitting methods.
 
     Args:

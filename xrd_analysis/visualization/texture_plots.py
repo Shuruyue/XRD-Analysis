@@ -1,11 +1,11 @@
-"""Texture Coefficient Visualization Module
+"""Texture Coefficient Visualization Module.
 ========================================
 
 Plots for Harris Texture Coefficient (TC) analysis.
 Harris 紋理係數（TC）分析繪圖模組。
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,17 +18,18 @@ from .style import (
 
 
 def plot_tc_evolution(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     x_param: str = "time",
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (15, 5.5),
+    figsize: tuple[float, float] = (15, 5.5),
     normalize: bool = False,  # NEW: If True, plot as fraction (sum=1)
 ) -> plt.Figure:
     """Plot TC evolution across samples with subplots by peak direction.
-    繪製 TC 隨樣品參數演化圖（按峰方向分子圖）。
+
+    繪製 TC 隨樣品參數演化圖（按峰方向分子圖）。.
 
     Uses 3 subplots (one for each hkl), grouped by concentration.
     Similar structure to FWHM evolution plots.
@@ -246,13 +247,13 @@ def plot_tc_evolution(
 
 
 def plot_texture_fraction_single(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     x_param: str = "time",
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (11, 11),
+    figsize: tuple[float, float] = (11, 11),
     metric: str = "fraction",  # "fraction" or "tc"
 ) -> plt.Figure:
     """Plot texture metrics with 2x2 grid (one panel per concentration).

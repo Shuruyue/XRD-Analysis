@@ -1,4 +1,4 @@
-"""Unit Conversion Module 單位轉換模組
+"""Unit Conversion Module 單位轉換模組.
 ===================================
 Provides unit conversion utilities for XRD analysis.
 提供 XRD 分析所需的單位轉換工具。

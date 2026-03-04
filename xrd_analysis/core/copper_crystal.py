@@ -1,4 +1,4 @@
-"""Copper Crystal Physical Constants Module 銅晶體物理常數模組
+"""Copper Crystal Physical Constants Module 銅晶體物理常數模組.
 ============================================================
 
 Physical parameters for FCC copper crystallography.
@@ -12,7 +12,7 @@ References 出處:
 
 from dataclasses import dataclass
 from math import gcd, sqrt
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 # =============================================================================
 # FCC Copper Crystal Structure Constants (298K Standard)
@@ -67,7 +67,7 @@ CU_CRYSTAL = CopperCrystal()
 #
 # d-spacing calculated via: d = a₀ / √(h² + k² + l²)
 
-CU_JCPDS_EXTENDED: Dict[Tuple[int, int, int], Dict] = {
+CU_JCPDS_EXTENDED: dict[tuple[int, int, int], dict] = {
     (1, 1, 1): {
         "two_theta": 43.316,  # Calculated from a=3.6150, λ=1.540562
         "d_spacing": 2.087,  # Å, d = a₀/√3
@@ -107,10 +107,11 @@ CU_JCPDS_EXTENDED: Dict[Tuple[int, int, int], Dict] = {
 
 
 def get_standard_peaks(
-    hkl_list: Optional[List[Tuple[int, int, int]]] = None
-) -> Dict[Tuple[int, int, int], float]:
+    hkl_list: Optional[list[tuple[int, int, int]]] = None
+) -> dict[tuple[int, int, int], float]:
     """Get standard peak positions for specified (hkl) indices.
-    取得指定 (hkl) 的標準峰位。
+
+    取得指定 (hkl) 的標準峰位。.
 
     Args:
         hkl_list: List of (h, k, l) tuples.
@@ -188,7 +189,8 @@ def is_fcc_allowed(h: int, k: int, l: int) -> bool:
 @dataclass(frozen=True)
 class ScherrerCubicK:
     """Scherrer constant K values for cubic habit crystallites.
-    立方晶習晶粒的 Scherrer 常數 K 值。
+
+    立方晶習晶粒的 Scherrer 常數 K 值。.
 
     ═══════════════════════════════════════════════════════════════════════════
     文獻出處 Reference (完整引用)
@@ -322,7 +324,8 @@ def get_k_for_hkl(
 @dataclass(frozen=True)
 class CopperElasticModuli:
     """Direction-dependent Young's modulus for copper single crystal.
-    銅單晶方向相依楽氏模量。
+
+    銅單晶方向相依楽氏模量。.
 
     CRITICAL for Williamson-Hall Analysis 重要:
     Copper is elastically anisotropic. The elastic modulus varies by
@@ -586,12 +589,12 @@ def explain_lattice_deviation(
 # =============================================================================
 
 
-def get_jcpds_peak(hkl: Tuple[int, int, int]) -> Optional[Dict]:
+def get_jcpds_peak(hkl: tuple[int, int, int]) -> Optional[dict]:
     """Get JCPDS data for a specific (hkl) reflection."""
     return CU_JCPDS_EXTENDED.get(hkl)
 
 
-def get_all_peaks() -> List[Tuple[int, int, int]]:
+def get_all_peaks() -> list[tuple[int, int, int]]:
     """Get list of all standard Cu peak indices."""
     return list(CU_JCPDS_EXTENDED.keys())
 
@@ -608,7 +611,8 @@ def calculate_youngs_modulus_from_stiffness(
     h: int, k: int, l: int, C11: float = 168.4, C12: float = 121.4, C44: float = 75.4
 ) -> float:
     """Calculate direction-dependent Young's modulus from elastic stiffness constants.
-    從彈性勁度常數計算方向相依楊氏模數。
+
+    從彈性勁度常數計算方向相依楊氏模數。.
 
     Formula (Ledbetter & Naimon 1974):
         1/E_hkl = S11 - 2(S11 - S12 - S44/2) × Γ

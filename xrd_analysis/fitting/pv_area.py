@@ -1,4 +1,4 @@
-"""Pseudo-Voigt Area Calculation Utilities
+"""Pseudo-Voigt Area Calculation Utilities.
 ========================================
 
 Provides accurate integrated area calculations for Pseudo-Voigt profiles.
@@ -21,7 +21,8 @@ import numpy as np
 
 def calculate_pv_area(amplitude: float, fwhm: float, eta: float) -> float:
     """Calculate integrated area of a Pseudo-Voigt profile.
-    計算 Pseudo-Voigt 剖面的積分面積。
+
+    計算 Pseudo-Voigt 剖面的積分面積。.
 
     Args:
         amplitude: Peak amplitude (maximum intensity)
@@ -80,7 +81,8 @@ def calculate_pv_area(amplitude: float, fwhm: float, eta: float) -> float:
 
 def get_pv_integration_factor(eta: float) -> float:
     """Get the integration factor for a given η value.
-    取得給定 η 值的積分因子。
+
+    取得給定 η 值的積分因子。.
 
     Args:
         eta: Mixing parameter (0-1)
@@ -114,7 +116,8 @@ PV_FACTORS = {
 
 def validate_pv_area_calculation():
     """Validate area calculation against known values.
-    驗證面積計算對已知值的準確性。
+
+    驗證面積計算對已知值的準確性。.
     """
     print("Validating PV Area Calculation")
     print("=" * 50)

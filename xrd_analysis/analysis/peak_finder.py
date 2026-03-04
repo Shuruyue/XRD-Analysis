@@ -1,4 +1,4 @@
-"""Peak Finding with Pseudo-Voigt Fitting 偽Voigt擬合峰值查找
+"""Peak Finding with Pseudo-Voigt Fitting 偽Voigt擬合峰值查找.
 =============================================================
 
 Find and fit peaks in XRD data using Kα doublet fitting with
@@ -8,7 +8,7 @@ Pseudo-Voigt fallback.
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class PeakData:
     """Single peak data."""
 
-    hkl: Tuple[int, int, int]
+    hkl: tuple[int, int, int]
     two_theta: float
     intensity: float
     fwhm: float
@@ -53,7 +53,7 @@ def _fit_peak_pseudo_voigt(
     peak_theta: float,
     peak_int: float,
     initial_fwhm: float,
-) -> Tuple[bool, float, float, float, float, float]:
+) -> tuple[bool, float, float, float, float, float]:
     """Try Pseudo-Voigt fitting. Returns (success, theta, intensity, fwhm, eta, area)."""
     try:
         optimizer = LMOptimizer(max_iterations=500, tolerance=1e-6)

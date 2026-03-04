@@ -1,11 +1,11 @@
-"""Scherrer Size Visualization Module
+"""Scherrer Size Visualization Module.
 ==================================
 
 Plots for crystallite size analysis results.
 晶粒尺寸分析結果繪圖模組。
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,13 +18,13 @@ from .style import (
 
 
 def plot_scherrer_evolution_by_peak(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     x_param: str = "time",
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (12, 8),
+    figsize: tuple[float, float] = (12, 8),
     instrument_limit: Optional[
         float
     ] = None,  # Not really applicable for size, but kept for interface consistency
@@ -214,12 +214,12 @@ def plot_scherrer_evolution_by_peak(
 
 
 def plot_scherrer_by_concentration(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (11, 11),  # Square figure to help subplots be square
+    figsize: tuple[float, float] = (11, 11),  # Square figure to help subplots be square
     instrument_limit: Optional[float] = None,
 ) -> plt.Figure:
     """Plot Scherrer size evolution with subplots by concentration.

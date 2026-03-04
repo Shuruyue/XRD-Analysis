@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""xrd_analysis Peak Fitting Diagnostic Plots
+"""xrd_analysis Peak Fitting Diagnostic Plots.
 ====================================
 
 Generate detailed fitting diagnostic plots for each XRD sample,
@@ -12,7 +12,7 @@ Refactored to use xrd_analysis.visualization module.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,9 +47,10 @@ from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 
 def generate_sample_fitting_plot(
     filepath: Path, output_dir: Path, config: AnalysisConfig = None
-) -> Optional[List[Dict]]:
+) -> Optional[list[dict]]:
     """Generate a single diagnostic plot for one XRD sample.
-    使用新視覺化模組生成單一樣品的診斷圖。
+
+    使用新視覺化模組生成單一樣品的診斷圖。.
 
     Shows 3 subplots (one for each peak) with fitting details.
     """

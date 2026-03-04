@@ -1,11 +1,11 @@
-"""FWHM Visualization Module
+"""FWHM Visualization Module.
 =========================
 
 Plots for FWHM (Full Width at Half Maximum) analysis.
 FWHM（半高寬）分析繪圖模組。
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,17 +18,18 @@ from .style import (
 
 
 def plot_fwhm_evolution(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     x_param: str = "concentration",
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (12, 8),
+    figsize: tuple[float, float] = (12, 8),
     instrument_limit: Optional[float] = 0.05,
 ) -> plt.Figure:
     """Plot FWHM evolution across samples.
-    繪製 FWHM 隨樣品參數演化圖。
+
+    繪製 FWHM 隨樣品參數演化圖。.
 
     Args:
         data: List of dictionaries with keys:
@@ -234,17 +235,18 @@ def plot_fwhm_evolution(
 
 
 def plot_fwhm_by_peak(
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (10, 6),
-    y_limit: Optional[Tuple[float, float]] = None,
+    figsize: tuple[float, float] = (10, 6),
+    y_limit: Optional[tuple[float, float]] = None,
     instrument_limit: Optional[float] = 0.05,
 ) -> plt.Figure:
     """Plot FWHM comparison across different peaks for all samples.
-    繪製所有樣品各峰 FWHM 比較圖。
+
+    繪製所有樣品各峰 FWHM 比較圖。.
 
     Args:
         results: List of dictionaries with keys:
@@ -337,12 +339,12 @@ def plot_fwhm_by_peak(
 
 
 def plot_fwhm_by_concentration(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (16, 10),
+    figsize: tuple[float, float] = (16, 10),
     instrument_limit: Optional[float] = 0.05,
 ) -> plt.Figure:
     """Plot FWHM evolution with subplots by concentration.

@@ -1,11 +1,10 @@
 """Tests for scripts/_script_utils.py helpers."""
 
+import sys
 from argparse import ArgumentTypeError
 from pathlib import Path
-import sys
 
 import pytest
-
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:

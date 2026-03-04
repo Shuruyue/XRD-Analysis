@@ -1,4 +1,4 @@
-"""Defect Analysis Module 缺陷分析模組
+"""Defect Analysis Module 缺陷分析模組.
 ===================================
 
 Stacking fault detection and lattice constant monitoring.
@@ -10,7 +10,7 @@ References 出處:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -151,7 +151,7 @@ class LatticeConstantResult:
     lattice_constant: float  # Å
     deviation: float  # From standard
     d_spacing: float  # Å
-    hkl_used: Tuple[int, int, int]
+    hkl_used: tuple[int, int, int]
     two_theta_used: float
     status: LatticeStatus
     message: str
@@ -180,7 +180,7 @@ class DefectAnalysisResult:
 
     # Overall
     overall_status: str = ""
-    recommendations: List[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
 
 # =============================================================================
@@ -190,7 +190,8 @@ class DefectAnalysisResult:
 
 class StackingFaultAnalyzer:
     """Warren-based stacking fault analyzer.
-    基於Warren分析的堆疊層錯分析器。
+
+    基於Warren分析的堆疊層錯分析器。.
 
     Reference: Warren (1969), X-ray Diffraction, Ch.13
 
@@ -292,10 +293,11 @@ def calculate_d_spacing(two_theta: float, wavelength: float = CU_KA1) -> float:
 
 
 def calculate_lattice_constant(
-    two_theta: float, hkl: Tuple[int, int, int], wavelength: float = CU_KA1
+    two_theta: float, hkl: tuple[int, int, int], wavelength: float = CU_KA1
 ) -> float:
     """Calculate lattice constant from peak position.
-    從峰位計算晶格常數。
+
+    從峰位計算晶格常數。.
 
     a = d × √(h² + k² + l²)
     """
@@ -306,7 +308,8 @@ def calculate_lattice_constant(
 
 class LatticeMonitor:
     """Lattice constant monitor.
-    晶格常數監控器。
+
+    晶格常數監控器。.
 
     Prefers high-angle peaks (311, 220) for better accuracy.
     偶好高角峰 (311, 220) 以提高精度。
@@ -319,7 +322,7 @@ class LatticeMonitor:
         self.wavelength = wavelength
 
     def analyze_lattice(
-        self, two_theta: float, hkl: Tuple[int, int, int]
+        self, two_theta: float, hkl: tuple[int, int, int]
     ) -> LatticeConstantResult:
         """Analyze lattice constant from peak position.
 
@@ -367,9 +370,10 @@ class LatticeMonitor:
 
 def determine_annealing_state(
     sample_age_hours: Optional[float] = None, fwhm_narrowing_detected: bool = False
-) -> Tuple[AnnealingState, str]:
+) -> tuple[AnnealingState, str]:
     """Determine self-annealing state from sample age.
-    根據樣品存放時間判定自退火狀態。
+
+    根據樣品存放時間判定自退火狀態。.
 
     Args:
         sample_age_hours: Time since deposition (hours), None for unknown
@@ -414,7 +418,7 @@ def analyze_stacking_faults(
 
 
 def analyze_lattice(
-    two_theta: float, hkl: Tuple[int, int, int]
+    two_theta: float, hkl: tuple[int, int, int]
 ) -> LatticeConstantResult:
     """Convenience function for lattice constant analysis."""
     monitor = LatticeMonitor()

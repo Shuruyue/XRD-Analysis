@@ -5,9 +5,8 @@ from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
-
 import warnings
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -22,6 +21,7 @@ from _script_utils import (
     resolve_path,
     unit_interval,
 )
+
 from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
 from xrd_analysis.core.config import ParameterConfig
 from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
@@ -30,7 +30,6 @@ from xrd_analysis.visualization.scherrer_plots import (
     plot_scherrer_by_concentration,
     plot_scherrer_evolution_by_peak,
 )
-
 
 warnings.filterwarnings("ignore")
 

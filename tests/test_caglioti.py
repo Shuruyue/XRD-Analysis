@@ -2,7 +2,11 @@
 
 import numpy as np
 import pytest
-from xrd_analysis.methods.caglioti import CagliotiCorrection, calculate_instrumental_broadening
+
+from xrd_analysis.methods.caglioti import (
+    CagliotiCorrection,
+    calculate_instrumental_broadening,
+)
 
 
 class TestCagliotiCorrection:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""XRD-Analysis Command Line Interface
+"""XRD-Analysis Command Line Interface.
 =============================
 
 Unified entry point for all analysis operations.
@@ -9,7 +9,7 @@ Unified entry point for all analysis operations.
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from xrd_analysis.__version__ import __version__
 
@@ -66,8 +66,9 @@ def _unit_interval(value: str) -> float:
     return parsed
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point.
+
     主 CLI 入口點。
     """
     parser = argparse.ArgumentParser(
@@ -267,12 +268,12 @@ def _build_analysis_config(config_path: Optional[Path]):
     return config
 
 
-def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
+def _collect_input_files(input_path: Path, batch: bool) -> list[Path]:
     """Resolve analyze input into concrete files."""
     input_str = str(input_path)
 
     if input_path.is_dir():
-        files: List[Path] = []
+        files: list[Path] = []
         for pattern in ("*.txt", "*.xy", "*.csv"):
             files.extend(sorted(input_path.glob(pattern)))
         return files
@@ -291,6 +292,7 @@ def _collect_input_files(input_path: Path, batch: bool) -> List[Path]:
 
 def _run_analyze(args) -> int:
     """Run analysis command.
+
     執行分析指令。
     """
     from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
@@ -330,6 +332,7 @@ def _run_analyze(args) -> int:
 
 def _run_calibrate(args) -> int:
     """Run calibration command.
+
     執行校正指令。
 
     Calibrates Caglioti parameters (U, V, W) using a standard material
@@ -496,3 +499,130 @@ def _run_calibrate(args) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# =============================================================================
+# Output Serialization Helpers
+# =============================================================================
+
+
+def _safe_float(v, default=None):
+    """Convert a value to float safely, returning default on failure."""
+    if v is None:
+        return default
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return default
+
+
+def _hkl_to_str(hkl: tuple) -> str:
+    """Convert (h, k, l) tuple to string representation."""
+    return f"({hkl[0]}{hkl[1]}{hkl[2]})"
+
+
+def _serialize_pipeline_result(result) -> dict:
+    """Serialize a PipelineResult into a JSON-safe dictionary.
+
+    Args:
+        result: PipelineResult object.
+
+    Returns:
+        Dictionary suitable for JSON serialization.
+
+    """
+    peaks_list = []
+    for p in result.peaks:
+        peaks_list.append(
+            {
+                "hkl": _hkl_to_str(p.hkl),
+                "two_theta": _safe_float(p.two_theta),
+                "intensity": _safe_float(p.intensity),
+                "fwhm": _safe_float(p.fwhm),
+                "area": _safe_float(p.area, 0.0),
+                "eta": _safe_float(p.eta, 0.5),
+            }
+        )
+
+    scherrer_results = []
+    for s in result.scherrer_results:
+        scherrer_results.append(
+            {
+                "hkl": _hkl_to_str(s.hkl),
+                "size_nm": _safe_float(s.size_nm),
+                "two_theta": _safe_float(s.two_theta),
+                "k_factor": _safe_float(s.k_factor),
+                "fwhm_observed": _safe_float(s.fwhm_observed),
+                "fwhm_instrumental": _safe_float(s.fwhm_instrumental),
+                "fwhm_sample": _safe_float(s.fwhm_sample),
+                "validity_flag": s.validity_flag.value
+                if hasattr(s.validity_flag, "value")
+                else str(s.validity_flag),
+                "is_reliable": s.is_reliable,
+            }
+        )
+
+    payload = {
+        "sample_name": result.sample_name,
+        "filepath": result.filepath,
+        "peaks": peaks_list,
+        "scherrer": {
+            "results": scherrer_results,
+            "average_size_nm": _safe_float(result.average_size_nm),
+        },
+    }
+
+    return payload
+
+
+def _write_analysis_outputs(
+    results: list, output_dir: Path
+) -> dict:
+    """Write analysis results to JSON and CSV summary files.
+
+    Args:
+        results: List of PipelineResult objects.
+        output_dir: Directory to write output files.
+
+    Returns:
+        Dictionary with paths to created files.
+
+    """
+    import csv
+    import json
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    all_payloads = []
+    for r in results:
+        payload = _serialize_pipeline_result(r)
+        all_payloads.append(payload)
+
+        # Write per-sample JSON
+        sample_json = output_dir / f"{r.sample_name}_analysis.json"
+        with open(sample_json, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    # Write summary JSON
+    summary_json = output_dir / "analysis_summary.json"
+    with open(summary_json, "w", encoding="utf-8") as f:
+        json.dump(all_payloads, f, indent=2, ensure_ascii=False)
+
+    # Write summary CSV
+    summary_csv = output_dir / "analysis_summary.csv"
+    with open(summary_csv, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["sample_name", "average_size_nm"])
+        for payload in all_payloads:
+            writer.writerow(
+                [
+                    payload["sample_name"],
+                    payload["scherrer"]["average_size_nm"],
+                ]
+            )
+
+    return {
+        "summary_json": summary_json,
+        "summary_csv": summary_csv,
+    }
+

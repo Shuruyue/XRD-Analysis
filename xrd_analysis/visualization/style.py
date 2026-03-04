@@ -1,11 +1,11 @@
-"""xrd_analysis Style Configuration
+"""xrd_analysis Style Configuration.
 ==========================
 
 Unified matplotlib styling and colorblind-safe color palettes.
 統一的 matplotlib 樣式配置與色盲友善調色盤。
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # XRD-Analysis Standard Style
 # =============================================================================
 
-XRD_ANALYSIS_STYLE: Dict[str, Any] = {
+XRD_ANALYSIS_STYLE: dict[str, Any] = {
     # Figure settings
     "figure.figsize": (10, 6),
     "figure.dpi": 100,
@@ -75,7 +75,7 @@ XRD_ANALYSIS_STYLE: Dict[str, Any] = {
 # Colorblind-Safe Color Palette (Wong, 2011)
 # =============================================================================
 
-COLORBLIND_SAFE: List[str] = [
+COLORBLIND_SAFE: list[str] = [
     "#0077BB",  # Blue - primary
     "#EE7733",  # Orange - secondary
     "#009988",  # Teal
@@ -87,7 +87,7 @@ COLORBLIND_SAFE: List[str] = [
 ]
 
 # Semantic color mapping for XRD peaks
-PEAK_COLORS: Dict[str, str] = {
+PEAK_COLORS: dict[str, str] = {
     "(111)": "#0077BB",  # Blue
     "(200)": "#EE7733",  # Orange
     "(220)": "#009988",  # Teal
@@ -103,7 +103,8 @@ PEAK_COLORS: Dict[str, str] = {
 
 def apply_xrd_analysis_style() -> None:
     """Apply xrd_analysis style to all subsequent matplotlib plots.
-    將 xrd_analysis 樣式套用至後續所有 matplotlib 圖表。
+
+    將 xrd_analysis 樣式套用至後續所有 matplotlib 圖表。.
 
     Example:
         >>> from xrd_analysis.visualization.style import apply_xrd_analysis_style
@@ -114,9 +115,10 @@ def apply_xrd_analysis_style() -> None:
     plt.rcParams.update(XRD_ANALYSIS_STYLE)
 
 
-def get_color_palette(n_colors: int = 6) -> List[str]:
+def get_color_palette(n_colors: int = 6) -> list[str]:
     """Get a colorblind-safe color palette.
-    取得色盲友善調色盤。
+
+    取得色盲友善調色盤。.
 
     Args:
         n_colors: Number of colors needed (max 8).
@@ -135,7 +137,8 @@ def get_color_palette(n_colors: int = 6) -> List[str]:
 
 def get_peak_color(hkl: str) -> str:
     """Get color for a specific (hkl) peak.
-    取得特定 (hkl) 峰的顏色。
+
+    取得特定 (hkl) 峰的顏色。.
 
     Args:
         hkl: Peak identifier string, e.g. "(111)".
@@ -149,7 +152,8 @@ def get_peak_color(hkl: str) -> str:
 
 def create_figure(figsize: tuple = None, apply_style: bool = True) -> tuple:
     """Create a figure with xrd_analysis styling.
-    建立套用 xrd_analysis 樣式的圖表。
+
+    建立套用 xrd_analysis 樣式的圖表。.
 
     Args:
         figsize: Optional figure size (width, height) in inches.
@@ -173,7 +177,8 @@ def save_figure(
     fig, filepath: str, dpi: int = 300, format: str = None, transparent: bool = False
 ) -> None:
     """Save figure with standardized settings.
-    使用標準化設定儲存圖表。
+
+    使用標準化設定儲存圖表。.
 
     Args:
         fig: Matplotlib figure object.

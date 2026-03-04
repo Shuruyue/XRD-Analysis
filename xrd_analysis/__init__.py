@@ -1,4 +1,4 @@
-"""XRD-Analysis: Advanced XRD Crystallite Size Analysis System
+"""XRD-Analysis: Advanced XRD Crystallite Size Analysis System.
 =====================================================
 
 A comprehensive toolkit for XRD data analysis including:

@@ -12,7 +12,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from _script_utils import ensure_dir, get_project_root, resolve_data_dir, resolve_path
-from xrd_analysis.visualization.generate_fitting_diagnosis import generate_sample_fitting_plot
+
+from xrd_analysis.visualization.generate_fitting_diagnosis import (
+    generate_sample_fitting_plot,
+)
 
 
 def generate_diagnosis_plots(data_dir: Path, output_dir: Path, clean: bool = True) -> int:

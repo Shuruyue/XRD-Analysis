@@ -1,4 +1,4 @@
-"""Analysis Pipeline Module
+"""Analysis Pipeline Module.
 =========================
 
 High-level analysis orchestration for XRD data.

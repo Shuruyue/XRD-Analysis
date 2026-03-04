@@ -1,11 +1,10 @@
-"""Peak Detection Module 峰值檢測模組
+"""Peak Detection Module 峰值檢測模組.
 ==================================
 Implements second derivative method for automatic peak finding.
 使用二階導數法進行自動峰值檢測。
 """
 
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 from scipy.signal import find_peaks as scipy_find_peaks
@@ -50,7 +49,7 @@ class PeakDetector:
         self.window_size = window_size
         self.poly_order = poly_order
 
-    def detect(self, two_theta: np.ndarray, intensity: np.ndarray) -> List[PeakInfo]:
+    def detect(self, two_theta: np.ndarray, intensity: np.ndarray) -> list[PeakInfo]:
         """Detect peaks in XRD data.
 
         Args:
@@ -128,7 +127,7 @@ def find_peaks(
     intensity: np.ndarray,
     min_height: float = 100,
     min_distance: float = 0.5,
-) -> List[PeakInfo]:
+) -> list[PeakInfo]:
     """Convenience function for peak detection.
 
     Args:

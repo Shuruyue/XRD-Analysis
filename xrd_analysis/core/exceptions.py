@@ -1,4 +1,4 @@
-"""Custom Exception Hierarchy 自訂例外體系
+"""Custom Exception Hierarchy 自訂例外體系.
 ==========================================
 
 Centralised exception classes for XRD-Analysis.

@@ -1,4 +1,4 @@
-"""Peak Fitting Orchestrator
+"""Peak Fitting Orchestrator.
 =========================
 
 Provides high-level peak fitting logic, combining Kα doublet fitting
@@ -8,7 +8,6 @@ Moves fitting logic out of visualization modules to avoid circular dependencies.
 """
 
 import logging
-from typing import Dict
 
 import numpy as np
 
@@ -24,9 +23,10 @@ def fit_peak_with_diagnosis(
     window: float = 2.5,
     use_doublet: bool = False,
     doublet_max_iterations: int = 20000,
-) -> Dict:
+) -> dict:
     """Fit a single peak using Kα doublet model and return detailed diagnosis info.
-    使用 Kα 雙峰模型擬合單峰並返回詳細診斷資訊。
+
+    使用 Kα 雙峰模型擬合單峰並返回詳細診斷資訊。.
 
     Returns dict with:
         - success: bool

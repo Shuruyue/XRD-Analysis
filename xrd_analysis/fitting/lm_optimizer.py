@@ -1,4 +1,4 @@
-"""Levenberg-Marquardt Optimizer Module LM 優化器模組
+"""Levenberg-Marquardt Optimizer Module LM 優化器模組.
 ==================================================
 Implements non-linear least squares fitting for XRD peaks.
 實現 XRD 峰的非線性最小二乘法擬合。
@@ -6,7 +6,7 @@ Implements non-linear least squares fitting for XRD peaks.
 
 import logging
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FitResult:
     """Result of peak fitting.
-    峰擬合結果。
+
+    峰擬合結果。.
 
     Enhanced with R_wp quality metric, integrated area, and hkl assignment.
     增強版：包含 R_wp 品質指標、積分面積和 hkl 指派。
@@ -35,7 +36,7 @@ class FitResult:
     # Phase 03 enhancements
     r_wp: float = 0.0  # Weighted Profile R-factor (%)
     area: float = 0.0  # Integrated intensity (peak area)
-    hkl: Optional[Tuple[int, int, int]] = None  # Miller indices
+    hkl: Optional[tuple[int, int, int]] = None  # Miller indices
 
     def is_valid(self) -> bool:
         """Check if fit result is physically valid."""
@@ -366,10 +367,11 @@ class LMOptimizer:
         two_theta: np.ndarray,
         intensity: np.ndarray,
         n_peaks: int,
-        initial_guesses: Optional[List[PseudoVoigtParams]] = None,
-    ) -> List[FitResult]:
+        initial_guesses: Optional[list[PseudoVoigtParams]] = None,
+    ) -> list[FitResult]:
         """Fit multiple peaks sequentially.
-        依序擬合多個峰。
+
+        依序擬合多個峰。.
 
         Args:
             two_theta: 2θ array
@@ -446,8 +448,8 @@ class LMOptimizer:
 def fit_peaks(
     two_theta: np.ndarray,
     intensity: np.ndarray,
-    peak_positions: Optional[List[float]] = None,
-) -> List[FitResult]:
+    peak_positions: Optional[list[float]] = None,
+) -> list[FitResult]:
     """Convenience function for peak fitting.
 
     Args:

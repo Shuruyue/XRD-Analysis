@@ -1,5 +1,6 @@
-"""Unified Parameter Configuration System
-統一參數配置系統
+"""Unified Parameter Configuration System.
+
+統一參數配置系統.
 ======================================
 
 Centralized configuration management for all xrd_analysis parameters.
@@ -20,7 +21,7 @@ import logging
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 # Import physical constants
 from xrd_analysis.core.constants import (
@@ -40,7 +41,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class InstrumentConfig:
     """Instrument parameters configuration.
-    儀器參數配置。
+
+    儀器參數配置。.
 
     Attributes:
         caglioti_u: Caglioti U parameter (FWHM²_inst = U·tan²θ + V·tanθ + W)
@@ -68,7 +70,8 @@ class InstrumentConfig:
 @dataclass
 class PeakDetectionConfig:
     """Peak detection parameters configuration.
-    峰檢測參數配置。
+
+    峰檢測參數配置。.
 
     Attributes:
         peak_window: Search window around expected peak position (degrees)
@@ -94,7 +97,8 @@ class PeakDetectionConfig:
 @dataclass
 class ValidationConfig:
     """Validation thresholds configuration.
-    驗證閾值配置。
+
+    驗證閾值配置。.
 
     Attributes:
         max_rwp: Maximum R_wp percentage for acceptable fit
@@ -124,7 +128,8 @@ class ValidationConfig:
 @dataclass
 class VisualizationConfig:
     """Visualization parameters configuration.
-    視覺化參數配置。
+
+    視覺化參數配置。.
 
     Attributes:
         dpi: Output resolution (dots per inch)
@@ -148,7 +153,7 @@ class VisualizationConfig:
 @dataclass
 class ParameterConfig:
     """Unified xrd_analysis parameter configuration.
-    xrd_analysis 統一參數配置。
+    xrd_analysis 統一參數配置。.
 
     This is the main configuration class that aggregates all parameter categories.
     這是聚合所有參數類別的主配置類。
@@ -182,7 +187,8 @@ class ParameterConfig:
     @classmethod
     def from_yaml(cls, filepath: Optional[Path] = None) -> "ParameterConfig":
         """Load configuration from YAML file.
-        從 YAML 文件加載配置。
+
+        從 YAML 文件加載配置。.
 
         Args:
             filepath: Path to YAML config file (default: "config.yaml")
@@ -247,7 +253,8 @@ class ParameterConfig:
 
     def validate_all(self) -> None:
         """Validate all configuration parameters.
-        驗證所有配置參數。
+
+        驗證所有配置參數。.
 
         Raises:
             ValueError: If any parameter is invalid
@@ -258,9 +265,10 @@ class ParameterConfig:
         self.validation.validate()
         self.visualization.validate()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary.
-        將配置轉換為字典。
+
+        將配置轉換為字典。.
 
         Returns:
             Nested dictionary representation
@@ -300,7 +308,8 @@ class ParameterConfig:
 
 def get_default_config() -> ParameterConfig:
     """Get default xrd_analysis configuration.
-    獲取默認 xrd_analysis 配置。
+
+    獲取默認 xrd_analysis 配置。.
 
     Returns:
         ParameterConfig with default values
@@ -311,7 +320,8 @@ def get_default_config() -> ParameterConfig:
 
 def load_config_from_file(filepath: str = "config.yaml") -> ParameterConfig:
     """Load configuration from file with fallback to defaults.
-    從文件加載配置，失敗時使用默認值。
+
+    從文件加載配置，失敗時使用默認值。.
 
     Args:
         filepath: Path to config file

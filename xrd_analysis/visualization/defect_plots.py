@@ -1,10 +1,10 @@
-"""Defect Analysis Plots Module
+"""Defect Analysis Plots Module.
 ============================
 
 Visualization for stacking fault analysis.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 
@@ -12,7 +12,7 @@ from xrd_analysis.visualization.style import apply_xrd_analysis_style, save_figu
 
 
 def plot_stacking_fault_evolution(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     output_path: Optional[str] = None,
     dpi: int = 600,
     show: bool = True,

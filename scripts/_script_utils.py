@@ -20,8 +20,7 @@ def resolve_path(root: Path, path: Path | None) -> Path | None:
 
 
 def resolve_data_dir(root: Path, data_dir: Path | None = None) -> Path:
-    """
-    Resolve input data directory.
+    """Resolve input data directory.
 
     Priority:
     1) User provided path

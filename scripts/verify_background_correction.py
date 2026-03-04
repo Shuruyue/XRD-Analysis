@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Verify background-correction behavior on one XRD scan.
+"""Verify background-correction behavior on one XRD scan.
 
 Reports basic quantitative diagnostics:
 - mean raw intensity

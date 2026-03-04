@@ -1,4 +1,4 @@
-"""Fitting Quality Metrics Module 擬合品質評估模組
+"""Fitting Quality Metrics Module 擬合品質評估模組.
 ==============================================
 
 Quality assessment for XRD peak fitting results.
@@ -7,7 +7,7 @@ XRD 峰擬合結果的品質評估。
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -40,7 +40,7 @@ class FitQualityReport:
     rss: float
     is_valid: bool
     quality_level: QualityLevel
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         """Generate human-readable quality summary."""
@@ -67,7 +67,8 @@ def calculate_r_wp(
     observed: np.ndarray, calculated: np.ndarray, weights: Optional[np.ndarray] = None
 ) -> float:
     """Calculate Weighted Profile R-factor (R_wp).
-    計算加權剖面 R 因子 (R_wp)。
+
+    計算加權剖面 R 因子 (R_wp)。.
 
     R_wp = sqrt(Σ w_i (I_obs - I_calc)² / Σ w_i I_obs²) × 100%
 
@@ -147,10 +148,11 @@ def validate_fit_parameters(
     amplitude: float,
     fwhm: float,
     eta: float,
-    two_theta_range: Tuple[float, float] = (10, 150),
-) -> Tuple[bool, List[str]]:
+    two_theta_range: tuple[float, float] = (10, 150),
+) -> tuple[bool, list[str]]:
     """Validate fitted parameters for physical reasonableness.
-    驗證擬合參數的物理合理性。
+
+    驗證擬合參數的物理合理性。.
 
     Physical constraints:
       - η must be in [0, 1]

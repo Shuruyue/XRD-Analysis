@@ -1,4 +1,4 @@
-"""Validation Module
+"""Validation Module.
 Contains validation functions for XRD analysis results.
 """
 

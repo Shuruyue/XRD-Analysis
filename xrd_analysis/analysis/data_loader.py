@@ -1,4 +1,4 @@
-"""XRD Data Loader XRD 數據加載器
+"""XRD Data Loader XRD 數據加載器.
 ================================
 
 Load and parse XRD data files from various instrument formats.
@@ -7,12 +7,12 @@ Load and parse XRD data files from various instrument formats.
 
 import re
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import numpy as np
 
 
-def load_bruker_txt(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+def load_bruker_txt(filepath: str) -> tuple[np.ndarray, np.ndarray]:
     """Load Bruker TXT format XRD data.
 
     Returns:
@@ -50,14 +50,14 @@ def load_bruker_txt(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     return np.array(two_theta), np.array(intensity)
 
 
-def parse_filename(filepath: str) -> Dict[str, Any]:
+def parse_filename(filepath: str) -> dict[str, Any]:
     """Parse sample info from filename.
 
     Format: YYYYMMDD_Xml_Xh.txt or YYYYMMDD_Xml_Xh_Xmin.txt
     """
     name = Path(filepath).stem
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "name": name,
         "concentration_ml": None,
         "time_hours": None,

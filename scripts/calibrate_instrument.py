@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Instrument calibration helper for XRD-Analysis.
+"""Instrument calibration helper for XRD-Analysis.
 
 Workflow:
 1) Run CLI calibration on a standard scan (LaB6/Si)

@@ -23,13 +23,13 @@ from _script_utils import (
     resolve_path,
     unit_interval,
 )
+
 from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
 from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 from xrd_analysis.methods.defect_analysis import analyze_stacking_faults
 from xrd_analysis.visualization.defect_plots import (
     plot_stacking_fault_evolution,
 )
-
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)

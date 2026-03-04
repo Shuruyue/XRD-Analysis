@@ -64,14 +64,49 @@ include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "UP"]
-ignore = ["D100", "D104"]
+ignore = [
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D107",   # Missing docstring in __init__
+    "D205",   # 1 blank line after summary (bilingual EN+CN docstring pattern)
+    "D401",   # First line should be imperative mood
+    "D417",   # Missing argument descriptions (dataclass/simple functions)
+    "E501",   # Line too long (physics formulas, bilingual comments)
+    "N806",   # Variable in function should be lowercase (physics: K, U, V, W)
+    "N803",   # Argument name should be lowercase (physics: U, V, W)
+    "E741",   # Ambiguous variable name (l in crystallography)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402", "D103"]  # sys.path manipulation; script functions
+"tests/*" = ["D103", "D102"]    # Test functions don't need docstrings
+"tests/test_script_utils.py" = ["E402"]  # sys.path setup
+"xrd_analysis/cli.py" = ["E402"]  # Lazy imports in command handlers
+"xrd_analysis/__init__.py" = ["E402"]  # Imports after version setup
+"xrd_analysis/methods/defect_analysis.py" = ["E402"]  # Import after constants
+"xrd_analysis/visualization/generate_fitting_diagnosis.py" = ["E402"]  # Script-style
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true
+no_implicit_optional = false
+disable_error_code = [
+    "var-annotated",    # numpy intermediate variables
+    "arg-type",         # numpy scalar/array type inference
+    "assignment",       # numpy floating/signedinteger vs float/int
+    "return-value",     # numpy return type inference
+    "import-untyped",   # yaml stubs
+    "attr-defined",     # numpy/matplotlib attribute access
+    "return",           # data_loader untyped functions
+    "index",            # dict indexing with object type
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

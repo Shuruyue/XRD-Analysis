@@ -1,4 +1,4 @@
-"""Smoothing Module
+"""Smoothing Module.
 Implements Savitzky-Golay filter for XRD data smoothing.
 """
 

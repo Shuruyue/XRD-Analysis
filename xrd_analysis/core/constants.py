@@ -1,4 +1,4 @@
-"""Physical Constants Module 物理常數模組
+"""Physical Constants Module 物理常數模組.
 ======================================
 Centralized physical constants for XRD analysis.
 集中管理 XRD 分析所需的物理常數。
@@ -8,7 +8,6 @@ All parameters are verified with paper citations.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Tuple
 
 # =============================================================================
 # X-ray Wavelengths (Ångströms) / X-ray 波長 (埃)
@@ -47,7 +46,8 @@ KA2_KA1_RATIO = 0.5
 @dataclass
 class ScherrerConstants:
     """Scherrer constant K values for different grain shapes.
-    不同晶粒形狀的 Scherrer 常數 K 值。
+
+    不同晶粒形狀的 Scherrer 常數 K 值。.
 
     IMPORTANT 重要:
     - These are K_w values for FWHM (half-width) definition
@@ -75,9 +75,10 @@ class ScherrerConstants:
 SCHERRER_K = ScherrerConstants()
 
 
-def get_jcpds_data(material: str = "Cu") -> Dict[Tuple[int, int, int], Dict]:
+def get_jcpds_data(material: str = "Cu") -> dict[tuple[int, int, int], dict]:
     """Get JCPDS standard data for copper.
-    取得銅的 JCPDS 標準數據。
+
+    取得銅的 JCPDS 標準數據。.
 
     Args:
         material: Material name (only "Cu" supported)

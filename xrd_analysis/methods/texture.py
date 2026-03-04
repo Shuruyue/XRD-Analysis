@@ -1,4 +1,4 @@
-"""Texture Analysis Module
+"""Texture Analysis Module.
 =======================
 
 Harris Texture Coefficient (TC) analysis for preferred orientation.
@@ -14,7 +14,7 @@ Reference:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -27,7 +27,7 @@ from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
 # JCPDS standard data for Cu (PDF 04-0836)
 # JCPDS standard data for Cu (PDF 04-0836)
 # Derived dynamically from centralized SSOT data
-JCPDS_STANDARD_INTENSITY: Dict[Tuple[int, int, int], float] = {
+JCPDS_STANDARD_INTENSITY: dict[tuple[int, int, int], float] = {
     hkl: data["intensity"] for hkl, data in CU_JCPDS_EXTENDED.items()
 }
 
@@ -58,7 +58,8 @@ RANDOM_TEXTURE_SIGMA = 0.3
 
 class OrientationType(Enum):
     """Classification of crystallographic orientation (DATA MARKER).
-    結晶學取向分類（資料標記）。
+
+    結晶學取向分類（資料標記）。.
     """
 
     PREFERRED = "preferred"  # TC > 1.0
@@ -74,10 +75,11 @@ class OrientationType(Enum):
 @dataclass
 class TCResult:
     """Single peak texture coefficient result.
-    單一峰紋理係數結果。
+
+    單一峰紋理係數結果。.
     """
 
-    hkl: Tuple[int, int, int]
+    hkl: tuple[int, int, int]
     tc_value: float
     intensity_observed: float
     intensity_standard: float
@@ -92,7 +94,8 @@ class TCResult:
 @dataclass
 class TextureAnalysisResult:
     """Complete texture analysis result.
-    完整紋理分析結果。
+
+    完整紋理分析結果。.
 
     NOTE: Contains DATA ONLY. No automatic process diagnosis.
     注意：僅包含資料，無自動過程診斷。
@@ -109,9 +112,9 @@ class TextureAnalysisResult:
 
     """
 
-    tc_values: Dict[Tuple[int, int, int], float] = field(default_factory=dict)
-    tc_details: List[TCResult] = field(default_factory=list)
-    dominant_hkl: Optional[Tuple[int, int, int]] = None
+    tc_values: dict[tuple[int, int, int], float] = field(default_factory=dict)
+    tc_details: list[TCResult] = field(default_factory=list)
+    dominant_hkl: Optional[tuple[int, int, int]] = None
     dominant_tc: float = 1.0
     is_random: bool = True
     degree_of_texture: float = 0.0
@@ -139,7 +142,7 @@ TextureResult = TCResult
 
 class TextureAnalyzer:
     """Harris Texture Coefficient analyzer.
-    Harris 紋理係數分析器。
+    Harris 紋理係數分析器。.
 
     Provides DATA output only. Interpretation should be done by humans.
     僅提供資料輸出，解讀應由人類進行。
@@ -165,7 +168,7 @@ class TextureAnalyzer:
 
     def __init__(
         self,
-        standard_data: Optional[Dict[Tuple[int, int, int], float]] = None,
+        standard_data: Optional[dict[tuple[int, int, int], float]] = None,
         use_area: bool = True,
     ) -> None:
         if standard_data is None:
@@ -176,10 +179,11 @@ class TextureAnalyzer:
         self.intensity_type = "area" if use_area else "height"
 
     def analyze(
-        self, intensities: Dict[Tuple[int, int, int], float], normalize: bool = True
+        self, intensities: dict[tuple[int, int, int], float], normalize: bool = True
     ) -> TextureAnalysisResult:
         """Perform texture coefficient analysis.
-        執行紋理係數分析。
+
+        執行紋理係數分析。.
 
         Args:
             intensities: Dict mapping (hkl) to observed intensities.
@@ -200,7 +204,7 @@ class TextureAnalyzer:
             )
 
         # Calculate intensity ratios I/I₀
-        ratios: Dict[Tuple[int, int, int], float] = {}
+        ratios: dict[tuple[int, int, int], float] = {}
         for hkl in valid_hkls:
             I_obs = intensities[hkl]
             I_std = self.standard_data[hkl]
@@ -218,8 +222,8 @@ class TextureAnalyzer:
         avg_ratio = sum(ratios.values()) / n_valid
 
         # Calculate TC values
-        tc_values: Dict[Tuple[int, int, int], float] = {}
-        tc_details: List[TCResult] = []
+        tc_values: dict[tuple[int, int, int], float] = {}
+        tc_details: list[TCResult] = []
 
         for hkl in ratios:
             tc = ratios[hkl] / avg_ratio if avg_ratio > 0 else 1.0
@@ -273,11 +277,12 @@ class TextureAnalyzer:
 
     def analyze_from_peaks(
         self,
-        peaks: List[Tuple[float, float]],
-        hkl_assignments: List[Tuple[int, int, int]],
+        peaks: list[tuple[float, float]],
+        hkl_assignments: list[tuple[int, int, int]],
     ) -> TextureAnalysisResult:
         """Analyze texture from peak fitting results.
-        從峰擬合結果分析紋理。
+
+        從峰擬合結果分析紋理。.
         """
         if len(peaks) != len(hkl_assignments):
             raise ValueError("peaks and hkl_assignments must have same length")
@@ -290,9 +295,10 @@ class TextureAnalyzer:
 
     def get_hkl_for_angle(
         self, two_theta: float, tolerance: float = 1.0
-    ) -> Optional[Tuple[int, int, int]]:
+    ) -> Optional[tuple[int, int, int]]:
         """Find (hkl) assignment for a given 2θ angle.
-        為給定的 2θ 角度查找 (hkl) 指派。
+
+        為給定的 2θ 角度查找 (hkl) 指派。.
         """
         best_match = None
         min_diff = tolerance
@@ -312,10 +318,11 @@ class TextureAnalyzer:
 
 
 def analyze_texture(
-    intensities: Dict[Tuple[int, int, int], float], use_area: bool = True
+    intensities: dict[tuple[int, int, int], float], use_area: bool = True
 ) -> TextureAnalysisResult:
     """Convenience function for texture analysis.
-    紋理分析便利函式。
+
+    紋理分析便利函式。.
 
     Example:
         >>> intensities = {(1,1,1): 15680, (2,0,0): 5520, (2,2,0): 4200}
@@ -327,18 +334,20 @@ def analyze_texture(
     return analyzer.analyze(intensities)
 
 
-def get_standard_intensity(hkl: Tuple[int, int, int]) -> float:
+def get_standard_intensity(hkl: tuple[int, int, int]) -> float:
     """Get JCPDS standard intensity for given hkl.
-    取得指定 hkl 的 JCPDS 標準強度。
+
+    取得指定 hkl 的 JCPDS 標準強度。.
 
     Reference: JCPDS 04-0836
     """
     return JCPDS_STANDARD_INTENSITY.get(hkl, 0.0)
 
 
-def get_standard_angles(material: str = "Cu") -> Dict[Tuple[int, int, int], float]:
+def get_standard_angles(material: str = "Cu") -> dict[tuple[int, int, int], float]:
     """Get standard 2θ angles for common materials.
-    取得常見材料的標準 2θ 角度。
+
+    取得常見材料的標準 2θ 角度。.
     """
     if material.upper() == "CU":
         return {hkl: data["two_theta"] for hkl, data in CU_JCPDS_STANDARD.items()}
@@ -347,11 +356,12 @@ def get_standard_angles(material: str = "Cu") -> Dict[Tuple[int, int, int], floa
 
 
 def calculate_texture_coefficient(
-    observed_intensities: Dict[Tuple[int, int, int], float],
-    standard_intensities: Optional[Dict[Tuple[int, int, int], float]] = None,
-) -> Dict[Tuple[int, int, int], float]:
+    observed_intensities: dict[tuple[int, int, int], float],
+    standard_intensities: Optional[dict[tuple[int, int, int], float]] = None,
+) -> dict[tuple[int, int, int], float]:
     """Convenience function for texture coefficient calculation.
-    紋理係數計算便利函式。
+
+    紋理係數計算便利函式。.
     """
     analyzer = TextureAnalyzer(standard_data=standard_intensities)
     result = analyzer.analyze(observed_intensities)

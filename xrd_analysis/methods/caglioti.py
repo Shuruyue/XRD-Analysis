@@ -1,4 +1,4 @@
-"""Caglioti Equation Module Caglioti方程模組
+"""Caglioti Equation Module Caglioti方程模組.
 ==========================================
 Implements instrumental broadening correction using Caglioti equation.
 使用 Caglioti 方程實現儀器展寬校正。
@@ -9,7 +9,7 @@ Reference 出處:
 """
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -88,7 +88,7 @@ class CagliotiCorrection:
 
     def correct_broadening(
         self, fwhm_observed: float, two_theta: float, method: str = "geometric"
-    ) -> Tuple[float, bool, str]:
+    ) -> tuple[float, bool, str]:
         """Correct observed FWHM for instrumental broadening.
 
         For Pseudo-Voigt profiles, simple subtraction is incorrect.

@@ -1,4 +1,4 @@
-"""xrd_analysis Methods Module
+"""xrd_analysis Methods Module.
 =====================
 
 Analysis methods for XRD data.

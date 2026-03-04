@@ -1,8 +1,9 @@
 """Tests for data_loader module."""
 
+
 import numpy as np
 import pytest
-from pathlib import Path
+
 from xrd_analysis.analysis.data_loader import load_bruker_txt, parse_filename
 
 

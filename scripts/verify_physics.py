@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Verify core XRD constants and Cu reference peaks.
+"""Verify core XRD constants and Cu reference peaks.
 
 This script checks:
 1) Cu Kalpha constants consistency
@@ -14,7 +13,6 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -25,12 +23,12 @@ from xrd_analysis.core.copper_crystal import CU_CRYSTAL, CU_JCPDS_EXTENDED
 from xrd_analysis.fitting.ka_doublet import calculate_ka2_position
 
 
-def calc_d_spacing(hkl: Tuple[int, int, int], a: float) -> float:
+def calc_d_spacing(hkl: tuple[int, int, int], a: float) -> float:
     h, k, l = hkl
     return a / math.sqrt(h * h + k * k + l * l)
 
 
-def calc_two_theta(hkl: Tuple[int, int, int], a: float, wavelength: float) -> float:
+def calc_two_theta(hkl: tuple[int, int, int], a: float, wavelength: float) -> float:
     d = calc_d_spacing(hkl, a)
     theta = math.asin(wavelength / (2.0 * d))
     return 2.0 * math.degrees(theta)
@@ -47,7 +45,7 @@ def check_constants() -> None:
         raise AssertionError(f"KA2_KA1_RATIO should be 0.5, got {KA2_KA1_RATIO}")
 
 
-def check_cu_jcpds_table() -> Dict[str, float]:
+def check_cu_jcpds_table() -> dict[str, float]:
     max_d_err = 0.0
     max_tt_err = 0.0
 

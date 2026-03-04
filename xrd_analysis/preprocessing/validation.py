@@ -1,4 +1,4 @@
-"""XRD Data Validation Module XRD 資料驗證模組
+"""XRD Data Validation Module XRD 資料驗證模組.
 ===========================================
 
 Input validation and data quality checks for XRD preprocessing.
@@ -7,7 +7,6 @@ XRD 預處理的輸入驗證和資料品質檢查。
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Tuple
 
 import numpy as np
 
@@ -41,7 +40,7 @@ class DataValidationResult:
     """
 
     is_valid: bool
-    warnings: List[ValidationWarning] = field(default_factory=list)
+    warnings: list[ValidationWarning] = field(default_factory=list)
     stats: dict = field(default_factory=dict)
 
     def has_errors(self) -> bool:
@@ -90,7 +89,7 @@ class XRDDataset:
         return float(np.mean(np.diff(self.two_theta)))
 
     @property
-    def theta_range(self) -> Tuple[float, float]:
+    def theta_range(self) -> tuple[float, float]:
         """Return (min, max) 2θ range."""
         return float(self.two_theta.min()), float(self.two_theta.max())
 
@@ -238,7 +237,7 @@ def validate_xrd_data(
 
 def check_negative_values(
     intensity: np.ndarray, auto_correct: bool = False
-) -> Tuple[np.ndarray, List[int]]:
+) -> tuple[np.ndarray, list[int]]:
     """Check for and optionally correct negative intensity values.
 
     Physical Context:

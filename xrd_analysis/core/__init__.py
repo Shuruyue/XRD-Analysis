@@ -1,4 +1,4 @@
-"""xrd_analysis Core Module
+"""xrd_analysis Core Module.
 ==================
 
 Core domain logic including constants, configuration, and crystal data.

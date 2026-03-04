@@ -1,4 +1,4 @@
-"""XRD-Analysis Version Information
+"""XRD-Analysis Version Information.
 ==========================
 
 Single source of truth for version number.

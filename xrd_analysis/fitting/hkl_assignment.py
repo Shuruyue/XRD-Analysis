@@ -1,4 +1,4 @@
-"""HKL Peak Assignment Module 峰位指標指派模組
+"""HKL Peak Assignment Module 峰位指標指派模組.
 ==========================================
 
 Automatic assignment of XRD peaks to copper crystallographic indices.
@@ -6,7 +6,7 @@ XRD 峰自動指派到銅的結晶學指標。
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
 
@@ -24,7 +24,7 @@ class PeakAssignment:
 
     """
 
-    hkl: Optional[Tuple[int, int, int]]
+    hkl: Optional[tuple[int, int, int]]
     measured_two_theta: float
     standard_two_theta: Optional[float]
     deviation: float
@@ -38,16 +38,17 @@ class PeakAssignment:
 
 # JCPDS 04-0836 standard peak positions for Cu / 銅的 JCPDS 標準峰位
 # Generated from CU_JCPDS constants / 從 CU_JCPDS 常數生成
-JCPDS_COPPER_PEAKS: Dict[Tuple[int, int, int], float] = {
+JCPDS_COPPER_PEAKS: dict[tuple[int, int, int], float] = {
     hkl: data["two_theta"] for hkl, data in CU_JCPDS_EXTENDED.items()
 }
 
 
 def assign_hkl(
     two_theta: float, tolerance: float = 0.5
-) -> Optional[Tuple[int, int, int]]:
+) -> Optional[tuple[int, int, int]]:
     """Assign (hkl) Miller indices to a peak position.
-    將 (hkl) Miller 指標指派給峰位。
+
+    將 (hkl) Miller 指標指派給峰位。.
 
     The assignment uses JCPDS 04-0836 standard values with tolerance
     for small lattice-shift offsets (|Δ2θ| < 0.5° is normal for ED-Cu).
@@ -130,8 +131,8 @@ def assign_hkl_detailed(two_theta: float, tolerance: float = 0.5) -> PeakAssignm
 
 
 def assign_all_peaks(
-    peak_positions: List[float], tolerance: float = 0.5
-) -> List[PeakAssignment]:
+    peak_positions: list[float], tolerance: float = 0.5
+) -> list[PeakAssignment]:
     """Assign hkl to multiple peaks.
 
     Args:
@@ -145,9 +146,10 @@ def assign_all_peaks(
     return [assign_hkl_detailed(pos, tolerance) for pos in peak_positions]
 
 
-def get_expected_peak_range(hkl: Tuple[int, int, int]) -> Optional[Tuple[float, float]]:
+def get_expected_peak_range(hkl: tuple[int, int, int]) -> Optional[tuple[float, float]]:
     """Get expected 2θ range for a given hkl.
-    獲取給定 hkl 的預期 2θ 範圍。
+
+    獲取給定 hkl 的預期 2θ 範圍。.
 
     Args:
         hkl: Miller indices
@@ -165,7 +167,7 @@ def get_expected_peak_range(hkl: Tuple[int, int, int]) -> Optional[Tuple[float, 
     return ranges.get(hkl)
 
 
-def format_hkl(hkl: Optional[Tuple[int, int, int]]) -> str:
+def format_hkl(hkl: Optional[tuple[int, int, int]]) -> str:
     """Format hkl tuple as string like '(111)'."""
     if hkl is None:
         return "(?)"

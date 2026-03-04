@@ -1,4 +1,4 @@
-"""Error Analysis Module 誤差分析模組
+"""Error Analysis Module 誤差分析模組.
 ===================================
 Implements instrumental limits and reliability validation.
 實現儀器限制和可靠性驗證。
@@ -6,7 +6,7 @@ Implements instrumental limits and reliability validation.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -38,7 +38,7 @@ class ValidationResult:
     """Result of validation check."""
 
     is_valid: bool
-    warnings: List[ValidationWarning]
+    warnings: list[ValidationWarning]
 
     def __repr__(self):
         status = "✓" if self.is_valid else "✗"

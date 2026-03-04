@@ -1,4 +1,4 @@
-"""XRD Preprocessing Pipeline XRD 預處理管道
+"""XRD Preprocessing Pipeline XRD 預處理管道.
 ==========================================
 
 Orchestrates the complete preprocessing workflow for XRD data.
@@ -12,7 +12,7 @@ Orchestrates the complete preprocessing workflow for XRD data.
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import numpy as np
 
@@ -59,8 +59,8 @@ class PreprocessingResult:
     raw_intensity: np.ndarray
     background: Optional[np.ndarray] = None
     validation: Optional[DataValidationResult] = None
-    steps: List[PreprocessingStep] = field(default_factory=list)
-    warnings: List[ValidationWarning] = field(default_factory=list)
+    steps: list[PreprocessingStep] = field(default_factory=list)
+    warnings: list[ValidationWarning] = field(default_factory=list)
 
     def summary(self) -> str:
         """Generate human-readable processing summary."""
@@ -88,7 +88,7 @@ class PreprocessingResult:
 
 class PreprocessingPipeline:
     """XRD data preprocessing pipeline.
-    XRD 資料預處理管道。
+    XRD 資料預處理管道。.
 
     Orchestrates the complete preprocessing workflow with configurable
     parameters and optional steps.
@@ -161,7 +161,7 @@ class PreprocessingPipeline:
         self.kalpha_stripper = KalphaStripper()
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "PreprocessingPipeline":
+    def from_config(cls, config: dict[str, Any]) -> "PreprocessingPipeline":
         """Create pipeline from configuration dictionary.
 
         Expected config keys (matching config.yaml):
@@ -334,7 +334,8 @@ def should_apply_kalpha_stripping(
     two_theta: np.ndarray, threshold: float = 40.0
 ) -> bool:
     """Determine if Kα2 stripping should be applied.
-    判定是否應用 Kα2 剥離。
+
+    判定是否應用 Kα2 剥離。.
 
     Physical Rationale 物理依據:
         At low angles (2θ < 40°), the Kα1/Kα2 doublet is not resolved
@@ -352,9 +353,10 @@ def should_apply_kalpha_stripping(
     return float(two_theta.max()) > threshold
 
 
-def get_kalpha_shift_table() -> Dict[int, float]:
+def get_kalpha_shift_table() -> dict[int, float]:
     """Return reference table of Kα1-Kα2 angular shifts.
-    返回 Kα1-Kα2 角度偏移參考表。
+
+    返回 Kα1-Kα2 角度偏移參考表。.
 
     Returns:
         Dictionary mapping 2θ (degrees) to Δ2θ (degrees)

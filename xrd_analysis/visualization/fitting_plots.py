@@ -1,11 +1,11 @@
-"""Peak Fitting Visualization Module
+"""Peak Fitting Visualization Module.
 =================================
 
 Diagnostic plots for peak fitting analysis.
 峰型擬合診斷繪圖模組。
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,16 +21,17 @@ def plot_peak_fit(
     two_theta: np.ndarray,
     intensity_obs: np.ndarray,
     intensity_fit: np.ndarray,
-    peak_params: Optional[Dict[str, Any]] = None,
+    peak_params: Optional[dict[str, Any]] = None,
     output_path: Optional[str] = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (10, 8),
+    figsize: tuple[float, float] = (10, 8),
     peak_name: str = "",
 ) -> plt.Figure:
     """Plot peak fitting comparison (observed vs fitted).
-    繪製峰型擬合對比圖（觀測值 vs 擬合值）。
+
+    繪製峰型擬合對比圖（觀測值 vs 擬合值）。.
 
     Args:
         two_theta: 2θ array (degrees).
@@ -146,11 +147,12 @@ def plot_doublet_comparison(
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (12, 8),
+    figsize: tuple[float, float] = (12, 8),
     peak_name: str = "",
 ) -> plt.Figure:
     """Compare single peak vs Kα doublet fitting.
-    比較單峰與 Kα 雙峰擬合。
+
+    比較單峰與 Kα 雙峰擬合。.
 
     Args:
         two_theta: 2θ array (degrees).
@@ -339,10 +341,11 @@ def plot_fit_residuals(
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
-    figsize: Tuple[float, float] = (10, 5),
+    figsize: tuple[float, float] = (10, 5),
 ) -> plt.Figure:
     """Plot peak fitting residuals with statistics.
-    繪製峰型擬合殘差統計圖。
+
+    繪製峰型擬合殘差統計圖。.
 
     Args:
         two_theta: 2θ array (degrees).

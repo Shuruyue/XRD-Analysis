@@ -24,6 +24,7 @@ Default constants and examples in this repository target Cu scans, but the workf
 
 - **True Voigt + Kalpha Doublet Fitting**: Primary path uses physically rigorous line shape with Cu Kalpha1/Kalpha2 coupling
 - **Pseudo-Voigt Fallback**: Used only when strict doublet fitting cannot converge
+- **Double-Correction Guard**: When doublet fitting is enabled, Kalpha2 pre-stripping is automatically disabled to avoid over-correction
 - **Caglioti Instrumental Correction**: Full-angle instrumental width correction using NIST SRM 660c (LaB6)
 - **High Precision**: Applicable to crystallite sizes in the 2-100 nm range
 
@@ -57,6 +58,10 @@ python scripts/calibrate_instrument.py data/standards/lab6_standard.txt \
   -o outputs/calibration.yaml \
   --update-config config.yaml
 ```
+
+`xrd-analysis analyze` now writes:
+- Per-sample machine-readable result: `outputs/<sample>_analysis.json`
+- Batch summaries: `outputs/analysis_summary.json` and `outputs/analysis_summary.csv`
 
 ### Validation Scripts
 

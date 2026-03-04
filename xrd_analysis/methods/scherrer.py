@@ -1,4 +1,4 @@
-"""Scherrer Crystallite Size Analysis Scherrer 晶粒尺寸分析
+"""Scherrer Crystallite Size Analysis Scherrer 晶粒尺寸分析.
 =======================================================
 
 Implements the Scherrer equation with dynamic K values, validity flags,
@@ -12,7 +12,7 @@ Reference 出處:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -41,7 +41,7 @@ FWHM_RATIO_THRESHOLD = MIN_BROADENING_RATIO
 
 class ValidityFlag(Enum):
     """Scherrer calculation validity flags.
-    Scherrer 計算有效性旗標。
+    Scherrer 計算有效性旗標。.
     """
 
     VALID = "VALID"  # Normal calculation 正常計算
@@ -52,7 +52,8 @@ class ValidityFlag(Enum):
 
 class GrainShape(Enum):
     """Grain shape for Scherrer constant selection.
-    晶粒形狀，用於選擇 Scherrer 常數。
+
+    晶粒形狀，用於選擇 Scherrer 常數。.
     """
 
     SPHERICAL = "spherical"  # 球形
@@ -68,7 +69,7 @@ class GrainShape(Enum):
 @dataclass
 class ScherrerResult:
     """Result from Scherrer crystallite size calculation.
-    Scherrer 晶粒尺寸計算結果。
+    Scherrer 晶粒尺寸計算結果。.
 
     Includes validity flags and complete metadata.
     包含有效性旗標與完整中繼資料。
@@ -92,7 +93,7 @@ class ScherrerResult:
     size_nm: float
     size_angstrom: float
     two_theta: float
-    hkl: Optional[Tuple[int, int, int]] = None
+    hkl: Optional[tuple[int, int, int]] = None
     k_factor: float = 0.829  # L&W 1978 spherical standard
     fwhm_observed: float = 0.0
     fwhm_instrumental: float = 0.0
@@ -117,7 +118,8 @@ class ScherrerResult:
 
 class ScherrerCalculator:
     """Scherrer equation for crystallite size calculation.
-    使用 Scherrer 方程式計算晶粒尺寸。
+
+    使用 Scherrer 方程式計算晶粒尺寸。.
 
     D = K × λ / (β × cos θ)
 
@@ -144,7 +146,7 @@ class ScherrerCalculator:
         self,
         wavelength: float = CU_KA1,
         use_cubic_habit: bool = True,
-        caglioti_params: Optional[Tuple[float, float, float]] = None,
+        caglioti_params: Optional[tuple[float, float, float]] = None,
         deconvolution_method: str = "auto",
     ) -> None:
         self.wavelength = wavelength
@@ -157,12 +159,13 @@ class ScherrerCalculator:
         two_theta: float,
         fwhm_observed: float,
         fwhm_instrumental: Optional[float] = None,
-        hkl: Optional[Tuple[int, int, int]] = None,
+        hkl: Optional[tuple[int, int, int]] = None,
         correction_method: Optional[str] = None,
         **kwargs,
     ) -> ScherrerResult:
         """Calculate crystallite size using Scherrer equation.
-        使用 Scherrer 方程式計算晶粒尺寸。
+
+        使用 Scherrer 方程式計算晶粒尺寸。.
 
         Args:
             two_theta: Peak position in degrees (2θ). 峰位角度。
@@ -387,7 +390,7 @@ class ScherrerCalculator:
             is_reliable=is_reliable,
         )
 
-    def _get_voigt_components(self, fwhm: float, eta: float) -> Tuple[float, float]:
+    def _get_voigt_components(self, fwhm: float, eta: float) -> tuple[float, float]:
         """Convert Pseudo-Voigt FWHM and eta to Constituent Gaussian and Lorentzian FWHMs.
 
         Using approximation connecting PV parameters to Voigt:
@@ -412,7 +415,8 @@ class ScherrerCalculator:
 
     def _calculate_caglioti(self, two_theta: float) -> float:
         """Calculate instrumental FWHM using Caglioti equation.
-        使用 Caglioti 方程式計算儀器 FWHM。
+
+        使用 Caglioti 方程式計算儀器 FWHM。.
 
         FWHM²_inst = U·tan²θ + V·tanθ + W
         """
@@ -428,11 +432,12 @@ class ScherrerCalculator:
 
     def batch_calculate(
         self,
-        peaks: List[Tuple[float, float]],
+        peaks: list[tuple[float, float]],
         fwhm_instrumental: Optional[float] = None,
-    ) -> List[ScherrerResult]:
+    ) -> list[ScherrerResult]:
         """Calculate crystallite sizes for multiple peaks.
-        批次計算多個峰的晶粒尺寸。
+
+        批次計算多個峰的晶粒尺寸。.
 
         Args:
             peaks: List of (two_theta, fwhm_observed) tuples.
@@ -448,10 +453,11 @@ class ScherrerCalculator:
         ]
 
     def average_size(
-        self, results: List[ScherrerResult], include_unreliable: bool = False
-    ) -> Tuple[float, float]:
+        self, results: list[ScherrerResult], include_unreliable: bool = False
+    ) -> tuple[float, float]:
         """Calculate average crystallite size from multiple peaks.
-        從多個峰計算平均晶粒尺寸。
+
+        從多個峰計算平均晶粒尺寸。.
 
         Args:
             results: List of ScherrerResult objects.
@@ -487,7 +493,8 @@ def calculate_crystallite_size(
     fwhm_instrumental: float = 0.0,
 ) -> float:
     """Quick crystallite size calculation.
-    快速計算晶粒尺寸。
+
+    快速計算晶粒尺寸。.
 
     Args:
         two_theta: Peak position (degrees). 峰位（度）
@@ -513,7 +520,8 @@ def calculate_scherrer(
     correction_method: str = "auto",
 ) -> ScherrerResult:
     """Convenience function for Scherrer calculation with full metadata.
-    完整中繼資料的 Scherrer 計算便利函式。
+
+    完整中繼資料的 Scherrer 計算便利函式。.
 
     Example:
         >>> result = calculate_scherrer(43.32, 0.25, 0.08)

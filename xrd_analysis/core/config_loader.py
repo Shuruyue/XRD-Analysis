@@ -1,4 +1,4 @@
-"""xrd_analysis Configuration Loader
+"""xrd_analysis Configuration Loader.
 ===========================
 
 Centralized configuration loading from YAML files.
@@ -6,7 +6,7 @@ Centralized configuration loading from YAML files.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 try:
     import yaml
@@ -23,9 +23,10 @@ from xrd_analysis.core.constants import (
 )
 
 
-def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
+def load_config(config_path: Optional[Path] = None) -> dict[str, Any]:
     """Load configuration from YAML file.
-    從 YAML 檔案載入配置。
+
+    從 YAML 檔案載入配置。.
 
     Falls back to defaults from constants module if no config file.
     若無配置檔案則使用 constants 模組的預設值。
@@ -68,7 +69,8 @@ def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
 
 def _deep_merge(base: dict, override: dict) -> dict:
     """Deep merge two dictionaries.
-    深度合併兩個字典。
+
+    深度合併兩個字典。.
     """
     result = base.copy()
     for key, value in override.items():

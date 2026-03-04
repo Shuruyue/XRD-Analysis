@@ -1,4 +1,4 @@
-"""xrd_analysis Visualization Module
+"""xrd_analysis Visualization Module.
 ===========================
 
 Provides structured visualization tools for XRD analysis results.

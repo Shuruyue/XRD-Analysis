@@ -1,4 +1,4 @@
-"""Pseudo-Voigt Function Module 偽Voigt函數模組
+"""Pseudo-Voigt Function Module 偽Voigt函數模組.
 =============================================
 Implements the Pseudo-Voigt profile function for XRD peak fitting.
 實現用於 XRD 峰擬合的偽Voigt剖面函數。
@@ -8,7 +8,6 @@ Also includes True Voigt profile using scipy.special.voigt_profile.
 """
 
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
 from scipy.special import voigt_profile
@@ -134,7 +133,7 @@ class TrueVoigt:
         return 0.5346 * fL + np.sqrt(0.2166 * fL**2 + fG**2)
 
     @staticmethod
-    def params_from_fwhm(fwhm: float, eta: float = 0.5) -> Tuple[float, float]:
+    def params_from_fwhm(fwhm: float, eta: float = 0.5) -> tuple[float, float]:
         """Estimate sigma and gamma from total FWHM and mixing ratio.
 
         Args:

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Verify peak-angle correctness against expected Cu reference peaks.
+"""Verify peak-angle correctness against expected Cu reference peaks.
 
 This script runs the project pipeline and reports:
 - mean peak offset
@@ -19,6 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from _script_utils import positive_float
+
 from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
 
 

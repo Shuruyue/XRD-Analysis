@@ -1,8 +1,7 @@
-"""Background Subtraction Module
+"""Background Subtraction Module.
 Implements Sonneveld-Visser and Chebyshev polynomial methods.
 """
 
-from typing import Tuple
 
 import numpy as np
 from scipy.signal import savgol_filter
@@ -35,7 +34,7 @@ class BackgroundSubtractor:
 
     def subtract(
         self, two_theta: np.ndarray, intensity: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Subtract background from XRD data.
 
         Args:
@@ -53,7 +52,7 @@ class BackgroundSubtractor:
 
     def _chebyshev_background(
         self, two_theta: np.ndarray, intensity: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Chebyshev polynomial background fitting.
 
         Iteratively fits polynomial, excluding points above the fit.
@@ -87,7 +86,7 @@ class BackgroundSubtractor:
 
     def _sonneveld_visser_background(
         self, two_theta: np.ndarray, intensity: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Sonneveld-Visser second derivative method.
 
         Uses second derivative to identify background regions.
@@ -121,7 +120,7 @@ class BackgroundSubtractor:
 
 def subtract_background(
     two_theta: np.ndarray, intensity: np.ndarray, method: str = "chebyshev", **kwargs
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Convenience function for background subtraction.
 
     Args:

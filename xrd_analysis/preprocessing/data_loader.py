@@ -1,9 +1,9 @@
-"""XRD Data Loader Module
-Supports multiple XRD data formats: .xy, .csv, .raw, .txt (Bruker)
+"""XRD Data Loader Module.
+Supports multiple XRD data formats: .xy, .csv, .raw, .txt (Bruker).
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -23,10 +23,10 @@ class XRDDataLoader:
 
     def __init__(self):
         self.data: Optional[np.ndarray] = None
-        self.metadata: Dict[str, Any] = {}
+        self.metadata: dict[str, Any] = {}
         self.filepath: Optional[Path] = None
 
-    def load(self, filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+    def load(self, filepath: str) -> tuple[np.ndarray, np.ndarray]:
         """Load XRD data from file.
 
         Args:
@@ -54,14 +54,14 @@ class XRDDataLoader:
         elif suffix == ".raw":
             return self._load_bruker_raw()
 
-    def _load_xy(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _load_xy(self) -> tuple[np.ndarray, np.ndarray]:
         """Load .xy format (simple two-column)."""
         data = np.loadtxt(self.filepath, comments=["#", ";"])
         two_theta = data[:, 0]
         intensity = data[:, 1]
         return two_theta, intensity
 
-    def _load_csv(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _load_csv(self) -> tuple[np.ndarray, np.ndarray]:
         """Load .csv format with automatic header detection."""
         # Try to detect if header exists
         df = pd.read_csv(self.filepath)
@@ -72,7 +72,7 @@ class XRDDataLoader:
 
         return two_theta, intensity
 
-    def _load_bruker_txt(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _load_bruker_txt(self) -> tuple[np.ndarray, np.ndarray]:
         """Load Bruker TXT export format with robust encoding handling.
 
         Format:
@@ -146,7 +146,7 @@ class XRDDataLoader:
 
         return np.array(two_theta), np.array(intensity)
 
-    def _load_bruker_raw(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _load_bruker_raw(self) -> tuple[np.ndarray, np.ndarray]:
         """Load Bruker RAW format (binary).
 
         Note: This is a simplified implementation.
@@ -157,7 +157,7 @@ class XRDDataLoader:
             "Please export to TXT or XY format."
         )
 
-    def get_metadata(self) -> Dict[str, Any]:
+    def get_metadata(self) -> dict[str, Any]:
         """Return file metadata."""
         return {
             "filepath": str(self.filepath),
@@ -166,7 +166,7 @@ class XRDDataLoader:
         }
 
 
-def load_xrd_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+def load_xrd_data(filepath: str) -> tuple[np.ndarray, np.ndarray]:
     """Convenience function to load XRD data.
 
     Args:

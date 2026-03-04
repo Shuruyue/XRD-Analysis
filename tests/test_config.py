@@ -1,15 +1,15 @@
 """Tests for core/config.py configuration system."""
 
 import warnings
+
 import pytest
-from pathlib import Path
 
 from xrd_analysis.core.config import (
     InstrumentConfig,
+    ParameterConfig,
     PeakDetectionConfig,
     ValidationConfig,
     VisualizationConfig,
-    ParameterConfig,
     get_default_config,
     load_config_from_file,
 )

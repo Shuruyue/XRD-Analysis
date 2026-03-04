@@ -1,4 +1,4 @@
-"""xrd_analysis Complete Analysis Pipeline 完整分析管道
+"""xrd_analysis Complete Analysis Pipeline 完整分析管道.
 ==========================================
 
 Unified pipeline integrating all analysis phases.
@@ -15,7 +15,7 @@ Unified pipeline integrating all analysis phases.
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AnalysisConfig:
     """Configuration for xrd_analysis analysis pipeline.
-    xrd_analysis 分析管道配置。
+    xrd_analysis 分析管道配置。.
     """
 
     # X-ray parameters / X-ray 參數
@@ -99,7 +99,7 @@ class AnalysisConfig:
 
     # Cu peak positions from JCPDS 04-0836 / 銅峰位從 JCPDS 標準
     # Dynamically generated from CU_JCPDS constants
-    EXPECTED_PEAKS: Dict[Tuple[int, int, int], float] = field(
+    EXPECTED_PEAKS: dict[tuple[int, int, int], float] = field(
         default_factory=lambda: {
             hkl: data["two_theta"] for hkl, data in CU_JCPDS_EXTENDED.items()
         }
@@ -110,7 +110,10 @@ class AnalysisConfig:
 # Data Loader (delegated to data_loader module)
 # =============================================================================
 # Backward-compatible re-exports
-from xrd_analysis.analysis.data_loader import load_bruker_txt, parse_filename  # noqa: E402,F401
+from xrd_analysis.analysis.data_loader import (  # noqa: E402,F401
+    load_bruker_txt,
+    parse_filename,
+)
 
 # =============================================================================
 # Peak Finding (delegated to peak_finder module)
@@ -120,7 +123,6 @@ from xrd_analysis.analysis.peak_finder import (  # noqa: E402,F401
     PeakData,
     find_peak_in_range,
 )
-
 
 # =============================================================================
 # Result Container
@@ -141,10 +143,10 @@ class PipelineResult:
     sample_age_hours: Optional[float] = None
 
     # Peak data
-    peaks: List[PeakData] = field(default_factory=list)
+    peaks: list[PeakData] = field(default_factory=list)
 
     # Preprocessing and angle-quality diagnostics
-    preprocessing_notes: List[str] = field(default_factory=list)
+    preprocessing_notes: list[str] = field(default_factory=list)
     background_applied: bool = False
     background_method: str = ""
     background_fraction_mean: Optional[float] = None
@@ -154,7 +156,7 @@ class PipelineResult:
     angle_validation_peaks: int = 0
 
     # Phase 04: Scherrer
-    scherrer_results: List[ScherrerResult] = field(default_factory=list)
+    scherrer_results: list[ScherrerResult] = field(default_factory=list)
     average_size_nm: Optional[float] = None
 
     # Phase 05: W-H
@@ -475,10 +477,10 @@ def run_full_analysis(
 
 
 def batch_analyze(
-    filepaths: List[str],
+    filepaths: list[str],
     sample_age_hours: Optional[float] = None,
     config: Optional[AnalysisConfig] = None,
-) -> List[PipelineResult]:
+) -> list[PipelineResult]:
     """Run analysis on multiple files."""
     pipeline = XRDAnalysisPipeline(config)
     results = []

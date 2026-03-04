@@ -22,6 +22,7 @@ from _script_utils import (
     resolve_path,
     unit_interval,
 )
+
 from xrd_analysis.analysis.pipeline import load_bruker_txt, parse_filename
 from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 from xrd_analysis.fitting.pseudo_voigt import TrueVoigt
@@ -30,7 +31,6 @@ from xrd_analysis.visualization.texture_plots import (
     plot_tc_evolution,
     plot_texture_fraction_single,
 )
-
 
 TARGET_PEAKS = {
     (1, 1, 1): 43.316,

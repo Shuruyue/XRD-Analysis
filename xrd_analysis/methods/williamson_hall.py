@@ -1,4 +1,4 @@
-"""Williamson-Hall Analysis Module
+"""Williamson-Hall Analysis Module.
 ===============================
 
 Separates crystallite size and microstrain contributions to peak broadening.
@@ -12,7 +12,7 @@ Reference:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 from scipy.stats import linregress
@@ -55,7 +55,7 @@ R2_ACCEPTABLE = 0.85  # 可接受 / Acceptable
 MIN_PEAKS = 3  # W-H 線性迴歸最少需要 3 點 / Minimum 3 peaks for linear regression
 
 # Copper elastic anisotropy
-MODULUS_MAP: Dict[Tuple[int, int, int], float] = {
+MODULUS_MAP: dict[tuple[int, int, int], float] = {
     (1, 1, 1): 191.0,  # GPa, hardest direction
     (2, 0, 0): 67.0,  # GPa, softest direction
     (2, 2, 0): 130.0,  # GPa, intermediate
@@ -72,7 +72,7 @@ ZENER_ANISOTROPY = 3.21
 
 class WHQualityLevel(Enum):
     """Williamson-Hall analysis quality classification.
-    Williamson-Hall 分析品質分類。
+    Williamson-Hall 分析品質分類。.
     """
 
     EXCELLENT = "excellent"  # R² > 0.95
@@ -88,7 +88,7 @@ class WHQualityLevel(Enum):
 @dataclass
 class WHResult:
     """Result from Williamson-Hall analysis.
-    Williamson-Hall 分析結果。
+    Williamson-Hall 分析結果。.
 
     Attributes:
         crystallite_size_nm: Crystallite size in nm. 晶粒尺寸（奈米）
@@ -121,7 +121,7 @@ class WHResult:
     quality_level: WHQualityLevel = WHQualityLevel.ACCEPTABLE
     is_reliable: bool = True
     n_peaks: int = 0
-    peak_hkls: List[Tuple[int, int, int]] = field(default_factory=list)
+    peak_hkls: list[tuple[int, int, int]] = field(default_factory=list)
     warning_message: str = ""
     anisotropy_note: str = ""
 
@@ -140,7 +140,8 @@ class WHResult:
 
 class WilliamsonHallAnalyzer:
     """Williamson-Hall analysis for separating size and strain broadening.
-    用於分離尺寸與應變展寬的 Williamson-Hall 分析。
+
+    用於分離尺寸與應變展寬的 Williamson-Hall 分析。.
 
     W-H Equation:
         β cos θ = (K λ / D) + 4 ε sin θ
@@ -179,11 +180,12 @@ class WilliamsonHallAnalyzer:
         self,
         two_theta: np.ndarray,
         fwhm_sample: np.ndarray,
-        hkl_list: Optional[List[Tuple[int, int, int]]] = None,
+        hkl_list: Optional[list[tuple[int, int, int]]] = None,
         fwhm_in_radians: bool = False,
     ) -> WHResult:
         """Perform Williamson-Hall analysis.
-        執行 Williamson-Hall 分析。
+
+        執行 Williamson-Hall 分析。.
 
         Args:
             two_theta: Array of 2θ peak positions (degrees). 峰位陣列（度）
@@ -273,7 +275,8 @@ class WilliamsonHallAnalyzer:
         fwhm_instrumental: np.ndarray,
     ) -> WHResult:
         """Perform W-H analysis with instrumental broadening correction.
-        執行含儀器寬化校正的 W-H 分析。
+
+        執行含儀器寬化校正的 W-H 分析。.
 
         Uses geometric approximation: β_sample = β_obs - β²_inst / β_obs
         """
@@ -288,9 +291,10 @@ class WilliamsonHallAnalyzer:
         two_theta: np.ndarray,
         fwhm_sample: np.ndarray,
         fwhm_in_radians: bool = False,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get data for W-H plot.
-        取得 W-H 圖資料。
+
+        取得 W-H 圖資料。.
 
         Returns:
             Tuple of (x_data, y_data, x_fit_line, y_fit_line).
@@ -310,7 +314,7 @@ class WilliamsonHallAnalyzer:
 
         return x_data, y_data, x_fit, y_fit
 
-    def _assess_quality(self, r_squared: float) -> Tuple[WHQualityLevel, str]:
+    def _assess_quality(self, r_squared: float) -> tuple[WHQualityLevel, str]:
         """Assess analysis quality based on R²."""
         if r_squared > R2_EXCELLENT:
             return WHQualityLevel.EXCELLENT, ""
@@ -323,7 +327,7 @@ class WilliamsonHallAnalyzer:
             )
 
     def _generate_anisotropy_note(
-        self, r_squared: float, hkl_list: Optional[List[Tuple[int, int, int]]]
+        self, r_squared: float, hkl_list: Optional[list[tuple[int, int, int]]]
     ) -> str:
         """Generate anisotropy diagnostic note."""
         if r_squared > R2_ACCEPTABLE:
@@ -373,10 +377,10 @@ class WilliamsonHallAnalyzer:
 def analyze_williamson_hall(
     two_theta: np.ndarray,
     fwhm_sample: np.ndarray,
-    hkl_list: Optional[List[Tuple[int, int, int]]] = None,
+    hkl_list: Optional[list[tuple[int, int, int]]] = None,
 ) -> WHResult:
     """Convenience function for Williamson-Hall analysis.
-    Williamson-Hall 分析便利函式。
+    Williamson-Hall 分析便利函式。.
 
     Example:
         >>> two_theta = np.array([43.32, 50.45, 74.16, 89.97])
@@ -389,9 +393,10 @@ def analyze_williamson_hall(
     return analyzer.analyze(two_theta, fwhm_sample, hkl_list)
 
 
-def get_modulus_for_hkl(hkl: Tuple[int, int, int]) -> float:
+def get_modulus_for_hkl(hkl: tuple[int, int, int]) -> float:
     """Get Young's modulus for a given hkl direction.
-    取得指定 hkl 方向的楊氏模數。
+
+    取得指定 hkl 方向的楊氏模數。.
 
     Returns:
         Young's modulus in GPa, or 120 GPa (average) if not found.
