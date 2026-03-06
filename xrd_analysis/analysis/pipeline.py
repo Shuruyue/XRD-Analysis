@@ -14,7 +14,7 @@ Unified pipeline integrating all analysis phases.
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -131,9 +131,9 @@ class PipelineResult:
     sample_name: str
 
     # Sample metadata
-    leveler_concentration: Optional[float] = None
-    plating_time_hours: Optional[float] = None
-    sample_age_hours: Optional[float] = None
+    leveler_concentration: float | None = None
+    plating_time_hours: float | None = None
+    sample_age_hours: float | None = None
 
     # Peak data
     peaks: List[PeakData] = field(default_factory=list)
@@ -142,22 +142,22 @@ class PipelineResult:
     preprocessing_notes: List[str] = field(default_factory=list)
     background_applied: bool = False
     background_method: str = ""
-    background_fraction_mean: Optional[float] = None
-    angle_offset_mean_deg: Optional[float] = None
-    angle_offset_rmse_deg: Optional[float] = None
-    angle_offset_max_abs_deg: Optional[float] = None
+    background_fraction_mean: float | None = None
+    angle_offset_mean_deg: float | None = None
+    angle_offset_rmse_deg: float | None = None
+    angle_offset_max_abs_deg: float | None = None
     angle_validation_peaks: int = 0
 
     # Phase 04: Scherrer
     scherrer_results: List[ScherrerResult] = field(default_factory=list)
-    average_size_nm: Optional[float] = None
+    average_size_nm: float | None = None
 
     # Phase 05: Texture
-    texture_result: Optional[TextureAnalysisResult] = None
+    texture_result: TextureAnalysisResult | None = None
 
     # Phase 06: Defects
-    stacking_fault: Optional[StackingFaultResult] = None
-    lattice_result: Optional[LatticeConstantResult] = None
+    stacking_fault: StackingFaultResult | None = None
+    lattice_result: LatticeConstantResult | None = None
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
 
 
@@ -172,7 +172,7 @@ class XRDAnalysisPipeline:
     Integrates all Phase 04-06 analysis modules into a unified workflow.
     """
 
-    def __init__(self, config: Optional[AnalysisConfig] = None):
+    def __init__(self, config: AnalysisConfig | None = None):
         """Initialize pipeline with configuration."""
         self.config = config or AnalysisConfig()
 
@@ -321,7 +321,7 @@ class XRDAnalysisPipeline:
         return sf_result, lattice_result
 
     def analyze(
-        self, filepath: str, sample_age_hours: Optional[float] = None
+        self, filepath: str, sample_age_hours: float | None = None
     ) -> PipelineResult:
         """Run complete analysis on XRD data file.
 
@@ -405,7 +405,7 @@ class XRDAnalysisPipeline:
         self,
         filepath: str,
         output_dir: str,
-        sample_age_hours: Optional[float] = None,
+        sample_age_hours: float | None = None,
     ) -> PipelineResult:
         """Analyze one file and ensure output directory exists."""
         result = self.analyze(filepath, sample_age_hours=sample_age_hours)
@@ -423,8 +423,8 @@ class XRDAnalysisPipeline:
 
 def run_full_analysis(
     filepath: str,
-    sample_age_hours: Optional[float] = None,
-    config: Optional[AnalysisConfig] = None,
+    sample_age_hours: float | None = None,
+    config: AnalysisConfig | None = None,
 ) -> PipelineResult:
     """Run complete xrd_analysis analysis on a single file.
 
@@ -439,8 +439,8 @@ def run_full_analysis(
 
 def batch_analyze(
     filepaths: List[str],
-    sample_age_hours: Optional[float] = None,
-    config: Optional[AnalysisConfig] = None,
+    sample_age_hours: float | None = None,
+    config: AnalysisConfig | None = None,
 ) -> List[PipelineResult]:
     """Run analysis on multiple files."""
     pipeline = XRDAnalysisPipeline(config)

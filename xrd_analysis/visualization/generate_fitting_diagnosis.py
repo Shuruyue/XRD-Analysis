@@ -12,7 +12,7 @@ Refactored to use xrd_analysis.visualization module.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,7 +44,7 @@ PEAK_LABELS = [f"({h[0]}{h[1]}{h[2]})" for h in PEAK_POSITIONS.keys()]
 
 def generate_sample_fitting_plot(
     filepath: Path, output_dir: Path, config: AnalysisConfig = None
-) -> Optional[List[Dict]]:
+) -> List[Dict] | None:
     """Generate a single diagnostic plot for one XRD sample.
     使用新視覺化模組生成單一樣品的診斷圖。
 

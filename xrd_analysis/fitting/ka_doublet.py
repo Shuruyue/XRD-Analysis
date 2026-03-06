@@ -14,7 +14,8 @@ Cu Kα wavelengths (Bearden 1967, Rev. Mod. Phys. 39, 78):
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any
+
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import least_squares
@@ -145,7 +146,7 @@ class Ka2Stripper:
             theta_ka1 = theta2_from_wavelength_shift(theta_ka2, CU_KA2, CU_KA1)
 
             # Find the index of Kα₁ position
-            idx_ka1 = np.searchsorted(two_theta, theta_ka1)
+            idx_ka1 = int(np.searchsorted(two_theta, theta_ka1))
 
             if 0 <= idx_ka1 < len(two_theta):
                 # Interpolate intensity at Kα₁ position

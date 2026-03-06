@@ -12,7 +12,7 @@ References 出處:
 
 from dataclasses import dataclass
 from math import gcd, sqrt
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 # =============================================================================
 # FCC Copper Crystal Structure Constants (298K Standard)
@@ -107,7 +107,7 @@ CU_JCPDS_EXTENDED: Dict[Tuple[int, int, int], Dict] = {
 
 
 def get_standard_peaks(
-    hkl_list: Optional[List[Tuple[int, int, int]]] = None
+    hkl_list: List[Tuple[int, int, int]] | None = None
 ) -> Dict[Tuple[int, int, int], float]:
     """Get standard peak positions for specified (hkl) indices.
     取得指定 (hkl) 的標準峰位。
@@ -511,7 +511,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
 
 
 def explain_lattice_deviation(
-    measured_a: float, sample_age_hours: Optional[float] = None
+    measured_a: float, sample_age_hours: float | None = None
 ) -> str:
     """Generate detailed explanation for observed lattice constant deviation.
 
@@ -586,7 +586,7 @@ def explain_lattice_deviation(
 # =============================================================================
 
 
-def get_jcpds_peak(hkl: Tuple[int, int, int]) -> Optional[Dict]:
+def get_jcpds_peak(hkl: Tuple[int, int, int]) -> Dict | None:
     """Get JCPDS data for a specific (hkl) reflection."""
     return CU_JCPDS_EXTENDED.get(hkl)
 
