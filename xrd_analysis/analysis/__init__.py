@@ -2,7 +2,6 @@
 =========================
 
 High-level analysis orchestration for XRD data.
-XRD 資料的高階分析協調模組。
 """
 
 from xrd_analysis.analysis.pipeline import (

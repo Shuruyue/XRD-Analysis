@@ -1,11 +1,9 @@
-"""Goodness of Fit Module 擬合優度模組.
+"""Goodness of Fit Module.
 ====================================
 Implements quality metrics for XRD peak fitting.
-實現 XRD 峰擬合的品質指標。
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -27,7 +25,7 @@ class FitQualityResult:
 
 
 def calculate_rwp(
-    observed: np.ndarray, calculated: np.ndarray, weights: Optional[np.ndarray] = None
+    observed: np.ndarray, calculated: np.ndarray, weights: np.ndarray | None = None
 ) -> float:
     """Calculate weighted profile R-factor (Rwp).
 
@@ -123,7 +121,7 @@ def calculate_r_squared(observed: np.ndarray, calculated: np.ndarray) -> float:
 def calculate_chi_squared(
     observed: np.ndarray,
     calculated: np.ndarray,
-    weights: Optional[np.ndarray] = None,
+    weights: np.ndarray | None = None,
     n_params: int = 0,
 ) -> tuple:
     """Calculate chi-squared statistic.
@@ -161,7 +159,7 @@ def calculate_chi_squared(
 def assess_fit_quality(
     observed: np.ndarray,
     calculated: np.ndarray,
-    weights: Optional[np.ndarray] = None,
+    weights: np.ndarray | None = None,
     n_params: int = 0,
     rwp_threshold: float = 10.0,
 ) -> FitQualityResult:

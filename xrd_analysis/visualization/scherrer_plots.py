@@ -2,10 +2,9 @@
 ==================================
 
 Plots for crystallite size analysis results.
-晶粒尺寸分析結果繪圖模組。
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,14 +19,14 @@ from .style import (
 def plot_scherrer_evolution_by_peak(
     data: list[dict[str, Any]],
     x_param: str = "time",
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (12, 8),
-    instrument_limit: Optional[
-        float
-    ] = None,  # Not really applicable for size, but kept for interface consistency
+    instrument_limit: (
+        float | None
+    ) = None,  # Not really applicable for size, but kept for interface consistency
 ) -> plt.Figure:
     """Plot Scherrer size evolution by peak (direction).
 
@@ -215,12 +214,12 @@ def plot_scherrer_evolution_by_peak(
 
 def plot_scherrer_by_concentration(
     data: list[dict[str, Any]],
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (11, 11),  # Square figure to help subplots be square
-    instrument_limit: Optional[float] = None,
+    instrument_limit: float | None = None,
 ) -> plt.Figure:
     """Plot Scherrer size evolution with subplots by concentration.
 

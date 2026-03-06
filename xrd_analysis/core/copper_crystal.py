@@ -1,18 +1,17 @@
-"""Copper Crystal Physical Constants Module 銅晶體物理常數模組.
+"""Copper Crystal Physical Constants Module.
 ============================================================
 
 Physical parameters for FCC copper crystallography.
-FCC 銅結晶學物理參數。
 
-References 出處:
+References:
 - JCPDS 04-0836 (Copper Standard)
 - Langford & Wilson, J. Appl. Cryst. 11, 102-113 (1978)
 - Ledbetter & Naimon, J. Phys. Chem. Ref. Data 3, 897-935 (1974)
+
 """
 
 from dataclasses import dataclass
 from math import gcd, sqrt
-from typing import Optional
 
 # =============================================================================
 # FCC Copper Crystal Structure Constants (298K Standard)
@@ -49,7 +48,6 @@ class CopperCrystal:
 
 # Default instance
 CU_CRYSTAL = CopperCrystal()
-
 
 # =============================================================================
 # JCPDS 04-0836 Extended Standard Diffraction Data
@@ -107,11 +105,9 @@ CU_JCPDS_EXTENDED: dict[tuple[int, int, int], dict] = {
 
 
 def get_standard_peaks(
-    hkl_list: Optional[list[tuple[int, int, int]]] = None
+    hkl_list: list[tuple[int, int, int] | None] = None,
 ) -> dict[tuple[int, int, int], float]:
     """Get standard peak positions for specified (hkl) indices.
-
-    取得指定 (hkl) 的標準峰位。.
 
     Args:
         hkl_list: List of (h, k, l) tuples.
@@ -121,7 +117,7 @@ def get_standard_peaks(
     Returns:
         Dictionary mapping (hkl) -> 2θ position (degrees)
 
-    Data Source 資料來源:
+    Data Source:
         JCPDS Card 04-0836 (Copper, FCC)
         Joint Committee on Powder Diffraction Standards
 
@@ -190,10 +186,8 @@ def is_fcc_allowed(h: int, k: int, l: int) -> bool:
 class ScherrerCubicK:
     """Scherrer constant K values for cubic habit crystallites.
 
-    立方晶習晶粒的 Scherrer 常數 K 值。.
-
     ═══════════════════════════════════════════════════════════════════════════
-    文獻出處 Reference (完整引用)
+    Reference
     ═══════════════════════════════════════════════════════════════════════════
 
     Langford, J. I., & Wilson, A. J. C. (1978).
@@ -202,52 +196,46 @@ class ScherrerCubicK:
     Journal of Applied Crystallography, Volume 11, Issue 2, Pages 102-113.
     DOI: 10.1107/S0021889878012844
 
-    數據來源 Data Source:
-        Table 2, Page 104 — $K_w$ (FWHM) 欄位
+    Data Source:
         Table 2, Page 104 — $K_w$ (FWHM) column
 
     ═══════════════════════════════════════════════════════════════════════════
-    重要說明 IMPORTANT
+    IMPORTANT
     ═══════════════════════════════════════════════════════════════════════════
 
-    1. 這些是 $K_w$ 值，適用於 FWHM（半高寬）定義
-       These are $K_w$ values for FWHM definition
+    1. These are $K_w$ values for FWHM definition
 
-    2. 若使用積分寬度，請參考原論文 Table 2 的 $K_β$ 欄位
-       For integral breadth, see $K_β$ column in original Table 2
+    2. For integral breadth, see $K_β$ column in original Table 2
 
-    3. Cu 薄膜/鍍層等實務案例常見柱狀晶粒與立方晶習，非球形晶粒
-       Cu thin-film/plated cases often show columnar grains with cubic habit
+    3. Cu thin-film/plated cases often show columnar grains with cubic habit
 
     ═══════════════════════════════════════════════════════════════════════════
-    物理意義 Physical Meaning
+    Physical Meaning
     ═══════════════════════════════════════════════════════════════════════════
 
-    K 值關聯量測的 FWHM 與晶粒尺寸：D = Kλ / (β cos θ)
     K relates measured FWHM to crystallite dimension: D = Kλ / (β cos θ)
 
-    對於立方晶粒，投影形狀隨觀察方向變化：
     For cubic grains, projected shape varies with viewing direction:
 
-    | 方向 Direction | 投影 Projection | $K_w$ | 來源 Source |
-    |----------------|-----------------|-------|-------------|
-    | (111) 體對角線 | 六邊形 Hexagon | 0.8551 | L&W Table 2 |
-    | (200) 立方體邊 | 正方形 Square | 0.8859 | L&W Table 2 |
-    | (220) 面對角線 | 長方形 Rectangle | 0.8340 | L&W Table 2 |
-    | (311) 複雜方向 | 複雜形 Complex | 0.9082 | L&W Table 2 |
-    | 球形 Sphere | 圓形 Circle | 0.8290 | L&W Table 1 |
+    | Direction | Projection | $K_w$ | Source |
+    |-----------|------------|-------|--------|
+    | (111) Body diagonal | Hexagon | 0.8551 | L&W Table 2 |
+    | (200) Cube edge | Square | 0.8859 | L&W Table 2 |
+    | (220) Face diagonal | Rectangle | 0.8340 | L&W Table 2 |
+    | (311) Complex | Complex | 0.9082 | L&W Table 2 |
+    | Sphere | Circle | 0.8290 | L&W Table 1 |
     """
 
-    # 立方晶習方向相依 K 值 / Direction-dependent K for cubic habit
-    K_111: float = 0.855  # 體對角線 / Body diagonal (L&W 1978 Table 2: 0.8551)
-    K_200: float = 0.886  # 立方體邊 / Cube edge (L&W 1978 Table 2: 0.8859)
-    K_220: float = 0.834  # 面對角線 / Face diagonal (L&W 1978 Table 2: 0.8340)
-    K_311: float = 0.908  # 複雜方向 / Complex (L&W 1978 Table 2: 0.9082)
-    K_222: float = 0.855  # 與 (111) 平行 / Parallel to (111)
+    # Direction-dependent K for cubic habit
+    K_111: float = 0.855  # Body diagonal (L&W 1978 Table 2: 0.8551)
+    K_200: float = 0.886  # Cube edge (L&W 1978 Table 2: 0.8859)
+    K_220: float = 0.834  # Face diagonal (L&W 1978 Table 2: 0.8340)
+    K_311: float = 0.908  # Complex (L&W 1978 Table 2: 0.9082)
+    K_222: float = 0.855  # Parallel to (111)
 
-    # 參考值 / Reference values
-    K_SPHERICAL: float = 0.829  # 球形晶粒 / Spherical (L&W 1978 Table 1: 0.8290)
-    K_CUBIC_GENERAL: float = 0.94  # 立方體平均 / Cubic average (Warren 1969)
+    # Reference values
+    K_SPHERICAL: float = 0.829  # Spherical (L&W 1978 Table 1: 0.8290)
+    K_CUBIC_GENERAL: float = 0.94  # Cubic average (Warren 1969)
 
 
 # Default instance
@@ -325,46 +313,43 @@ def get_k_for_hkl(
 class CopperElasticModuli:
     """Direction-dependent Young's modulus for copper single crystal.
 
-    銅單晶方向相依楽氏模量。.
-
-    CRITICAL for Williamson-Hall Analysis 重要:
+    CRITICAL for Williamson-Hall Analysis:
     Copper is elastically anisotropic. The elastic modulus varies by
     nearly 3x between the softest <100> and hardest <111> directions.
-    銅具彈性各向異性，模量在最軟 <100> 與最硬 <111> 方向之間差異近 3 倍。
 
-    Reference 出處:
+    Reference:
     - Ledbetter & Naimon (1974), "Elastic Properties of Metals and Alloys.
       II. Copper", J. Phys. Chem. Ref. Data, 3(4), 897-935.
     - Original data from Simmons & Wang (1971) handbook.
 
-    Stiffness constants 勁度常數 (Ledbetter & Naimon 1974, recommended values):
+    Stiffness constants (Ledbetter & Naimon 1974, recommended values):
         C11 = 168.4 GPa, C12 = 121.4 GPa, C44 = 75.4 GPa
 
-    Zener Anisotropy Ratio 各向異性比:
+    Zener Anisotropy Ratio:
         A = 2C₄₄/(C₁₁-C₁₂) = 2×75.4 / (168.4-121.4) = 3.21
 
-    Directional E calculation 方向模量計算:
+    Directional E calculation:
         1/E_hkl = S11 - 2(S11 - S12 - S44/2)Γ
         where Γ = (h²k² + k²l² + l²h²) / (h² + k² + l²)²
 
-    Calculated values 計算值:
+    Calculated values:
         E_111 = 191.1 GPa (Γ = 1/3)
         E_100 = 66.7 GPa  (Γ = 0)
         E_110 = 130.3 GPa (Γ = 1/4)
     """
 
-    # Directional Young's moduli 方向模量
-    E_111: float = 191.1  # GPa, hardest direction 最硬方向
-    E_100: float = 66.7  # GPa, softest direction 最軟方向
-    E_110: float = 130.3  # GPa, intermediate 中間
+    # Directional Young's moduli
+    E_111: float = 191.1  # GPa, hardest direction
+    E_100: float = 66.7  # GPa, softest direction
+    E_110: float = 130.3  # GPa, intermediate
 
-    # Polycrystalline average (Voigt-Reuss-Hill) 多晶平均 (VRH)
+    # Polycrystalline average (Voigt-Reuss-Hill)
     # Calculation: G_VRH = (G_Voigt + G_Reuss)/2 = 47.3 GPa
     #              E = 9BG / (3B + G) where B = (C11 + 2C12)/3 = 137.1 GPa
     E_isotropic: float = 127.3  # GPa
 
 
-# Default instance 預設實例
+# Default instance
 CU_ELASTIC = CopperElasticModuli()
 
 
@@ -514,7 +499,7 @@ def validate_lattice_constant(measured_a: float) -> LatticeValidationResult:
 
 
 def explain_lattice_deviation(
-    measured_a: float, sample_age_hours: Optional[float] = None
+    measured_a: float, sample_age_hours: float | None = None
 ) -> str:
     """Generate detailed explanation for observed lattice constant deviation.
 
@@ -589,7 +574,7 @@ def explain_lattice_deviation(
 # =============================================================================
 
 
-def get_jcpds_peak(hkl: tuple[int, int, int]) -> Optional[dict]:
+def get_jcpds_peak(hkl: tuple[int, int, int]) -> dict | None:
     """Get JCPDS data for a specific (hkl) reflection."""
     return CU_JCPDS_EXTENDED.get(hkl)
 
@@ -611,8 +596,6 @@ def calculate_youngs_modulus_from_stiffness(
     h: int, k: int, l: int, C11: float = 168.4, C12: float = 121.4, C44: float = 75.4
 ) -> float:
     """Calculate direction-dependent Young's modulus from elastic stiffness constants.
-
-    從彈性勁度常數計算方向相依楊氏模數。.
 
     Formula (Ledbetter & Naimon 1974):
         1/E_hkl = S11 - 2(S11 - S12 - S44/2) × Γ

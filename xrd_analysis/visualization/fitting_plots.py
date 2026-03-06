@@ -2,11 +2,9 @@
 =================================
 
 Diagnostic plots for peak fitting analysis.
-峰型擬合診斷繪圖模組。
 """
 
-from typing import Any, Optional
-
+from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -21,8 +19,8 @@ def plot_peak_fit(
     two_theta: np.ndarray,
     intensity_obs: np.ndarray,
     intensity_fit: np.ndarray,
-    peak_params: Optional[dict[str, Any]] = None,
-    output_path: Optional[str] = None,
+    peak_params: dict[str, Any] | None = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
@@ -30,8 +28,6 @@ def plot_peak_fit(
     peak_name: str = "",
 ) -> plt.Figure:
     """Plot peak fitting comparison (observed vs fitted).
-
-    繪製峰型擬合對比圖（觀測值 vs 擬合值）。.
 
     Args:
         two_theta: 2θ array (degrees).
@@ -143,7 +139,7 @@ def plot_doublet_comparison(
     intensity_doublet: np.ndarray,
     ka1_center: float,
     ka2_center: float,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
@@ -151,8 +147,6 @@ def plot_doublet_comparison(
     peak_name: str = "",
 ) -> plt.Figure:
     """Compare single peak vs Kα doublet fitting.
-
-    比較單峰與 Kα 雙峰擬合。.
 
     Args:
         two_theta: 2θ array (degrees).
@@ -337,15 +331,13 @@ def plot_doublet_comparison(
 def plot_fit_residuals(
     two_theta: np.ndarray,
     residuals: np.ndarray,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (10, 5),
 ) -> plt.Figure:
     """Plot peak fitting residuals with statistics.
-
-    繪製峰型擬合殘差統計圖。.
 
     Args:
         two_theta: 2θ array (degrees).

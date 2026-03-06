@@ -6,7 +6,6 @@ Tests K value lookup, unit conversion, validity flags, and calculation accuracy.
 Run with: pytest tests/test_scherrer.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -97,7 +96,7 @@ class TestDocumentExample:
             two_theta=43.32,
             fwhm_observed=0.25,
             fwhm_instrumental=0.08,
-            use_cubic_habit=True
+            use_cubic_habit=True,
         )
 
         # Check sample broadening (quadratic subtraction)
@@ -119,7 +118,7 @@ class TestDocumentExample:
             two_theta=43.32,
             fwhm_observed=0.25,
             fwhm_instrumental=0.08,
-            use_cubic_habit=False
+            use_cubic_habit=False,
         )
 
         # K_spherical = 0.829, expect ~33 nm
@@ -133,9 +132,7 @@ class TestValidityFlags:
     def test_valid_flag_normal(self):
         """Normal calculation should have VALID flag."""
         result = calculate_scherrer(
-            two_theta=43.32,
-            fwhm_observed=0.25,
-            fwhm_instrumental=0.08
+            two_theta=43.32, fwhm_observed=0.25, fwhm_instrumental=0.08
         )
 
         assert result.validity_flag == ValidityFlag.VALID
@@ -145,9 +142,7 @@ class TestValidityFlags:
         """Narrow peak (ratio < 1.2) should be UNRELIABLE."""
         # FWHM_obs = 0.09, FWHM_inst = 0.08 → ratio = 1.125 < 1.2
         result = calculate_scherrer(
-            two_theta=43.32,
-            fwhm_observed=0.09,
-            fwhm_instrumental=0.08
+            two_theta=43.32, fwhm_observed=0.09, fwhm_instrumental=0.08
         )
 
         assert result.validity_flag == ValidityFlag.UNRELIABLE
@@ -157,9 +152,7 @@ class TestValidityFlags:
         """Very large size (>200 nm) should trigger WARNING."""
         # Very narrow peak → large size
         result = calculate_scherrer(
-            two_theta=43.32,
-            fwhm_observed=0.02,
-            fwhm_instrumental=0.001
+            two_theta=43.32, fwhm_observed=0.02, fwhm_instrumental=0.001
         )
 
         # Either WARNING or UNRELIABLE
@@ -174,9 +167,9 @@ class TestBatchCalculation:
         calc = ScherrerCalculator()
 
         peaks = [
-            (43.32, 0.25),   # (111)
-            (50.45, 0.28),   # (200)
-            (74.16, 0.32),   # (220)
+            (43.32, 0.25),  # (111)
+            (50.45, 0.28),  # (200)
+            (74.16, 0.32),  # (220)
         ]
 
         results = calc.batch_calculate(peaks, fwhm_instrumental=0.08)

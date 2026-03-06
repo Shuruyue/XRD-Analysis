@@ -1,13 +1,11 @@
-"""Fitting Quality Metrics Module 擬合品質評估模組.
+"""Fitting Quality Metrics Module.
 ==============================================
 
 Quality assessment for XRD peak fitting results.
-XRD 峰擬合結果的品質評估。
 """
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 import numpy as np
 
@@ -59,16 +57,14 @@ class FitQualityReport:
 
 
 # =============================================================================
-# R_wp Calculation / R_wp 計算
+# R_wp Calculation
 # =============================================================================
 
 
 def calculate_r_wp(
-    observed: np.ndarray, calculated: np.ndarray, weights: Optional[np.ndarray] = None
+    observed: np.ndarray, calculated: np.ndarray, weights: np.ndarray | None = None
 ) -> float:
     """Calculate Weighted Profile R-factor (R_wp).
-
-    計算加權剖面 R 因子 (R_wp)。.
 
     R_wp = sqrt(Σ w_i (I_obs - I_calc)² / Σ w_i I_obs²) × 100%
 
@@ -94,7 +90,7 @@ def calculate_r_wp(
     numerator = np.sum(weights * residuals**2)
     denominator = np.sum(weights * observed**2)
 
-    if denominator == 0:
+    if denominator < 1e-30:
         return float("inf")
 
     return 100.0 * np.sqrt(numerator / denominator)
@@ -132,14 +128,14 @@ def calculate_r_squared(observed: np.ndarray, calculated: np.ndarray) -> float:
     ss_res = np.sum((observed - calculated) ** 2)
     ss_tot = np.sum((observed - np.mean(observed)) ** 2)
 
-    if ss_tot == 0:
+    if ss_tot < 1e-30:
         return 0.0
 
     return 1.0 - (ss_res / ss_tot)
 
 
 # =============================================================================
-# Fit Validation / 擬合驗證
+# Fit Validation
 # =============================================================================
 
 
@@ -151,8 +147,6 @@ def validate_fit_parameters(
     two_theta_range: tuple[float, float] = (10, 150),
 ) -> tuple[bool, list[str]]:
     """Validate fitted parameters for physical reasonableness.
-
-    驗證擬合參數的物理合理性。.
 
     Physical constraints:
       - η must be in [0, 1]

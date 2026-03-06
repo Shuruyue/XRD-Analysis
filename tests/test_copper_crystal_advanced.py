@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Advanced tests for copper crystal elastic moduli calculations.
-
-測試銅晶體彈性模量進階計算。.
-"""
+"""Advanced tests for copper crystal elastic moduli calculations."""
 
 import pytest
 
@@ -62,10 +59,7 @@ class TestElasticModuliCalculation:
         """Test calculation with custom elastic constants."""
         # Use hypothetical values
         E = calculate_youngs_modulus_from_stiffness(
-            1, 0, 0,
-            C11=200.0,
-            C12=100.0,
-            C44=80.0
+            1, 0, 0, C11=200.0, C12=100.0, C44=80.0
         )
 
         # Should return a positive value
@@ -99,7 +93,7 @@ class TestDSpacingCalculation:
         d_111 = calculate_d_spacing(1, 1, 1)
 
         # d_111 = a / √3 = 3.6150 / 1.732 = 2.087 Å
-        expected = 3.6150 / (3 ** 0.5)
+        expected = 3.6150 / (3**0.5)
         assert abs(d_111 - expected) < 0.001
 
     def test_d_spacing_200(self):
@@ -115,7 +109,7 @@ class TestDSpacingCalculation:
         a_custom = 4.0  # Å
         d = calculate_d_spacing(1, 1, 1, a=a_custom)
 
-        expected = a_custom / (3 ** 0.5)
+        expected = a_custom / (3**0.5)
         assert abs(d - expected) < 0.001
 
 

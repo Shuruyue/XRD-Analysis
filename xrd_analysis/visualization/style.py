@@ -2,7 +2,6 @@
 ==========================
 
 Unified matplotlib styling and colorblind-safe color palettes.
-統一的 matplotlib 樣式配置與色盲友善調色盤。
 """
 
 from typing import Any
@@ -70,7 +69,6 @@ XRD_ANALYSIS_STYLE: dict[str, Any] = {
     "lines.markeredgewidth": 1.0,
 }
 
-
 # =============================================================================
 # Colorblind-Safe Color Palette (Wong, 2011)
 # =============================================================================
@@ -95,7 +93,6 @@ PEAK_COLORS: dict[str, str] = {
     "(222)": "#EE3377",  # Magenta
 }
 
-
 # =============================================================================
 # Style Application Functions
 # =============================================================================
@@ -103,8 +100,6 @@ PEAK_COLORS: dict[str, str] = {
 
 def apply_xrd_analysis_style() -> None:
     """Apply xrd_analysis style to all subsequent matplotlib plots.
-
-    將 xrd_analysis 樣式套用至後續所有 matplotlib 圖表。.
 
     Example:
         >>> from xrd_analysis.visualization.style import apply_xrd_analysis_style
@@ -117,8 +112,6 @@ def apply_xrd_analysis_style() -> None:
 
 def get_color_palette(n_colors: int = 6) -> list[str]:
     """Get a colorblind-safe color palette.
-
-    取得色盲友善調色盤。.
 
     Args:
         n_colors: Number of colors needed (max 8).
@@ -138,8 +131,6 @@ def get_color_palette(n_colors: int = 6) -> list[str]:
 def get_peak_color(hkl: str) -> str:
     """Get color for a specific (hkl) peak.
 
-    取得特定 (hkl) 峰的顏色。.
-
     Args:
         hkl: Peak identifier string, e.g. "(111)".
 
@@ -152,8 +143,6 @@ def get_peak_color(hkl: str) -> str:
 
 def create_figure(figsize: tuple = None, apply_style: bool = True) -> tuple:
     """Create a figure with xrd_analysis styling.
-
-    建立套用 xrd_analysis 樣式的圖表。.
 
     Args:
         figsize: Optional figure size (width, height) in inches.
@@ -177,8 +166,6 @@ def save_figure(
     fig, filepath: str, dpi: int = 300, format: str = None, transparent: bool = False
 ) -> None:
     """Save figure with standardized settings.
-
-    使用標準化設定儲存圖表。.
 
     Args:
         fig: Matplotlib figure object.

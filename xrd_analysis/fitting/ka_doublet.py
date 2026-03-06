@@ -1,22 +1,20 @@
-"""Kα Doublet Handling Module Kα 雙峰處理模組.
+"""Kα Doublet Handling Module.
 ==========================================
 
 Two approaches for handling Cu Kα₁/Kα₂ doublet in XRD data.
-處理 XRD 數據中 Cu Kα₁/Kα₂ 雙峰的兩種方法。
 
-1. Ka2Stripper: Remove Kα₂ contribution from spectrum / 從光譜中移除 Kα₂ 貢獨
-2. DoubletFitter: Fit both Kα₁ and Kα₂ peaks simultaneously / 同時擬合 Kα₁ 和 Kα₂ 峰
+1. Ka2Stripper: Remove Kα₂ contribution from spectrum
+2. DoubletFitter: Fit both Kα₁ and Kα₂ peaks simultaneously
 
-Cu Kα wavelengths 波長 (Bearden 1967, Rev. Mod. Phys. 39, 78):
-- Kα₁ = 1.540562 Å (stronger, 2x intensity / 較強)
-- Kα₂ = 1.544390 Å (weaker, 1x intensity / 較弱)
-- Kα₂/Kα₁ intensity ratio 強度比 ≈ 0.5 (Burger-Dorgelo rule)
+Cu Kα wavelengths (Bearden 1967, Rev. Mod. Phys. 39, 78):
+- Kα₁ = 1.540562 Å (stronger, 2x intensity)
+- Kα₂ = 1.544390 Å (weaker, 1x intensity)
+- Kα₂/Kα₁ intensity ratio ≈ 0.5 (Burger-Dorgelo rule)
 """
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
-
+from typing import Any
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import least_squares
@@ -27,7 +25,7 @@ from .pseudo_voigt import TrueVoigt
 
 logger = logging.getLogger(__name__)
 
-# 波長常數直接使用 CU_KA1/CU_KA2 / Wavelength: use CU_KA1/CU_KA2 directly
+# Wavelength: use CU_KA1/CU_KA2 directly
 
 
 @dataclass
@@ -46,8 +44,8 @@ class DoubletFitResult:
     fwhm_error: float = 0.0  # Standard error of FWHM
     center_error: float = 0.0  # Standard error of center
     eta_error: float = 0.0  # Standard error of eta
-    fitted_curve: Optional[np.ndarray] = None
-    opt_result: Optional[Any] = None  # Optimization result with Jacobian
+    fitted_curve: np.ndarray | None = None
+    opt_result: Any | None = None  # Optimization result with Jacobian
 
     @property
     def fwhm_ka1(self) -> float:
@@ -263,7 +261,7 @@ class DoubletFitter:
         self,
         two_theta: np.ndarray,
         intensity: np.ndarray,
-        initial_center: Optional[float] = None,
+        initial_center: float | None = None,
         initial_fwhm: float = 0.3,
     ) -> DoubletFitResult:
         """Fit Kα₁/Kα₂ doublet to data using True Voigt model.
@@ -307,14 +305,6 @@ class DoubletFitter:
             if right_idx > left_idx:
                 initial_fwhm = max(two_theta[right_idx] - two_theta[left_idx], 0.15)
 
-        # Initial guesses for Sigma and Gamma from FWHM
-        # Assume initial mix is 50/50 Gaussian/Lorentzian (eta=0.5)
-        # fL = 0.5 * fwhm, fG = 0.5 * fwhm
-        # sigma = fG / (2*sqrt(2*ln2)) ≈ fG / 2.355
-        # gamma = fL / 2
-        (0.5 * initial_fwhm) / 2.35482
-        (0.5 * initial_fwhm) / 2.0
-
         # Multi-start optimization for robustness
         best_result = None
         best_r_sq = -1
@@ -322,13 +312,17 @@ class DoubletFitter:
         # Define residual function ONCE outside loop
         profile_func = self._doublet_profile
 
-        def make_residual(x_data, y_data):
+        # Poisson weights: σ_i = sqrt(max(I_i, 1)), w_i = 1/σ_i
+        # Weighting improves fit quality in low-count regions
+        sigma_weights = np.sqrt(np.maximum(intensity, 1.0))
+
+        def make_residual(x_data, y_data, weights):
             def residual(params):
-                return y_data - profile_func(x_data, *params)
+                return (y_data - profile_func(x_data, *params)) / weights
 
             return residual
 
-        residual_func = make_residual(two_theta, intensity)
+        residual_func = make_residual(two_theta, intensity, sigma_weights)
 
         # Define bounds for [center, amp, sigma, gamma, slope, intercept]
         # sigma, gamma > 0
@@ -403,24 +397,51 @@ class DoubletFitter:
 
                         try:
                             jac = result.jac
-                            s_sq = 2 * result.cost / (len(intensity) - len(popt))
+                            s_sq = 2 * result.cost / max(len(intensity) - len(popt), 1)
                             pcov = s_sq * np.linalg.inv(jac.T @ jac)
                             perr = np.sqrt(np.diag(pcov))
 
-                            # error[0] is center error
                             center_err = perr[0]
-
-                            # Error propagation for FWHM (approximate)
                             sigma_err = perr[2]
                             gamma_err = perr[3]
-                            fwhm_err = sigma_err * 2.35 + gamma_err * 2.0
 
-                            # Error propagation for Eta (approximate)
-                            # Eta ~ 2*Gamma / FWHM
-                            if fwhm_total > 0 and gamma_val > 0:
-                                rel_gamma = gamma_err / gamma_val
-                                rel_fwhm = fwhm_err / fwhm_total
-                                eta_err = eta_eff * (rel_gamma + rel_fwhm)
+                            # Proper error propagation for FWHM via Jacobian
+                            # FWHM = TCH(fG, fL) where fG = 2σ√(2ln2), fL = 2γ
+                            # ∂FWHM/∂σ = (∂FWHM/∂fG) × (∂fG/∂σ)
+                            # ∂FWHM/∂γ = (∂FWHM/∂fL) × (∂fL/∂γ)
+                            fG = 2.0 * sigma_val * np.sqrt(2.0 * np.log(2.0))
+                            fL = 2.0 * gamma_val
+                            eps = 1e-8 * max(fwhm_total, 1e-6)
+
+                            from .pseudo_voigt import tch_fwhm_from_components
+
+                            # Numerical partial derivatives of TCH
+                            dfwhm_dfG = (
+                                tch_fwhm_from_components(fG + eps, fL)
+                                - tch_fwhm_from_components(fG - eps, fL)
+                            ) / (2.0 * eps)
+                            dfwhm_dfL = (
+                                tch_fwhm_from_components(fG, fL + eps)
+                                - tch_fwhm_from_components(fG, fL - eps)
+                            ) / (2.0 * eps)
+
+                            # Chain rule: ∂fG/∂σ = 2√(2ln2), ∂fL/∂γ = 2
+                            dfG_dsigma = 2.0 * np.sqrt(2.0 * np.log(2.0))
+                            dfL_dgamma = 2.0
+
+                            # Quadrature error propagation (assuming σ,γ uncorrelated)
+                            fwhm_err = np.sqrt(
+                                (dfwhm_dfG * dfG_dsigma * sigma_err) ** 2
+                                + (dfwhm_dfL * dfL_dgamma * gamma_err) ** 2
+                            )
+
+                            # Eta = fL / fwhm_total; propagate via quotient rule
+                            if fwhm_total > 1e-10:
+                                fL_err = dfL_dgamma * gamma_err
+                                eta_err = abs(eta_eff) * np.sqrt(
+                                    (fL_err / max(fL, 1e-10)) ** 2
+                                    + (fwhm_err / fwhm_total) ** 2
+                                )
                             else:
                                 eta_err = 0.01
 

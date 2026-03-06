@@ -1,16 +1,15 @@
-"""Defect Analysis Module 缺陷分析模組.
+"""Defect Analysis Module.
 ===================================
 
 Stacking fault detection and lattice constant monitoring.
-堆疊層錯檢測與晶格常數監控。
 
-References 出處:
+References:
 - Warren (1969), X-ray Diffraction, Chapter 13 (stacking faults)
+
 """
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 import numpy as np
 
@@ -21,10 +20,10 @@ from xrd_analysis.core.copper_crystal import (
 )
 
 # =============================================================================
-# Constants 常數
+# Constants
 # =============================================================================
 
-# Standard peak separation (111)-(200) / 標準峰間距 (111)-(200)
+# Standard peak separation (111)-(200)
 # Calculated dynamically from JCPDS data to match updated high-precision values
 STANDARD_PEAK_SEPARATION = (
     CU_JCPDS_EXTENDED[(2, 0, 0)]["two_theta"]
@@ -32,40 +31,36 @@ STANDARD_PEAK_SEPARATION = (
 )
 
 # Warren geometric coefficient for FCC (111)-(200) stacking fault
-# Warren FCC (111)-(200) 堆疊層錯幾何係數
 #
-# 文獻出處 Reference:
+# Reference:
 #     Warren, B. E. (1969).
 #     "X-ray Diffraction."
 #     Dover Publications, New York.
 #     Chapter 13: Stacking Faults, Pages 275-298.
-#     ISBN: 978-0486663173 (重印版)
+#     ISBN: 978-0486663173 (Dover reprint)
 #
 # ═══════════════════════════════════════════════════════════════════════════
-# 理論推導 Theoretical Derivation
+# Theoretical Derivation
 # ═══════════════════════════════════════════════════════════════════════════
 #
-# Warren 推導的 FCC (200)-(111) 峰間距變化公式：
 # Warren's formula for FCC (200)-(111) peak separation shift:
 #
 #     Δ(2θ_200 - 2θ_111) = -(45√3 / π²) × α
 #
-# 其中 α 為堆疊層錯機率 (stacking fault probability)
+# where α is the stacking fault probability
 #
-# 係數計算 Coefficient calculation:
+# Coefficient calculation:
 #     G = -45√3 / π²
 #       = -45 × 1.7320508... / 9.8696044...
 #       = -77.9422... / 9.8696...
 #       = -7.897 (degrees per unit probability)
 #
-# 單位轉換 Unit conversion:
-#   若 α 以百分比表示 (α_percent = α × 100):
+# Unit conversion:
+#   If α is expressed as percentage (α_percent = α × 100):
 #   G_percent = G / 100 = -0.07897 °/%
 #
-# 物理意義 Physical meaning:
-#   - 負號表示堆疊層錯使峰間距縮小
+# Physical meaning:
 #   - Negative sign indicates stacking faults reduce peak separation
-#   - (111) 峰向高角度偏移，(200) 峰向低角度偏移
 #   - (111) peak shifts to higher angles, (200) shifts to lower angles
 #
 # ═══════════════════════════════════════════════════════════════════════════
@@ -73,20 +68,17 @@ import math
 
 _WARREN_G_THEORETICAL = -45 * math.sqrt(3) / (math.pi**2)  # = -7.897
 
-WARREN_G_COEFFICIENT = _WARREN_G_THEORETICAL  # 理論推導值 / Theoretical value
+WARREN_G_COEFFICIENT = _WARREN_G_THEORETICAL  # Theoretical value
 
-# Standard lattice constant for Cu / 銅標準晶格常數
+# Standard lattice constant for Cu
 # Reference: JCPDS 04-0836
-# Standard lattice constant / 標準晶格常數
 STANDARD_LATTICE_CONSTANT = CU_CRYSTAL.lattice_constant  # 3.6150 Å
 
-# Lattice constant thresholds / 晶格常數閾值
+# Lattice constant thresholds
 LATTICE_MINOR_THRESHOLD = 3.616  # Å
 LATTICE_SEVERE_THRESHOLD = 3.618  # Å
 
-# 波長常數直接從 core.constants 使用 CU_KA1
 # Wavelength constant: use CU_KA1 directly from core.constants
-
 
 # =============================================================================
 # Enums
@@ -168,14 +160,14 @@ class DefectAnalysisResult:
     """Complete defect analysis result."""
 
     # Stacking fault
-    stacking_fault: Optional[StackingFaultResult] = None
+    stacking_fault: StackingFaultResult | None = None
 
     # Lattice constant
-    lattice_constant: Optional[LatticeConstantResult] = None
+    lattice_constant: LatticeConstantResult | None = None
 
     # Self-annealing
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
-    sample_age_hours: Optional[float] = None
+    sample_age_hours: float | None = None
     annealing_note: str = ""
 
     # Overall
@@ -190,8 +182,6 @@ class DefectAnalysisResult:
 
 class StackingFaultAnalyzer:
     """Warren-based stacking fault analyzer.
-
-    基於Warren分析的堆疊層錯分析器。.
 
     Reference: Warren (1969), X-ray Diffraction, Ch.13
 
@@ -234,7 +224,7 @@ class StackingFaultAnalyzer:
         # Q.1.4: Calculate deviation from standard
         deviation = peak_separation - STANDARD_PEAK_SEPARATION
 
-        # Warren formula for α / Warren 公式計算 α
+        # Warren formula for α
         # α = deviation / G
         # G is negative, deviation is negative when SF present
         # So α comes out positive
@@ -243,7 +233,7 @@ class StackingFaultAnalyzer:
 
         alpha_percent = alpha * 100
 
-        # Determine severity / 判定嚴重程度
+        # Determine severity
         if alpha_percent < 0.5:
             severity = StackingFaultSeverity.NORMAL
         elif alpha_percent < 1.0:
@@ -253,19 +243,19 @@ class StackingFaultAnalyzer:
         else:
             severity = StackingFaultSeverity.SEVERE
 
-        # SPS warning check / SPS 警告檢查
+        # SPS warning check
         sps_warning = peak_separation < 7.0
 
         # Generate message
         if sps_warning:
             message = (
-                f"警告：峰間距 {peak_separation:.3f}° < 7.0°，"
-                "可能 SPS 加速劑濃度過高"
+                f"Warning: peak separation {peak_separation:.3f}° < 7.0°, "
+                "possible excessive SPS accelerator concentration"
             )
         elif severity == StackingFaultSeverity.NORMAL:
-            message = "堆垛層錯在正常範圍內"
+            message = "Stacking fault probability within normal range"
         else:
-            message = f"檢測到堆垛層錯 α ≈ {alpha_percent:.2f}%"
+            message = f"Stacking fault detected: α ≈ {alpha_percent:.2f}%"
 
         return StackingFaultResult(
             peak_separation_deg=peak_separation,
@@ -297,8 +287,6 @@ def calculate_lattice_constant(
 ) -> float:
     """Calculate lattice constant from peak position.
 
-    從峰位計算晶格常數。.
-
     a = d × √(h² + k² + l²)
     """
     d = calculate_d_spacing(two_theta, wavelength)
@@ -309,10 +297,7 @@ def calculate_lattice_constant(
 class LatticeMonitor:
     """Lattice constant monitor.
 
-    晶格常數監控器。.
-
     Prefers high-angle peaks (311, 220) for better accuracy.
-    偶好高角峰 (311, 220) 以提高精度。
     """
 
     def __init__(
@@ -344,13 +329,13 @@ class LatticeMonitor:
         # R.1.4: Determine status
         if a <= LATTICE_MINOR_THRESHOLD:
             status = LatticeStatus.NORMAL
-            message = "晶格常數在正常範圍"
+            message = "Lattice constant within normal range"
         elif a <= LATTICE_SEVERE_THRESHOLD:
             status = LatticeStatus.MINOR_EXPANSION
-            message = "輕微晶格擴張，可能存在雜質固溶或空孔效應"
+            message = "Minor lattice expansion; possible impurity solid solution or vacancy effects"
         else:
             status = LatticeStatus.SEVERE_EXPANSION
-            message = "嚴重晶格擴張，需檢查添加劑純度或雜質固溶"
+            message = "Severe lattice expansion; check additive purity or impurity solid solution"
 
         return LatticeConstantResult(
             lattice_constant=a,
@@ -369,11 +354,9 @@ class LatticeMonitor:
 
 
 def determine_annealing_state(
-    sample_age_hours: Optional[float] = None, fwhm_narrowing_detected: bool = False
+    sample_age_hours: float | None = None, fwhm_narrowing_detected: bool = False
 ) -> tuple[AnnealingState, str]:
     """Determine self-annealing state from sample age.
-
-    根據樣品存放時間判定自退火狀態。.
 
     Args:
         sample_age_hours: Time since deposition (hours), None for unknown
@@ -384,24 +367,33 @@ def determine_annealing_state(
 
     """
     if sample_age_hours is None:
-        return (AnnealingState.UNKNOWN, "樣品存放時間未知，無法判定自退火狀態")
+        return (
+            AnnealingState.UNKNOWN,
+            "Sample age unknown; cannot determine self-annealing state",
+        )
 
     if sample_age_hours < 1:
         return (
             AnnealingState.AS_DEPOSITED,
-            "初始態樣品：預期細晶粒、高缺陷密度。建議 7 天後重測以獲得穩定結構",
+            "As-deposited: expect fine grains, high defect density. Re-measure after 7 days for stable structure",
         )
     elif sample_age_hours < 24:
         state = AnnealingState.PARTIAL
         if fwhm_narrowing_detected:
-            note = "自退火進行中：已觀察到 FWHM 窄化"
+            note = "Self-annealing in progress: FWHM narrowing observed"
         else:
-            note = "自退火初期：晶粒可能正在長大"
+            note = "Early self-annealing: grains may be growing"
         return (state, note)
     elif sample_age_hours < 168:  # 7 days
-        return (AnnealingState.ANNEALED, "自退火中：結構尚未完全穩定")
+        return (
+            AnnealingState.ANNEALED,
+            "Self-annealing: structure not yet fully stable",
+        )
     else:
-        return (AnnealingState.STABLE, "穩定態：結構已達穩定，分析結果可靠")
+        return (
+            AnnealingState.STABLE,
+            "Stable state: structure has stabilised, analysis results are reliable",
+        )
 
 
 # =============================================================================

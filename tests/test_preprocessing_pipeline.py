@@ -6,7 +6,6 @@ Tests validation, smoothing, background, Kα2 stripping, and pipeline integratio
 Run with: pytest tests/test_preprocessing_pipeline.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -31,11 +30,7 @@ class TestXRDDataset:
         two_theta = np.linspace(20, 80, 1000)
         intensity = np.random.rand(1000) * 100
 
-        stripper = KalphaStripper(
-            ka1_lambda=1.5406,
-            ka2_lambda=1.5444,
-            ka_ratio=0.5
-        )
+        stripper = KalphaStripper(ka1_lambda=1.5406, ka2_lambda=1.5444, ka_ratio=0.5)
         ds = XRDDataset(two_theta, intensity)
 
         # This test needs more specific assertions about the stripping effect
@@ -43,7 +38,9 @@ class TestXRDDataset:
         stripped_intensity = stripper.strip(ds.two_theta, ds.intensity)
 
         assert len(stripped_intensity) == len(ds.intensity)
-        assert not np.array_equal(stripped_intensity, ds.intensity) # Intensity should change
+        assert not np.array_equal(
+            stripped_intensity, ds.intensity
+        )  # Intensity should change
 
     def test_dataset_creation(self):
         """Test basic dataset creation."""
@@ -173,7 +170,7 @@ class TestPreprocessingPipeline:
         """Test that pipeline completes on valid data."""
         two_theta = np.linspace(20, 80, 1000)
         # Simulate a simple XRD pattern
-        intensity = 100 + 50 * np.exp(-((two_theta - 43)**2) / 2)
+        intensity = 100 + 50 * np.exp(-((two_theta - 43) ** 2) / 2)
         intensity += np.random.randn(1000) * 5  # Add noise
 
         pipeline = PreprocessingPipeline()

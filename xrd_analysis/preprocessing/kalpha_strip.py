@@ -1,9 +1,8 @@
-"""Kα2 Stripping Module Kα2 剥離模組.
+"""Kα2 Stripping Module.
 ==================================
 Implements Rachinger Correction for Cu Kα2 removal.
-實現用於移除 Cu Kα2 的 Rachinger 校正。
 
-Reference 出處:
+Reference:
     Rachinger, W. A. (1948). J. Sci. Instr., 25(7), 254-255.
 """
 
@@ -14,8 +13,6 @@ from xrd_analysis.core.constants import CU_KA1, CU_KA2, KA2_KA1_RATIO
 
 class KalphaStripper:
     """Kα2 stripping using Rachinger Correction.
-
-    使用 Rachinger 校正的 Kα2 剥離。.
 
     For Cu Kα wavelengths (Bearden 1967, Rev. Mod. Phys. 39, 78):
     - Kα1: 1.540562 Å

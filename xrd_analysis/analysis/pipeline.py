@@ -1,24 +1,23 @@
-"""xrd_analysis Complete Analysis Pipeline 完整分析管道.
+"""xrd_analysis Complete Analysis Pipeline.
 ==========================================
 
 Unified pipeline integrating all analysis phases.
-統一的分析流程，整合所有分析階段。
 
-- Phase 02: Preprocessing 預處理
-- Phase 03: Peak Fitting 峰値擬合
-- Phase 04: Scherrer Size Calculation 晶粒尺寸計算
-- Phase 05: Williamson-Hall Strain Analysis 應變分析
-- Phase 06: Texture Analysis 織構分析
-- Phase 07: Defect Diagnosis 缺陷診斷
+- Phase 02: Preprocessing
+- Phase 03: Peak Fitting
+- Phase 04: Scherrer Size Calculation
+- Phase 05: Williamson-Hall Strain Analysis
+- Phase 06: Texture Analysis
+- Phase 07: Defect Diagnosis
 """
 
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 
+from xrd_analysis.core.config import ParameterConfig
 from xrd_analysis.core.constants import CU_KA1
 from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
 from xrd_analysis.methods.defect_analysis import (
@@ -53,25 +52,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AnalysisConfig:
-    """Configuration for xrd_analysis analysis pipeline.
-    xrd_analysis 分析管道配置。.
-    """
+    """Configuration for xrd_analysis analysis pipeline."""
 
-    # X-ray parameters / X-ray 參數
+    # X-ray parameters
     # Default: Cu Kα1 from constants (Bearden 1967)
     wavelength: float = CU_KA1
 
-    # Scherrer parameters / Scherrer 參數
+    # Scherrer parameters
     use_cubic_habit: bool = True
 
-    # Peak detection / 峰值偵測
+    # Peak detection
     peak_window: float = 2.0  # degrees around expected position
     min_intensity: float = 100  # minimum counts
     use_doublet_fitting: bool = True
     doublet_max_iterations: int = 20000
     min_fit_r_squared: float = 0.80
 
-    # Preprocessing / 預處理
+    # Preprocessing
     enable_smoothing: bool = True
     smoothing_window: int = 11
     smoothing_poly_order: int = 3
@@ -80,30 +77,55 @@ class AnalysisConfig:
     background_degree: int = 5
     enable_kalpha_strip: bool = True
 
-    # Instrumental broadening (Caglioti U, V, W) / 儀器展寬
+    # Instrumental broadening (Caglioti U, V, W)
     # FWHM_inst² = U·tan²θ + V·tanθ + W
     #
-    # Default values 默認值 (Empirical ranges for typical lab diffractometers):
+    # Default values (Empirical ranges for typical lab diffractometers):
     #   High-end lab:     W ≈ 0.001-0.002  (FWHM ≈ 0.032-0.045°)
     #   Standard lab:     W ≈ 0.002-0.005  (FWHM ≈ 0.045-0.071°)  ← Default
     #   Aging equipment:  W ≈ 0.008-0.015  (FWHM ≈ 0.089-0.122°)
     #
-    # ⚠️ IMPORTANT 重要: These are placeholder values for initial analysis.
+    # IMPORTANT: These are placeholder values for initial analysis.
     # For publication-quality results, calibrate using LaB6 (NIST SRM 660c):
     #   >>> xrd-analysis calibrate data/lab6_standard.txt
     #
-    # Reference 參考: Caglioti et al. (1958). Nucl. Instrum. 3, 223-228.
+    # Reference: Caglioti et al. (1958). Nucl. Instrum. 3, 223-228.
     caglioti_u: float = 0.0  # Default: 0 (typically -0.005 to +0.005)
     caglioti_v: float = 0.0  # Default: 0 (typically -0.002 to +0.002)
     caglioti_w: float = 0.003  # Default: standard lab (FWHM_inst ≈ 0.055°)
 
-    # Cu peak positions from JCPDS 04-0836 / 銅峰位從 JCPDS 標準
+    # Cu peak positions from JCPDS 04-0836
     # Dynamically generated from CU_JCPDS constants
     EXPECTED_PEAKS: dict[tuple[int, int, int], float] = field(
         default_factory=lambda: {
             hkl: data["two_theta"] for hkl, data in CU_JCPDS_EXTENDED.items()
         }
     )
+
+    @classmethod
+    def from_parameter_config(cls, param_config: ParameterConfig) -> "AnalysisConfig":
+        """Create AnalysisConfig from the unified ParameterConfig.
+
+        Bridges the two configuration systems to avoid duplicated fields.
+
+        Args:
+            param_config: Unified parameter configuration
+
+        Returns:
+            AnalysisConfig populated from ParameterConfig values
+
+        """
+        inst = param_config.instrument
+        peak = param_config.peak_detection
+        return cls(
+            wavelength=inst.wavelength,
+            caglioti_u=inst.caglioti_u,
+            caglioti_v=inst.caglioti_v,
+            caglioti_w=inst.caglioti_w,
+            peak_window=peak.peak_window,
+            min_intensity=peak.min_intensity,
+            min_fit_r_squared=param_config.validation.min_r_squared,
+        )
 
 
 # =============================================================================
@@ -138,9 +160,9 @@ class PipelineResult:
     sample_name: str
 
     # Sample metadata
-    leveler_concentration: Optional[float] = None
-    plating_time_hours: Optional[float] = None
-    sample_age_hours: Optional[float] = None
+    leveler_concentration: float | None = None
+    plating_time_hours: float | None = None
+    sample_age_hours: float | None = None
 
     # Peak data
     peaks: list[PeakData] = field(default_factory=list)
@@ -149,25 +171,25 @@ class PipelineResult:
     preprocessing_notes: list[str] = field(default_factory=list)
     background_applied: bool = False
     background_method: str = ""
-    background_fraction_mean: Optional[float] = None
-    angle_offset_mean_deg: Optional[float] = None
-    angle_offset_rmse_deg: Optional[float] = None
-    angle_offset_max_abs_deg: Optional[float] = None
+    background_fraction_mean: float | None = None
+    angle_offset_mean_deg: float | None = None
+    angle_offset_rmse_deg: float | None = None
+    angle_offset_max_abs_deg: float | None = None
     angle_validation_peaks: int = 0
 
     # Phase 04: Scherrer
     scherrer_results: list[ScherrerResult] = field(default_factory=list)
-    average_size_nm: Optional[float] = None
+    average_size_nm: float | None = None
 
     # Phase 05: W-H
-    wh_result: Optional[WHResult] = None
+    wh_result: WHResult | None = None
 
     # Phase 06: Texture
-    texture_result: Optional[TextureAnalysisResult] = None
+    texture_result: TextureAnalysisResult | None = None
 
     # Phase 07: Defects
-    stacking_fault: Optional[StackingFaultResult] = None
-    lattice_result: Optional[LatticeConstantResult] = None
+    stacking_fault: StackingFaultResult | None = None
+    lattice_result: LatticeConstantResult | None = None
     annealing_state: AnnealingState = AnnealingState.UNKNOWN
 
 
@@ -182,9 +204,18 @@ class XRDAnalysisPipeline:
     Integrates all Phase 04-07 analysis modules into a unified workflow.
     """
 
-    def __init__(self, config: Optional[AnalysisConfig] = None):
+    def __init__(self, config: AnalysisConfig | None = None):
         """Initialize pipeline with configuration."""
         self.config = config or AnalysisConfig()
+
+        # Double-Correction Guard: when doublet fitting handles Kα2 explicitly,
+        # pre-stripping must be disabled to avoid subtracting Kα2 twice.
+        if self.config.use_doublet_fitting and self.config.enable_kalpha_strip:
+            logger.info(
+                "Double-Correction Guard: disabling Kα2 pre-stripping "
+                "because doublet fitting is active"
+            )
+            self.config.enable_kalpha_strip = False
 
         # Initialize analyzers
         self.scherrer = ScherrerCalculator(
@@ -198,11 +229,9 @@ class XRDAnalysisPipeline:
         )
 
         # Initialize Williamson-Hall analyzer
-        # 初始化 Williamson-Hall 分析器
         self.wh = WilliamsonHallAnalyzer()
 
         # Initialize Texture analyzer
-        # 初始化紋理分析器
         self.texture = TextureAnalyzer()
         self.sf_analyzer = StackingFaultAnalyzer()
         self.lattice = LatticeMonitor()
@@ -352,7 +381,7 @@ class XRDAnalysisPipeline:
         return sf_result, lattice_result
 
     def analyze(
-        self, filepath: str, sample_age_hours: Optional[float] = None
+        self, filepath: str, sample_age_hours: float | None = None
     ) -> PipelineResult:
         """Run complete analysis on XRD data file.
 
@@ -427,7 +456,12 @@ class XRDAnalysisPipeline:
                 result.wh_result = self.wh.analyze(two_theta_arr, fwhm_arr, hkl_list)
 
         # Step 5: Texture analysis
-        intensities = {p.hkl: p.intensity for p in result.peaks}
+        # Use integrated area (not peak height) for proper comparison with JCPDS
+        # standard intensities, which are relative integrated intensities.
+        # Fall back to peak height if area is zero (e.g., simple fallback fitting).
+        intensities = {
+            p.hkl: (p.area if p.area > 0 else p.intensity) for p in result.peaks
+        }
         result.texture_result = self.texture.analyze(intensities)
 
         # Step 6: Defect analysis
@@ -444,7 +478,7 @@ class XRDAnalysisPipeline:
         self,
         filepath: str,
         output_dir: str,
-        sample_age_hours: Optional[float] = None,
+        sample_age_hours: float | None = None,
     ) -> PipelineResult:
         """Analyze one file and ensure output directory exists."""
         result = self.analyze(filepath, sample_age_hours=sample_age_hours)
@@ -462,8 +496,8 @@ class XRDAnalysisPipeline:
 
 def run_full_analysis(
     filepath: str,
-    sample_age_hours: Optional[float] = None,
-    config: Optional[AnalysisConfig] = None,
+    sample_age_hours: float | None = None,
+    config: AnalysisConfig | None = None,
 ) -> PipelineResult:
     """Run complete xrd_analysis analysis on a single file.
 
@@ -478,8 +512,8 @@ def run_full_analysis(
 
 def batch_analyze(
     filepaths: list[str],
-    sample_age_hours: Optional[float] = None,
-    config: Optional[AnalysisConfig] = None,
+    sample_age_hours: float | None = None,
+    config: AnalysisConfig | None = None,
 ) -> list[PipelineResult]:
     """Run analysis on multiple files."""
     pipeline = XRDAnalysisPipeline(config)

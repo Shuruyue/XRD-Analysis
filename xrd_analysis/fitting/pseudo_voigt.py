@@ -1,10 +1,10 @@
-"""Pseudo-Voigt Function Module 偽Voigt函數模組.
+"""Pseudo-Voigt Function Module.
 =============================================
 Implements the Pseudo-Voigt profile function for XRD peak fitting.
-實現用於 XRD 峰擬合的偽Voigt剖面函數。
+XRDVoigt
 
 Also includes True Voigt profile using scipy.special.voigt_profile.
-另包含使用 scipy.special.voigt_profile 的真Voigt剖面。
+scipy.special.voigt_profileVoigt
 """
 
 from dataclasses import dataclass
@@ -34,10 +34,15 @@ class VoigtParams:
 
     @property
     def fwhm_total(self) -> float:
-        """Approximate total FWHM using Olivero-Longbothum approximation."""
+        """Total FWHM using Thompson-Cox-Hastings (1987) 5th-order polynomial.
+
+        Reference:
+            Thompson, Cox & Hastings (1987),
+            J. Appl. Cryst. 20, 79-83. DOI: 10.1107/S0021889887087090
+        """
         fG = self.fwhm_gaussian
         fL = self.fwhm_lorentzian
-        return 0.5346 * fL + np.sqrt(0.2166 * fL**2 + fG**2)
+        return tch_fwhm_from_components(fG, fL)
 
     def to_array(self) -> np.ndarray:
         """Convert to numpy array [center, amplitude, sigma, gamma]."""
@@ -126,11 +131,16 @@ class TrueVoigt:
     @staticmethod
     def fwhm_from_params(sigma: float, gamma: float) -> float:
         """Calculate total FWHM from sigma and gamma.
-        Uses Olivero-Longbothum approximation.
+
+        Uses Thompson-Cox-Hastings (1987) 5th-order polynomial.
+
+        Reference:
+            Thompson, Cox & Hastings (1987),
+            J. Appl. Cryst. 20, 79-83.
         """
         fG = 2.0 * sigma * np.sqrt(2.0 * np.log(2.0))
         fL = 2.0 * gamma
-        return 0.5346 * fL + np.sqrt(0.2166 * fL**2 + fG**2)
+        return tch_fwhm_from_components(fG, fL)
 
     @staticmethod
     def params_from_fwhm(fwhm: float, eta: float = 0.5) -> tuple[float, float]:
@@ -279,3 +289,142 @@ def pseudo_voigt_function(
 
     """
     return PseudoVoigt.profile(x, center, amplitude, fwhm, eta)
+
+
+# =============================================================================
+# Thompson-Cox-Hastings (1987) Parameterization
+# =============================================================================
+#
+# Reference:
+#     Thompson, P., Cox, D. E., & Hastings, J. B. (1987).
+#     "Rietveld refinement of Debye-Scherrer synchrotron X-ray data from Al₂O₃."
+#     J. Appl. Cryst. 20, 79-83.
+#     DOI: 10.1107/S0021889887087090
+#
+# The TCH parameterization gives a more accurate total Voigt FWHM and
+# pseudo-Voigt mixing parameter η from Gaussian and Lorentzian components
+# than the Olivero-Longbothum (1977) approximation.
+#
+# Used by FullProf, GSAS-II, and other modern Rietveld codes.
+# =============================================================================
+
+
+def tch_fwhm_from_components(fG: float, fL: float) -> float:
+    """Compute total Voigt FWHM from Gaussian and Lorentzian FWHM components.
+
+    Thompson-Cox-Hastings (1987) 5th-order polynomial:
+        f⁵ = fG⁵ + 2.69269·fG⁴·fL + 2.42843·fG³·fL²
+             + 4.47163·fG²·fL³ + 0.07842·fG·fL⁴ + fL⁵
+
+    Args:
+        fG: Gaussian FWHM component
+        fL: Lorentzian FWHM component
+
+    Returns:
+        Total Voigt FWHM
+
+    """
+    f5 = (
+        fG**5
+        + 2.69269 * fG**4 * fL
+        + 2.42843 * fG**3 * fL**2
+        + 4.47163 * fG**2 * fL**3
+        + 0.07842 * fG * fL**4
+        + fL**5
+    )
+    return f5**0.2 if f5 > 0 else 0.0
+
+
+def tch_eta_from_components(fG: float, fL: float) -> tuple[float, float]:
+    """Compute pseudo-Voigt η and total FWHM from G/L components via TCH.
+
+    Thompson-Cox-Hastings (1987) parameterization.
+
+    The η formula:
+        r = fL / f_total
+        η = 1.36603·r − 0.47719·r² + 0.11116·r³
+
+    This gives the Lorentzian fraction of the pseudo-Voigt that best
+    approximates the true Voigt convolution.
+
+    Args:
+        fG: Gaussian FWHM component
+        fL: Lorentzian FWHM component
+
+    Returns:
+        Tuple of (total_fwhm, eta)
+
+    """
+    f_total = tch_fwhm_from_components(fG, fL)
+    if f_total <= 0:
+        return 0.0, 0.5
+
+    r = fL / f_total
+    eta = 1.36603 * r - 0.47719 * r**2 + 0.11116 * r**3
+    eta = float(np.clip(eta, 0.0, 1.0))
+
+    return f_total, eta
+
+
+def tch_components_from_eta(fwhm_total: float, eta: float) -> tuple[float, float]:
+    """Inverse TCH mapping: recover (fG, fL) from total FWHM and η.
+
+    Given a pseudo-Voigt described by (FWHM, η), compute the Gaussian and
+    Lorentzian FWHM components that reproduce these values through the
+    Thompson-Cox-Hastings parameterization.
+
+    Algorithm:
+        1. Invert η(r) = 1.36603r − 0.47719r² + 0.11116r³ via Newton's method
+           to obtain r = fL / fwhm_total.
+        2. fL = r × fwhm_total.
+        3. Solve tch_fwhm_from_components(fG, fL) = fwhm_total for fG using
+           bisection (the TCH polynomial is monotonically increasing in fG).
+
+    Args:
+        fwhm_total: Total pseudo-Voigt FWHM
+        eta: Pseudo-Voigt mixing parameter (0 = Gaussian, 1 = Lorentzian)
+
+    Returns:
+        (fG, fL) — Gaussian and Lorentzian FWHM components
+
+    Reference:
+        Thompson, Cox & Hastings (1987), J. Appl. Cryst. 20, 79-83.
+
+    """
+    if fwhm_total <= 0:
+        return 0.0, 0.0
+
+    eta = float(np.clip(eta, 0.0, 1.0))
+
+    # Step 1: Invert η(r) using Newton's method
+    # η = 1.36603*r - 0.47719*r² + 0.11116*r³
+    # η'(r) = 1.36603 - 0.95438*r + 0.33348*r²
+    r = eta  # Initial guess (good for small η)
+    for _ in range(20):
+        f_r = 1.36603 * r - 0.47719 * r**2 + 0.11116 * r**3 - eta
+        df_r = 1.36603 - 0.95438 * r + 0.33348 * r**2
+        if abs(df_r) < 1e-15:
+            break
+        r_new = r - f_r / df_r
+        r_new = max(0.0, min(1.0, r_new))
+        if abs(r_new - r) < 1e-12:
+            break
+        r = r_new
+
+    r = float(np.clip(r, 0.0, 1.0))
+    fL = r * fwhm_total
+
+    # Step 2: Solve for fG via bisection on tch_fwhm_from_components(fG, fL) = fwhm_total
+    fG_lo, fG_hi = 0.0, fwhm_total
+    for _ in range(60):
+        fG_mid = (fG_lo + fG_hi) / 2.0
+        f_mid = tch_fwhm_from_components(fG_mid, fL)
+        if f_mid < fwhm_total:
+            fG_lo = fG_mid
+        else:
+            fG_hi = fG_mid
+        if (fG_hi - fG_lo) < 1e-14 * fwhm_total:
+            break
+
+    fG = (fG_lo + fG_hi) / 2.0
+    return fG, fL

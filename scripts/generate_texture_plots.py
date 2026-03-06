@@ -103,7 +103,9 @@ def generate_texture_plots(
                 print(f"  Skip peak {sample_name} {hkl}: {exc}")
 
         if len(intensities_area) < 2:
-            print(f"  [SKIP] {sample_name}: not enough valid peaks ({len(intensities_area)}/3)")
+            print(
+                f"  [SKIP] {sample_name}: not enough valid peaks ({len(intensities_area)}/3)"
+            )
             continue
 
         tc_result = analyze_texture(intensities_area, use_area=True)
@@ -112,7 +114,9 @@ def generate_texture_plots(
             "concentration": file_info.get("concentration_ml", 0.0),
             "time": file_info.get("time_hours", 0.0),
             "tc_values": {_hkl_label(k): v for k, v in tc_result.tc_values.items()},
-            "dominant": _hkl_label(tc_result.dominant_hkl) if tc_result.dominant_hkl else "None",
+            "dominant": (
+                _hkl_label(tc_result.dominant_hkl) if tc_result.dominant_hkl else "None"
+            ),
             "is_random": tc_result.is_random,
             "sigma": tc_result.degree_of_texture,
             "high_quality": True,
@@ -165,7 +169,12 @@ def generate_texture_plots(
 def main() -> int:
     root = get_project_root()
     parser = argparse.ArgumentParser(description="Generate texture analysis plots.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

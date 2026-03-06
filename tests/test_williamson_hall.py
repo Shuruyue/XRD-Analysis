@@ -6,7 +6,6 @@ Tests R² quality assessment, anisotropy diagnostics, and calculation accuracy.
 Run with: pytest tests/test_williamson_hall.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -40,10 +39,10 @@ class TestWHConstants:
         """Verify elastic modulus values are from reference."""
         # Check specific directions - use tolerance for floating point
         import xrd_analysis.core.copper_crystal as cc
+
         assert abs(MODULUS_MAP[(1, 1, 1)] - cc.CopperElasticModuli.E_111) < 0.5
         assert abs(MODULUS_MAP[(2, 0, 0)] - cc.CopperElasticModuli.E_100) < 0.5
         assert abs(MODULUS_MAP[(2, 2, 0)] - cc.CopperElasticModuli.E_110) < 0.5
-
 
 
 class TestDocumentExample:
@@ -164,7 +163,10 @@ class TestAnisotropyDiagnostics:
         # If R² is poor, should have anisotropy note
         if result.r_squared < R2_ACCEPTABLE:
             assert result.anisotropy_note
-            assert "異方性" in result.anisotropy_note or "191" in result.anisotropy_note
+            assert (
+                "Anisotropy" in result.anisotropy_note
+                or "191" in result.anisotropy_note
+            )
 
 
 class TestPlotData:

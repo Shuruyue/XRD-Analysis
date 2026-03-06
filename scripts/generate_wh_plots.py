@@ -126,7 +126,9 @@ def generate_wh_plots(
                 hkl_list.append(hkl)
 
             if len(centers) < 3:
-                print(f"  [SKIP] {filepath.stem}: not enough valid peaks ({len(centers)}/5)")
+                print(
+                    f"  [SKIP] {filepath.stem}: not enough valid peaks ({len(centers)}/5)"
+                )
                 continue
 
             wh_result = analyze_williamson_hall(
@@ -183,7 +185,12 @@ def generate_wh_plots(
 def main() -> int:
     root = get_project_root()
     parser = argparse.ArgumentParser(description="Generate Williamson-Hall plots.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

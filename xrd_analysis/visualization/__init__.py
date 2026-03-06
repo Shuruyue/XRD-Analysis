@@ -2,7 +2,6 @@
 ===========================
 
 Provides structured visualization tools for XRD analysis results.
-提供結構化的 XRD 分析結果視覺化工具。
 
 Submodules:
     - style: Common styling configuration and color palettes
@@ -18,7 +17,6 @@ import os
 import matplotlib
 
 # Use a non-interactive backend by default in headless environments.
-# 若使用者未指定 MPLBACKEND，預設採用 Agg 以避免 Tk 依賴問題。
 if not os.environ.get("MPLBACKEND"):
     matplotlib.use("Agg")
 

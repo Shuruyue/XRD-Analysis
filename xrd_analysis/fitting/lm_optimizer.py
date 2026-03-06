@@ -1,12 +1,11 @@
-"""Levenberg-Marquardt Optimizer Module LM 優化器模組.
+"""Levenberg-Marquardt Optimizer Module.
 ==================================================
 Implements non-linear least squares fitting for XRD peaks.
-實現 XRD 峰的非線性最小二乘法擬合。
+XRD
 """
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -20,14 +19,12 @@ logger = logging.getLogger(__name__)
 class FitResult:
     """Result of peak fitting.
 
-    峰擬合結果。.
-
     Enhanced with R_wp quality metric, integrated area, and hkl assignment.
-    增強版：包含 R_wp 品質指標、積分面積和 hkl 指派。
+    R_wphkl
     """
 
     params: PseudoVoigtParams
-    covariance: Optional[np.ndarray]
+    covariance: np.ndarray | None
     residuals: np.ndarray
     chi_squared: float
     r_squared: float
@@ -36,7 +33,7 @@ class FitResult:
     # Phase 03 enhancements
     r_wp: float = 0.0  # Weighted Profile R-factor (%)
     area: float = 0.0  # Integrated intensity (peak area)
-    hkl: Optional[tuple[int, int, int]] = None  # Miller indices
+    hkl: tuple[int, int, int] | None = None  # Miller indices
 
     def is_valid(self) -> bool:
         """Check if fit result is physically valid."""
@@ -68,8 +65,8 @@ class LMOptimizer:
         self,
         two_theta: np.ndarray,
         intensity: np.ndarray,
-        initial_guess: Optional[PseudoVoigtParams] = None,
-        peak_idx: Optional[int] = None,
+        initial_guess: PseudoVoigtParams | None = None,
+        peak_idx: int | None = None,
         use_linear_background: bool = True,
     ) -> FitResult:
         """Fit a single Pseudo-Voigt peak with linear background.
@@ -157,12 +154,18 @@ class LMOptimizer:
 
             fit_func = pv_with_const_bg
 
+        # Poisson weights: σ_i = sqrt(max(I_i, 1))
+        # Weighting improves fit quality in low-count regions
+        sigma_weights = np.sqrt(np.maximum(intensity, 1.0))
+
         try:
             popt, pcov = curve_fit(
                 fit_func,
                 two_theta,
                 intensity,
                 p0=p0,
+                sigma=sigma_weights,
+                absolute_sigma=True,
                 bounds=bounds,
                 maxfev=self.max_iterations * 2,  # More iterations
                 ftol=self.tolerance,
@@ -367,11 +370,9 @@ class LMOptimizer:
         two_theta: np.ndarray,
         intensity: np.ndarray,
         n_peaks: int,
-        initial_guesses: Optional[list[PseudoVoigtParams]] = None,
+        initial_guesses: list[PseudoVoigtParams] | None = None,
     ) -> list[FitResult]:
         """Fit multiple peaks sequentially.
-
-        依序擬合多個峰。.
 
         Args:
             two_theta: 2θ array
@@ -382,11 +383,7 @@ class LMOptimizer:
         Returns:
             List of FitResult objects
 
-        Note / 注意:
-            目前使用依序擬合（每個峰獨立擬合），而非同時擬合。
-            對於嚴重重疊的峰（雖然在正常銅樣品中少見），
-            同時擬合的準確度可能更高。
-
+        Note:
             Currently uses sequential fitting (each peak fitted independently),
             not simultaneous optimization. For severely overlapping peaks
             (rare in normal copper samples), simultaneous fitting may be more accurate.
@@ -394,7 +391,7 @@ class LMOptimizer:
             Future improvement: implement global multi-peak optimization.
 
         """
-        # 演算法限制：依序擬合 - 列入未來優化項目
+        # -
         # Algorithm limitation: sequential fitting - future optimization target
         results = []
 
@@ -448,7 +445,7 @@ class LMOptimizer:
 def fit_peaks(
     two_theta: np.ndarray,
     intensity: np.ndarray,
-    peak_positions: Optional[list[float]] = None,
+    peak_positions: list[float] | None = None,
 ) -> list[FitResult]:
     """Convenience function for peak fitting.
 
@@ -470,9 +467,6 @@ def fit_peaks(
     # Fit each specified peak
     results = []
     for pos in peak_positions:
-        # Find closest index
-        np.argmin(np.abs(two_theta - pos))
-
         # Define local region
         margin = 2.0
         mask = (two_theta >= pos - margin) & (two_theta <= pos + margin)

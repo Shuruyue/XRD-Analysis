@@ -6,13 +6,11 @@ Generate detailed fitting diagnostic plots for each XRD sample,
 showing peak positions, FWHM, fitting curves, and R² values.
 
 Uses Kα₁/Kα₂ doublet fitting for accurate peak characterization.
-使用 Kα₁/Kα₂ 雙峰擬合進行精確峰型表徵。
 
 Refactored to use xrd_analysis.visualization module.
 """
 
 from pathlib import Path
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,23 +32,19 @@ from xrd_analysis.visualization.style import (
 # Apply unified style
 apply_xrd_analysis_style()
 
-
 # Cu peak positions (JCPDS) - use unified function
 from xrd_analysis.core.copper_crystal import get_standard_peaks
 
 PEAK_POSITIONS = get_standard_peaks()  # Returns (111), (200), (220)
 PEAK_LABELS = [f"({h[0]}{h[1]}{h[2]})" for h in PEAK_POSITIONS.keys()]
 
-
 from xrd_analysis.fitting.peak_fitter import fit_peak_with_diagnosis
 
 
 def generate_sample_fitting_plot(
     filepath: Path, output_dir: Path, config: AnalysisConfig = None
-) -> Optional[list[dict]]:
+) -> list[dict] | None:
     """Generate a single diagnostic plot for one XRD sample.
-
-    使用新視覺化模組生成單一樣品的診斷圖。.
 
     Shows 3 subplots (one for each peak) with fitting details.
     """

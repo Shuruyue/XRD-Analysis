@@ -6,7 +6,6 @@ Tests Harris TC calculation and document examples (DATA ONLY, no diagnosis).
 Run with: pytest tests/test_texture.py -v
 """
 
-
 import pytest
 
 # Add src to path
@@ -85,8 +84,8 @@ class TestOrientationType:
         # Create strong (111) preference
         intensities = {
             (1, 1, 1): 25000,  # Much stronger
-            (2, 0, 0): 4600,   # Standard
-            (2, 2, 0): 2000,   # Standard
+            (2, 0, 0): 4600,  # Standard
+            (2, 2, 0): 2000,  # Standard
         }
 
         result = analyze_texture(intensities)

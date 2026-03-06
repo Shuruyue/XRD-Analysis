@@ -6,7 +6,6 @@ Tests quality metrics, hkl assignment, and fitting validation.
 Run with: pytest tests/test_peak_fitting.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -84,10 +83,7 @@ class TestParameterValidation:
     def test_valid_parameters_pass(self):
         """Valid parameters should pass validation."""
         is_valid, warnings = validate_fit_parameters(
-            center=43.3,
-            amplitude=1000,
-            fwhm=0.25,
-            eta=0.5
+            center=43.3, amplitude=1000, fwhm=0.25, eta=0.5
         )
 
         assert is_valid
@@ -96,10 +92,7 @@ class TestParameterValidation:
     def test_eta_out_of_bounds_fails(self):
         """η outside [0,1] should fail."""
         is_valid, warnings = validate_fit_parameters(
-            center=43.3,
-            amplitude=1000,
-            fwhm=0.25,
-            eta=1.5  # Out of bounds
+            center=43.3, amplitude=1000, fwhm=0.25, eta=1.5  # Out of bounds
         )
 
         assert not is_valid
@@ -108,10 +101,7 @@ class TestParameterValidation:
     def test_negative_fwhm_fails(self):
         """Negative FWHM should fail."""
         is_valid, warnings = validate_fit_parameters(
-            center=43.3,
-            amplitude=1000,
-            fwhm=-0.1,  # Negative
-            eta=0.5
+            center=43.3, amplitude=1000, fwhm=-0.1, eta=0.5  # Negative
         )
 
         assert not is_valid
@@ -120,10 +110,7 @@ class TestParameterValidation:
     def test_zero_amplitude_fails(self):
         """Zero amplitude should fail."""
         is_valid, warnings = validate_fit_parameters(
-            center=43.3,
-            amplitude=0,  # Zero
-            fwhm=0.25,
-            eta=0.5
+            center=43.3, amplitude=0, fwhm=0.25, eta=0.5  # Zero
         )
 
         assert not is_valid
@@ -139,8 +126,7 @@ class TestQualityReport:
         calculated = np.array([98, 495, 995, 502, 101])
 
         report = generate_quality_report(
-            observed, calculated,
-            center=43.3, amplitude=1000, fwhm=0.25, eta=0.5
+            observed, calculated, center=43.3, amplitude=1000, fwhm=0.25, eta=0.5
         )
 
         assert report.is_valid
@@ -152,8 +138,12 @@ class TestQualityReport:
         calculated = np.array([100, 500, 1000, 500, 100])
 
         report = generate_quality_report(
-            observed, calculated,
-            center=43.3, amplitude=1000, fwhm=-0.1, eta=0.5  # Invalid FWHM
+            observed,
+            calculated,
+            center=43.3,
+            amplitude=1000,
+            fwhm=-0.1,
+            eta=0.5,  # Invalid FWHM
         )
 
         assert not report.is_valid
@@ -220,7 +210,7 @@ class TestJCPDSData:
 
     def test_all_peaks_present(self):
         """All main Cu peaks should be in JCPDS data."""
-        expected_hkls = [(1,1,1), (2,0,0), (2,2,0), (3,1,1)]
+        expected_hkls = [(1, 1, 1), (2, 0, 0), (2, 2, 0), (3, 1, 1)]
         for hkl in expected_hkls:
             assert hkl in JCPDS_COPPER_PEAKS
 

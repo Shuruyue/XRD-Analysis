@@ -3,8 +3,7 @@ Supports multiple XRD data formats: .xy, .csv, .raw, .txt (Bruker).
 """
 
 from pathlib import Path
-from typing import Any, Optional
-
+from typing import Any
 import numpy as np
 import pandas as pd
 
@@ -22,9 +21,9 @@ class XRDDataLoader:
     SUPPORTED_FORMATS = [".xy", ".csv", ".raw", ".txt"]
 
     def __init__(self):
-        self.data: Optional[np.ndarray] = None
+        self.data: np.ndarray | None = None
         self.metadata: dict[str, Any] = {}
-        self.filepath: Optional[Path] = None
+        self.filepath: Path | None = None
 
     def load(self, filepath: str) -> tuple[np.ndarray, np.ndarray]:
         """Load XRD data from file.

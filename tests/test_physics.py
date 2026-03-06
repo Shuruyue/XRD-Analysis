@@ -4,7 +4,6 @@ Tests Scherrer, Williamson-Hall, and Texture calculations.
 Run with: pytest tests/test_physics.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -57,8 +56,9 @@ class TestPhysicsVerification:
             # Verify with high precision (0.001 deg)
             diff = abs(stored_2theta - two_theta_calc)
 
-            assert diff < 0.001, \
-                f"Physical inconsistency for ({h}{k}{l}): Stored={stored_2theta}, Calc={two_theta_calc:.5f}, Diff={diff:.5f}"
+            assert (
+                diff < 0.001
+            ), f"Physical inconsistency for ({h}{k}{l}): Stored={stored_2theta}, Calc={two_theta_calc:.5f}, Diff={diff:.5f}"
 
 
 class TestScherrerCalculator:
@@ -223,8 +223,8 @@ class TestTextureAnalyzer:
         # Enhanced (111) intensity
         intensities = {
             (1, 1, 1): 200,  # 2× standard
-            (2, 0, 0): 23,   # 0.5× standard
-            (2, 2, 0): 10,   # 0.5× standard
+            (2, 0, 0): 23,  # 0.5× standard
+            (2, 2, 0): 10,  # 0.5× standard
         }
 
         result = analyzer.analyze(intensities)
@@ -298,7 +298,9 @@ class TestCagliotiCorrection:
         fwhm_obs = 0.3
         two_theta = 45.0
 
-        fwhm_corr, is_reliable, warning = caglioti.correct_broadening(fwhm_obs, two_theta)
+        fwhm_corr, is_reliable, warning = caglioti.correct_broadening(
+            fwhm_obs, two_theta
+        )
 
         assert fwhm_corr > 0
         assert fwhm_corr < fwhm_obs  # Corrected should be smaller

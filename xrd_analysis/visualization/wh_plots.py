@@ -2,11 +2,9 @@
 ====================================
 
 Plots for Williamson-Hall size/strain analysis.
-Williamson-Hall 尺寸/應變分析繪圖模組。
 """
 
-from typing import Any, Optional
-
+from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -23,9 +21,9 @@ from .style import (
 def plot_williamson_hall(
     two_theta: np.ndarray,
     fwhm_sample: np.ndarray,
-    fit_result: Optional[dict[str, Any]] = None,
-    hkl_labels: Optional[list[str]] = None,
-    output_path: Optional[str] = None,
+    fit_result: dict[str, Any] | None = None,
+    hkl_labels: list[str] | None = None,
+    output_path: str | None = None,
     dpi: int = 300,
     format: str = "png",
     show: bool = True,
@@ -33,8 +31,6 @@ def plot_williamson_hall(
     sample_name: str = "Sample",
 ) -> plt.Figure:
     """Plot Williamson-Hall linear fit diagram.
-
-    繪製 Williamson-Hall 線性擬合圖。.
 
     W-H Equation: β cos θ = (Kλ/D) + 4ε sin θ
 
@@ -211,17 +207,15 @@ def plot_williamson_hall(
 def plot_wh_residuals(
     two_theta: np.ndarray,
     fwhm_sample: np.ndarray,
-    fit_result: Optional[dict[str, Any]] = None,
-    hkl_labels: Optional[list[str]] = None,
-    output_path: Optional[str] = None,
+    fit_result: dict[str, Any] | None = None,
+    hkl_labels: list[str] | None = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (10, 5),
 ) -> plt.Figure:
     """Plot Williamson-Hall fit residuals.
-
-    繪製 Williamson-Hall 擬合殘差圖。.
 
     Args:
         two_theta: Array of 2θ peak positions (degrees).
@@ -321,7 +315,7 @@ def plot_wh_residuals(
 
 def plot_strain_evolution(
     data: list[dict[str, Any]],
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,

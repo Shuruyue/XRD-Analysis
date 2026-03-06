@@ -2,11 +2,9 @@
 =========================
 
 Plots for FWHM (Full Width at Half Maximum) analysis.
-FWHM（半高寬）分析繪圖模組。
 """
 
-from typing import Any, Optional
-
+from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -20,16 +18,14 @@ from .style import (
 def plot_fwhm_evolution(
     data: list[dict[str, Any]],
     x_param: str = "concentration",
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (12, 8),
-    instrument_limit: Optional[float] = 0.05,
+    instrument_limit: float | None = 0.05,
 ) -> plt.Figure:
     """Plot FWHM evolution across samples.
-
-    繪製 FWHM 隨樣品參數演化圖。.
 
     Args:
         data: List of dictionaries with keys:
@@ -98,8 +94,10 @@ def plot_fwhm_evolution(
         group_values = sorted(set(sample.get(group_key, 0) for sample in data))
         colors_by_group = get_color_palette(len(group_values))
         group_color_map = dict(zip(group_values, colors_by_group))
+
         def label_format(g):
             return f"{g:.0f}h"
+
     else:
         # Group by concentration when plotting against time
         group_key = "concentration"
@@ -107,6 +105,7 @@ def plot_fwhm_evolution(
         group_values = sorted(set(sample.get(group_key, 0) for sample in data))
         colors_by_group = get_color_palette(len(group_values))
         group_color_map = dict(zip(group_values, colors_by_group))
+
         def label_format(g):
             return f"{g} mL/1.5L"
 
@@ -236,17 +235,15 @@ def plot_fwhm_evolution(
 
 def plot_fwhm_by_peak(
     results: list[dict[str, Any]],
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (10, 6),
-    y_limit: Optional[tuple[float, float]] = None,
-    instrument_limit: Optional[float] = 0.05,
+    y_limit: tuple[float, float] | None = None,
+    instrument_limit: float | None = 0.05,
 ) -> plt.Figure:
     """Plot FWHM comparison across different peaks for all samples.
-
-    繪製所有樣品各峰 FWHM 比較圖。.
 
     Args:
         results: List of dictionaries with keys:
@@ -340,12 +337,12 @@ def plot_fwhm_by_peak(
 
 def plot_fwhm_by_concentration(
     data: list[dict[str, Any]],
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     format: str = "png",
     show: bool = True,
     figsize: tuple[float, float] = (16, 10),
-    instrument_limit: Optional[float] = 0.05,
+    instrument_limit: float | None = 0.05,
 ) -> plt.Figure:
     """Plot FWHM evolution with subplots by concentration.
 

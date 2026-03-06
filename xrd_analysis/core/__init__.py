@@ -2,7 +2,6 @@
 ==================
 
 Core domain logic including constants, configuration, and crystal data.
-核心領域邏輯，包括常數、配置和晶體資料。
 """
 
 from xrd_analysis.core.config_loader import load_config

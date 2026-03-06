@@ -2,7 +2,6 @@
 =====================
 
 Analysis methods for XRD data.
-XRD 資料分析方法。
 """
 
 from xrd_analysis.methods.caglioti import (

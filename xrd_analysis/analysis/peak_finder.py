@@ -1,14 +1,12 @@
-"""Peak Finding with Pseudo-Voigt Fitting 偽Voigt擬合峰值查找.
+"""Peak Finding with Pseudo-Voigt Fitting.
 =============================================================
 
 Find and fit peaks in XRD data using Kα doublet fitting with
 Pseudo-Voigt fallback.
-使用 Kα 雙峰擬合（含偽Voigt回退）在 XRD 數據中查找和擬合峰值。
 """
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -20,7 +18,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PeakData:
-    """Single peak data."""
+    """Single peak data with optional fitting metadata.
+
+    Core fields are always populated. Optional fields carry
+    fitting diagnostics when available, eliminating the need
+    to cross-reference DoubletFitResult separately.
+    """
 
     hkl: tuple[int, int, int]
     two_theta: float
@@ -28,6 +31,11 @@ class PeakData:
     fwhm: float
     area: float = 0.0
     eta: float = 0.5  # Pseudo-Voigt mixing parameter (0=Gaussian, 1=Lorentzian)
+    # Fitting metadata (optional)
+    r_squared: float = 0.0
+    fit_method: str = ""  # "doublet", "pseudo_voigt", "simple"
+    fwhm_error: float = 0.0
+    center_error: float = 0.0
 
 
 def _estimate_fwhm_simple(
@@ -111,7 +119,7 @@ def find_peak_in_range(
     use_doublet_fitting: bool = True,
     doublet_max_iterations: int = 20000,
     min_fit_r_squared: float = 0.80,
-) -> Optional[PeakData]:
+) -> PeakData | None:
     """Find peak near expected position using Kα doublet fitting.
 
     Args:
@@ -180,7 +188,9 @@ def find_peak_in_range(
                     eta=fit_result.get("eta", 0.5),
                 )
         except (ValueError, RuntimeError, ImportError):
-            logger.debug("Doublet fitting failed for center=%.2f, using fallback", center)
+            logger.debug(
+                "Doublet fitting failed for center=%.2f, using fallback", center
+            )
 
     # Fallback: simple Pseudo-Voigt fitting
     success, peak_theta, peak_int, fwhm, eta, area = _fit_peak_pseudo_voigt(

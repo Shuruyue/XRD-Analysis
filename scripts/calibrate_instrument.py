@@ -53,7 +53,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Calibrate instrument using standard XRD scan and optionally update config.yaml."
     )
-    parser.add_argument("standard", type=Path, help="Path to standard scan file (e.g. LaB6)")
+    parser.add_argument(
+        "standard", type=Path, help="Path to standard scan file (e.g. LaB6)"
+    )
     parser.add_argument(
         "-o",
         "--output",

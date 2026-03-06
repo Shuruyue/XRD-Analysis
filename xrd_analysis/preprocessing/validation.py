@@ -1,8 +1,7 @@
-"""XRD Data Validation Module XRD 資料驗證模組.
+"""XRD Data Validation Module.
 ===========================================
 
 Input validation and data quality checks for XRD preprocessing.
-XRD 預處理的輸入驗證和資料品質檢查。
 """
 
 from dataclasses import dataclass, field

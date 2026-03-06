@@ -25,7 +25,7 @@ Be respectful, constructive, and professional in all interactions.
 
 **Prerequisites**:
 
-- Python ≥ 3.9
+- Python ≥ 3.10
 - Git
 - Basic knowledge of XRD analysis
 
@@ -125,7 +125,7 @@ pytest --cov=xrd_analysis --cov-report=html
 
 - Follow PEP 8
 - Use type hints for function signatures
-- Maximum line length: 100 characters
+- Maximum line length: 88 characters (Black default)
 - Use double quotes for strings
 
 **Format code automatically**:
@@ -151,7 +151,7 @@ mypy xrd_analysis/
 - All public functions must have docstrings
 - Use Google-style docstrings
 - Include Args, Returns, and Examples sections
-- Bilingual comments (English + Chinese) where helpful
+- Use English for all comments and documentation
 
 **Example**:
 
@@ -254,10 +254,9 @@ git push origin feature/your-feature-name
 **Example Structure**:
 
 ```python
-# XRD-Analysis/methods/new_method.py
+# xrd_analysis/methods/new_method.py
 
 from dataclasses import dataclass
-from typing import Optional
 
 @dataclass
 class NewMethodResult:

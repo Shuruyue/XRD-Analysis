@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Advanced XRD Crystallite Size Analysis System"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "XRD-Analysis Team"}
 ]
@@ -18,7 +18,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -59,12 +58,12 @@ version = {attr = "xrd_analysis.__version__.__version__"}
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312"]
 include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "UP"]
@@ -73,11 +72,12 @@ ignore = [
     "D104",   # Missing docstring in public package
     "D105",   # Missing docstring in magic method
     "D107",   # Missing docstring in __init__
-    "D205",   # 1 blank line after summary (bilingual EN+CN docstring pattern)
+    "D205",   # 1 blank line after summary
     "D401",   # First line should be imperative mood
     "D417",   # Missing argument descriptions (dataclass/simple functions)
-    "E501",   # Line too long (physics formulas, bilingual comments)
+    "E501",   # Line too long (physics formulas)
     "N806",   # Variable in function should be lowercase (physics: K, U, V, W)
+    "N802",   # Function name should be lowercase (physics: compute_H_squared)
     "N803",   # Argument name should be lowercase (physics: U, V, W)
     "E741",   # Ambiguous variable name (l in crystallography)
 ]
@@ -92,7 +92,7 @@ ignore = [
 "xrd_analysis/visualization/generate_fitting_diagnosis.py" = ["E402"]  # Script-style
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true

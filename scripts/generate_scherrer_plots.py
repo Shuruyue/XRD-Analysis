@@ -141,7 +141,12 @@ def generate_scherrer_plots(
 def main() -> int:
     root = get_project_root()
     parser = argparse.ArgumentParser(description="Generate Scherrer size plots.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

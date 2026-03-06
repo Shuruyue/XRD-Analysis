@@ -18,7 +18,9 @@ from xrd_analysis.visualization.generate_fitting_diagnosis import (
 )
 
 
-def generate_diagnosis_plots(data_dir: Path, output_dir: Path, clean: bool = True) -> int:
+def generate_diagnosis_plots(
+    data_dir: Path, output_dir: Path, clean: bool = True
+) -> int:
     if not data_dir.exists():
         raise FileNotFoundError(f"Data directory not found: {data_dir}")
 
@@ -47,7 +49,12 @@ def generate_diagnosis_plots(data_dir: Path, output_dir: Path, clean: bool = Tru
 def main() -> int:
     root = get_project_root()
     parser = argparse.ArgumentParser(description="Generate fitting diagnosis plots.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

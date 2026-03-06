@@ -1,18 +1,16 @@
-"""Scherrer Crystallite Size Analysis Scherrer 晶粒尺寸分析.
+"""Scherrer Crystallite Size Analysis.
 =======================================================
 
 Implements the Scherrer equation with dynamic K values, validity flags,
 and complete unit conversion safety.
-使用動態 K 值、有效性標誌和完整單位轉換安全性實現 Scherrer 方程。
 
-Reference 出處:
+Reference:
     Langford, J. I., & Wilson, A. J. C. (1978).
     Scherrer after sixty years. J. Appl. Cryst., 11, 102-113.
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 import numpy as np
 
@@ -25,14 +23,14 @@ from xrd_analysis.core.constants import (
 )
 from xrd_analysis.core.copper_crystal import get_k_for_hkl
 from xrd_analysis.fitting.hkl_assignment import assign_hkl
+from xrd_analysis.fitting.pseudo_voigt import tch_components_from_eta
 
 # =============================================================================
 # Constants
 # =============================================================================
 
-# 波長常數直接使用 CU_KA1 / Wavelength: use CU_KA1 directly
+# Wavelength: use CU_KA1 directly
 FWHM_RATIO_THRESHOLD = MIN_BROADENING_RATIO
-
 
 # =============================================================================
 # Validity Flag System
@@ -40,25 +38,20 @@ FWHM_RATIO_THRESHOLD = MIN_BROADENING_RATIO
 
 
 class ValidityFlag(Enum):
-    """Scherrer calculation validity flags.
-    Scherrer 計算有效性旗標。.
-    """
+    """Scherrer calculation validity flags."""
 
-    VALID = "VALID"  # Normal calculation 正常計算
-    UNRELIABLE = "UNRELIABLE"  # FWHM ratio below threshold 寬化比值過低
-    WARNING = "WARNING"  # Size exceeds limits 尺寸超出限制
-    ERROR = "ERROR"  # Calculation failed 計算失敗
+    VALID = "VALID"  # Normal calculation
+    UNRELIABLE = "UNRELIABLE"  # FWHM ratio below threshold
+    WARNING = "WARNING"  # Size exceeds limits
+    ERROR = "ERROR"  # Calculation failed
 
 
 class GrainShape(Enum):
-    """Grain shape for Scherrer constant selection.
+    """Grain shape for Scherrer constant selection."""
 
-    晶粒形狀，用於選擇 Scherrer 常數。.
-    """
-
-    SPHERICAL = "spherical"  # 球形
-    CUBIC = "cubic"  # 立方
-    CUSTOM = "custom"  # 自訂
+    SPHERICAL = "spherical"
+    CUBIC = "cubic"
+    CUSTOM = "custom"
 
 
 # =============================================================================
@@ -69,31 +62,29 @@ class GrainShape(Enum):
 @dataclass
 class ScherrerResult:
     """Result from Scherrer crystallite size calculation.
-    Scherrer 晶粒尺寸計算結果。.
 
     Includes validity flags and complete metadata.
-    包含有效性旗標與完整中繼資料。
 
     Attributes:
-        size_nm: Crystallite size in nanometers. 晶粒尺寸（奈米）
-        size_angstrom: Crystallite size in Ångströms. 晶粒尺寸（埃）
-        two_theta: Peak position (2θ) in degrees. 峰位（度）
-        hkl: Miller indices if assigned. Miller 指數
-        k_factor: Scherrer constant used. 使用的 Scherrer 常數
-        fwhm_observed: Observed FWHM in degrees. 觀測 FWHM（度）
-        fwhm_instrumental: Instrumental FWHM in degrees. 儀器 FWHM（度）
-        fwhm_sample: Sample broadening in degrees. 樣品寬化（度）
-        fwhm_sample_rad: Sample broadening in radians. 樣品寬化（弧度）
-        validity_flag: Calculation validity status. 計算有效性狀態
-        warning_message: Warning or error message. 警告或錯誤訊息
-        is_reliable: True if result is reliable. 結果是否可靠
+        size_nm: Crystallite size in nanometers
+        size_angstrom: Crystallite size in Ångströms
+        two_theta: Peak position (2θ) in degrees
+        hkl: Miller indices if assigned
+        k_factor: Scherrer constant used
+        fwhm_observed: Observed FWHM in degrees
+        fwhm_instrumental: Instrumental FWHM in degrees
+        fwhm_sample: Sample broadening in degrees
+        fwhm_sample_rad: Sample broadening in radians
+        validity_flag: Calculation validity status
+        warning_message: Warning or error message
+        is_reliable: True if result is reliable
 
     """
 
     size_nm: float
     size_angstrom: float
     two_theta: float
-    hkl: Optional[tuple[int, int, int]] = None
+    hkl: tuple[int, int, int] | None = None
     k_factor: float = 0.829  # L&W 1978 spherical standard
     fwhm_observed: float = 0.0
     fwhm_instrumental: float = 0.0
@@ -118,8 +109,6 @@ class ScherrerResult:
 
 class ScherrerCalculator:
     """Scherrer equation for crystallite size calculation.
-
-    使用 Scherrer 方程式計算晶粒尺寸。.
 
     D = K × λ / (β × cos θ)
 
@@ -146,7 +135,7 @@ class ScherrerCalculator:
         self,
         wavelength: float = CU_KA1,
         use_cubic_habit: bool = True,
-        caglioti_params: Optional[tuple[float, float, float]] = None,
+        caglioti_params: tuple[float, float, float] | None = None,
         deconvolution_method: str = "auto",
     ) -> None:
         self.wavelength = wavelength
@@ -158,22 +147,19 @@ class ScherrerCalculator:
         self,
         two_theta: float,
         fwhm_observed: float,
-        fwhm_instrumental: Optional[float] = None,
-        hkl: Optional[tuple[int, int, int]] = None,
-        correction_method: Optional[str] = None,
+        fwhm_instrumental: float | None = None,
+        hkl: tuple[int, int, int] | None = None,
+        correction_method: str | None = None,
         **kwargs,
     ) -> ScherrerResult:
         """Calculate crystallite size using Scherrer equation.
 
-        使用 Scherrer 方程式計算晶粒尺寸。.
-
         Args:
-            two_theta: Peak position in degrees (2θ). 峰位角度。
-            fwhm_observed: Observed FWHM in degrees. 觀測半高寬。
+            two_theta: Peak position in degrees (2θ).
+            fwhm_observed: Observed FWHM in degrees.
             fwhm_instrumental: Instrumental FWHM in degrees (optional).
-                儀器寬化，若 None 則使用 Caglioti。
+                If None, Caglioti parameters are used.
             hkl: Miller indices for K selection (auto-assigned if None).
-                Miller 指數，若 None 則自動指派。
             correction_method:
                 Broadening subtraction method:
                 - "quadratic": β = sqrt(β_obs² - β_inst²)
@@ -183,23 +169,18 @@ class ScherrerCalculator:
 
         Returns:
             ScherrerResult with calculated size and metadata.
-            包含計算尺寸與中繼資料的 ScherrerResult。
 
         Raises:
-            ValueError: If fwhm_observed <= 0. 當 fwhm_observed <= 0。
+            ValueError: If fwhm_observed <= 0.
 
         """
         warnings = []
 
-        # Input validation 輸入驗證
+        # Input validation
         if fwhm_observed <= 0:
-            raise ValueError(
-                f"fwhm_observed must be positive, got {fwhm_observed}"
-            )
+            raise ValueError(f"fwhm_observed must be positive, got {fwhm_observed}")
         if not (0 < two_theta < 180):
-            raise ValueError(
-                f"two_theta must be between 0° and 180°, got {two_theta}"
-            )
+            raise ValueError(f"two_theta must be between 0° and 180°, got {two_theta}")
 
         # Auto-assign hkl if not provided
         if hkl is None:
@@ -224,7 +205,7 @@ class ScherrerCalculator:
         # =========================================================================
         # Advanced Voigt Component Deconvolution (Accuracy: Highest)
         # =========================================================================
-        # Algorithm References / 演算法文獻:
+        # Algorithm References:
         #
         # 1. Deconvolution Principle (G & L separation):
         #    Keijser, Th.H., Mittemeijer, E.J. & Rozendaal, H.C.F. (1983).
@@ -391,32 +372,21 @@ class ScherrerCalculator:
         )
 
     def _get_voigt_components(self, fwhm: float, eta: float) -> tuple[float, float]:
-        """Convert Pseudo-Voigt FWHM and eta to Constituent Gaussian and Lorentzian FWHMs.
+        """Convert Pseudo-Voigt (FWHM, η) to Gaussian and Lorentzian FWHM components.
 
-        Using approximation connecting PV parameters to Voigt:
-        fL = eta * fwhm
-        fG = (1 - eta) * fwhm   <-- Simple approximation, usually sufficient for subtraction logic
-                                    For strict accuracy one would reverse Olivero-Longbothum,
-                                    but that requires numerical root finding.
+        Uses TCH inverse mapping (Thompson-Cox-Hastings 1987) for accurate
+        decomposition. The previous linear approximation (fL = η*FWHM,
+        fG = (1-η)*FWHM) introduced systematic errors up to ~15% at
+        intermediate η values.
 
-        Detailed mapping for Pseudo-Voigt (Thompson et al. 1987):
-        fG = fwhm * (1 - 0.74417*eta - 0.24781*eta^2 - 0.00810*eta^3)^(1/2) ? No, that's complex.
+        Reference:
+            Thompson, Cox & Hastings (1987), J. Appl. Cryst. 20, 79-83.
 
-        We use the standard simple mapping for PV->Voigt components often used in diffraction codes:
-        fL ≈ FWHM * η
-        fG ≈ FWHM * (1 - η)
-
-        This preserves the mixing ratio meaning directly.
         """
-        fL = fwhm * eta
-        # A slightly better approximation for fG from eta might be used, but (1-eta) is standard Linear PV definition.
-        fG = fwhm * (1.0 - eta)
-        return fG, fL
+        return tch_components_from_eta(fwhm, eta)
 
     def _calculate_caglioti(self, two_theta: float) -> float:
         """Calculate instrumental FWHM using Caglioti equation.
-
-        使用 Caglioti 方程式計算儀器 FWHM。.
 
         FWHM²_inst = U·tan²θ + V·tanθ + W
         """
@@ -433,11 +403,9 @@ class ScherrerCalculator:
     def batch_calculate(
         self,
         peaks: list[tuple[float, float]],
-        fwhm_instrumental: Optional[float] = None,
+        fwhm_instrumental: float | None = None,
     ) -> list[ScherrerResult]:
         """Calculate crystallite sizes for multiple peaks.
-
-        批次計算多個峰的晶粒尺寸。.
 
         Args:
             peaks: List of (two_theta, fwhm_observed) tuples.
@@ -456,8 +424,6 @@ class ScherrerCalculator:
         self, results: list[ScherrerResult], include_unreliable: bool = False
     ) -> tuple[float, float]:
         """Calculate average crystallite size from multiple peaks.
-
-        從多個峰計算平均晶粒尺寸。.
 
         Args:
             results: List of ScherrerResult objects.
@@ -494,17 +460,15 @@ def calculate_crystallite_size(
 ) -> float:
     """Quick crystallite size calculation.
 
-    快速計算晶粒尺寸。.
-
     Args:
-        two_theta: Peak position (degrees). 峰位（度）
-        fwhm: FWHM in degrees. 半高寬（度）
-        wavelength: X-ray wavelength (Å), default Cu Kα1. X 射線波長
-        k_factor: Scherrer constant, default 0.829 (L&W 1978). Scherrer 常數
-        fwhm_instrumental: Instrumental FWHM (optional). 儀器寬化
+        two_theta: Peak position (degrees).
+        fwhm: FWHM in degrees.
+        wavelength: X-ray wavelength (Å), default Cu Kα1.
+        k_factor: Scherrer constant, default 0.829 (L&W 1978).
+        fwhm_instrumental: Instrumental FWHM (optional).
 
     Returns:
-        Crystallite size in nanometers. 晶粒尺寸（奈米）
+        Crystallite size in nanometers.
 
     """
     calc = ScherrerCalculator(wavelength=wavelength, use_cubic_habit=False)
@@ -520,8 +484,6 @@ def calculate_scherrer(
     correction_method: str = "auto",
 ) -> ScherrerResult:
     """Convenience function for Scherrer calculation with full metadata.
-
-    完整中繼資料的 Scherrer 計算便利函式。.
 
     Example:
         >>> result = calculate_scherrer(43.32, 0.25, 0.08)

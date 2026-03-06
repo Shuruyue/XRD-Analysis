@@ -2,11 +2,10 @@
 ===========================
 
 Centralized configuration loading from YAML files.
-集中式 YAML 配置載入。
 """
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
     import yaml
@@ -23,19 +22,16 @@ from xrd_analysis.core.constants import (
 )
 
 
-def load_config(config_path: Optional[Path] = None) -> dict[str, Any]:
+def load_config(config_path: Path | None = None) -> dict[str, Any]:
     """Load configuration from YAML file.
 
-    從 YAML 檔案載入配置。.
-
     Falls back to defaults from constants module if no config file.
-    若無配置檔案則使用 constants 模組的預設值。
 
     Args:
-        config_path: Path to config file. 配置檔案路徑。
+        config_path: Path to config file.
 
     Returns:
-        Configuration dictionary. 配置字典。
+        Configuration dictionary.
 
     """
     default_config = {
@@ -68,10 +64,7 @@ def load_config(config_path: Optional[Path] = None) -> dict[str, Any]:
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep merge two dictionaries.
-
-    深度合併兩個字典。.
-    """
+    """Deep merge two dictionaries."""
     result = base.copy()
     for key, value in override.items():
         if key in result and isinstance(result[key], dict) and isinstance(value, dict):

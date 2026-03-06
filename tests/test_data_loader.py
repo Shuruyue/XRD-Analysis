@@ -1,6 +1,5 @@
 """Tests for data_loader module."""
 
-
 import numpy as np
 import pytest
 

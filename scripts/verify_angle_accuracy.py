@@ -48,7 +48,10 @@ def main() -> int:
     print(f"RMSE (deg): {result.angle_offset_rmse_deg:.4f}")
     print(f"Max |offset| (deg): {result.angle_offset_max_abs_deg:.4f}")
 
-    if result.angle_offset_max_abs_deg is not None and result.angle_offset_max_abs_deg > args.max_offset_threshold:
+    if (
+        result.angle_offset_max_abs_deg is not None
+        and result.angle_offset_max_abs_deg > args.max_offset_threshold
+    ):
         print(
             f"FAIL: max |offset| exceeds threshold ({args.max_offset_threshold:.3f} deg). "
             "Check zero-shift/specimen displacement."

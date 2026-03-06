@@ -1,15 +1,14 @@
-"""Caglioti Equation Module Caglioti方程模組.
+"""Caglioti Equation Module.
 ==========================================
 Implements instrumental broadening correction using Caglioti equation.
-使用 Caglioti 方程實現儀器展寬校正。
+Caglioti
 
-Reference 出處:
+Reference:
     Caglioti, G., Paoletti, A., & Ricci, F. P. (1958).
     Nucl. Instr., 3, 223-228.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -40,9 +39,9 @@ class CagliotiCorrection:
 
     def __init__(
         self,
-        U: Optional[float] = None,
-        V: Optional[float] = None,
-        W: Optional[float] = None,
+        U: float | None = None,
+        V: float | None = None,
+        W: float | None = None,
     ):
         """Initialize Caglioti correction.
 
@@ -98,8 +97,8 @@ class CagliotiCorrection:
 
         This is valid when β_obs > 1.2 × β_inst (error < 1%)
 
-        Note 注意:
-            "忽視儀器展寬會嚴重低估晶粒尺寸（特別是 D > 50 nm）"
+        Note:
+            "D > 50 nm）"
 
         Args:
             fwhm_observed: Observed FWHM (degrees)
@@ -136,16 +135,22 @@ class CagliotiCorrection:
         else:
             warning = ""
 
-        if method == "geometric":
-            # Geometric approximation for Pseudo-Voigt
-            fwhm_sample = fwhm_observed - (fwhm_inst**2 / fwhm_observed)
-        elif method == "quadratic":
-            # Quadratic subtraction (valid for pure Gaussian)
+        if method == "quadratic":
+            # Quadratic subtraction (exact for pure Gaussian convolution)
+            # β_sample = √(β_obs² − β_inst²)
+            # Reference: Keijser, Mittemeijer & Rozendaal (1983), Eq. 9
             fwhm_sq_diff = fwhm_observed**2 - fwhm_inst**2
-            if fwhm_sq_diff < 0:
+            if fwhm_sq_diff <= 0:
                 fwhm_sample = 0.001
             else:
                 fwhm_sample = np.sqrt(fwhm_sq_diff)
+        elif method == "geometric":
+            # Linear subtraction (exact for pure Lorentzian convolution)
+            # β_sample = β_obs − β_inst
+            # Reference: Scherrer (1918), original assumption
+            fwhm_sample = fwhm_observed - fwhm_inst
+            if fwhm_sample <= 0:
+                fwhm_sample = 0.001
         else:
             raise ValueError(f"Unknown method: {method}")
 

@@ -26,7 +26,7 @@ def fit_peak_with_diagnosis(
 ) -> dict:
     """Fit a single peak using Kα doublet model and return detailed diagnosis info.
 
-    使用 Kα 雙峰模型擬合單峰並返回詳細診斷資訊。.
+    Kα.
 
     Returns dict with:
         - success: bool
@@ -140,10 +140,6 @@ def fit_peak_with_diagnosis(
                 result["fwhm_err"] = getattr(fit_result, "fwhm_error", np.nan)
                 result["eta"] = fit_result.eta
                 result["eta_err"] = getattr(fit_result, "eta_error", np.nan)
-                result["r_squared"] = fit_result.r_squared
-                result["chi2_red"] = chi2_red
-                result["fitted_curve"] = fit_result.fitted_curve
-                result["method"] = "doublet-true-voigt"
                 result["r_squared"] = fit_result.r_squared
                 result["chi2_red"] = chi2_red
                 result["fitted_curve"] = fit_result.fitted_curve

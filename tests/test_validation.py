@@ -4,7 +4,6 @@ Tests goodness of fit and error analysis functions.
 Run with: pytest tests/test_validation.py -v
 """
 
-
 import numpy as np
 import pytest
 
@@ -65,9 +64,7 @@ class TestGoodnessOfFit:
         observed = np.array([100, 200, 300])
         calculated = np.array([105, 195, 305])
 
-        chi_sq, reduced_chi_sq = calculate_chi_squared(
-            observed, calculated, n_params=1
-        )
+        chi_sq, reduced_chi_sq = calculate_chi_squared(observed, calculated, n_params=1)
 
         assert chi_sq > 0
         assert reduced_chi_sq > 0
@@ -138,7 +135,7 @@ class TestErrorAnalyzer:
         result = analyzer.validate_broadening(0.08, 0.1)
 
         assert not result.is_valid
-        assert any(w.level.value == 'critical' for w in result.warnings)
+        assert any(w.level.value == "critical" for w in result.warnings)
 
     def test_validate_fit_quality_good(self):
         """Test fit quality validation for good values."""
@@ -165,7 +162,7 @@ class TestErrorAnalyzer:
             fwhm_observed=0.3,
             fwhm_instrumental=0.1,
             rwp=5.0,
-            r_squared=0.98
+            r_squared=0.98,
         )
 
         assert result.is_valid

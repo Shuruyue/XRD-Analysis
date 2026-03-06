@@ -7,7 +7,6 @@ and lattice constant validation functions.
 Run with: pytest tests/test_copper_crystal.py -v
 """
 
-
 import pytest
 
 # Add src to path
@@ -77,8 +76,8 @@ class TestJCPDSData:
 
     def test_jcpds_multiplicities_correct(self):
         """Verify multiplicity values are physically correct."""
-        assert CU_JCPDS_EXTENDED[(1, 1, 1)]["multiplicity"] == 8   # {111}
-        assert CU_JCPDS_EXTENDED[(2, 0, 0)]["multiplicity"] == 6   # {200}
+        assert CU_JCPDS_EXTENDED[(1, 1, 1)]["multiplicity"] == 8  # {111}
+        assert CU_JCPDS_EXTENDED[(2, 0, 0)]["multiplicity"] == 6  # {200}
         assert CU_JCPDS_EXTENDED[(2, 2, 0)]["multiplicity"] == 12  # {220}
 
 
@@ -189,7 +188,6 @@ class TestLatticeValidation:
         """Explanation should include self-annealing context."""
         explanation = explain_lattice_deviation(3.6180, sample_age_hours=0.5)
         assert "as-deposited" in explanation
-
 
 
 class TestElasticProperties:

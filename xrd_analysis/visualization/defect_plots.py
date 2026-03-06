@@ -4,7 +4,7 @@
 Visualization for stacking fault analysis.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,7 @@ from xrd_analysis.visualization.style import apply_xrd_analysis_style, save_figu
 
 def plot_stacking_fault_evolution(
     data: list[dict[str, Any]],
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     dpi: int = 600,
     show: bool = True,
 ) -> plt.Figure:

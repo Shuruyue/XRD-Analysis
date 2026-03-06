@@ -1,28 +1,24 @@
-"""Unit Conversion Module 單位轉換模組.
+"""Unit Conversion Module.
 ===================================
 Provides unit conversion utilities for XRD analysis.
-提供 XRD 分析所需的單位轉換工具。
 
-Standard definitions 標準定義:
+Standard definitions:
 - 1 Å (Ångström) = 10⁻¹⁰ m = 0.1 nm
 - 2θ = 2 × θ (Bragg angle)
 
 All functions are pure mathematical transformations with no physical constants.
-所有函數皆為純數學轉換，不含物理常數。
 """
-
-from typing import Union
 
 import numpy as np
 
 from xrd_analysis.core.constants import CU_KA1
 
 # =============================================================================
-# Angle Conversions 角度轉換
+# Angle Conversions
 # =============================================================================
 
 
-def deg_to_rad(degrees: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def deg_to_rad(degrees: float | np.ndarray) -> float | np.ndarray:
     """Convert degrees to radians.
 
     Args:
@@ -35,7 +31,7 @@ def deg_to_rad(degrees: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     return np.radians(degrees)
 
 
-def rad_to_deg(radians: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def rad_to_deg(radians: float | np.ndarray) -> float | np.ndarray:
     """Convert radians to degrees.
 
     Args:
@@ -48,7 +44,7 @@ def rad_to_deg(radians: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     return np.degrees(radians)
 
 
-def two_theta_to_theta(two_theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def two_theta_to_theta(two_theta: float | np.ndarray) -> float | np.ndarray:
     """Convert 2θ to θ (Bragg angle).
 
     Args:
@@ -61,7 +57,7 @@ def two_theta_to_theta(two_theta: Union[float, np.ndarray]) -> Union[float, np.n
     return two_theta / 2.0
 
 
-def theta_to_two_theta(theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def theta_to_two_theta(theta: float | np.ndarray) -> float | np.ndarray:
     """Convert θ (Bragg angle) to 2θ.
 
     Args:
@@ -79,7 +75,7 @@ def theta_to_two_theta(theta: Union[float, np.ndarray]) -> Union[float, np.ndarr
 # =============================================================================
 
 
-def angstrom_to_nm(angstrom: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def angstrom_to_nm(angstrom: float | np.ndarray) -> float | np.ndarray:
     """Convert Ångströms to nanometers.
 
     Args:
@@ -92,7 +88,7 @@ def angstrom_to_nm(angstrom: Union[float, np.ndarray]) -> Union[float, np.ndarra
     return angstrom / 10.0
 
 
-def nm_to_angstrom(nm: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def nm_to_angstrom(nm: float | np.ndarray) -> float | np.ndarray:
     """Convert nanometers to Ångströms.
 
     Args:
@@ -105,7 +101,7 @@ def nm_to_angstrom(nm: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     return nm * 10.0
 
 
-def nm_to_meter(nm: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def nm_to_meter(nm: float | np.ndarray) -> float | np.ndarray:
     """Convert nanometers to meters.
 
     Args:
@@ -118,7 +114,7 @@ def nm_to_meter(nm: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     return nm * 1e-9
 
 
-def meter_to_nm(meter: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def meter_to_nm(meter: float | np.ndarray) -> float | np.ndarray:
     """Convert meters to nanometers.
 
     Args:
@@ -136,7 +132,7 @@ def meter_to_nm(meter: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
 # =============================================================================
 
 
-def fwhm_deg_to_rad(fwhm_deg: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def fwhm_deg_to_rad(fwhm_deg: float | np.ndarray) -> float | np.ndarray:
     """Convert FWHM from degrees to radians.
 
     This is specifically for peak widths (FWHM/β).
@@ -151,7 +147,7 @@ def fwhm_deg_to_rad(fwhm_deg: Union[float, np.ndarray]) -> Union[float, np.ndarr
     return np.radians(fwhm_deg)
 
 
-def fwhm_rad_to_deg(fwhm_rad: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+def fwhm_rad_to_deg(fwhm_rad: float | np.ndarray) -> float | np.ndarray:
     """Convert FWHM from radians to degrees.
 
     Args:

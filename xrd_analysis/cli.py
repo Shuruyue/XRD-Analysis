@@ -3,13 +3,11 @@
 =============================
 
 Unified entry point for all analysis operations.
-所有分析操作的統一入口點。
 """
 
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional
 
 from xrd_analysis.__version__ import __version__
 
@@ -66,11 +64,8 @@ def _unit_interval(value: str) -> float:
     return parsed
 
 
-def main(argv: Optional[list[str]] = None) -> int:
-    """Main CLI entry point.
-
-    主 CLI 入口點。
-    """
+def main(argv: list[str] | None = None) -> int:
+    """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         prog="xrd-analysis",
         description="Advanced XRD Crystallite Size Analysis System",
@@ -86,44 +81,32 @@ Examples:
         "-V", "--version", action="version", version=f"%(prog)s {__version__}"
     )
 
-    subparsers = parser.add_subparsers(
-        dest="command", help="Available commands 可用指令"
-    )
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # analyze command
-    analyze_parser = subparsers.add_parser(
-        "analyze", help="Analyze XRD data 分析 XRD 資料"
-    )
-    analyze_parser.add_argument(
-        "input", type=Path, help="Input file or directory 輸入檔案或目錄"
-    )
+    analyze_parser = subparsers.add_parser("analyze", help="Analyze XRD data")
+    analyze_parser.add_argument("input", type=Path, help="Input file or directory")
     analyze_parser.add_argument(
         "-o",
         "--output",
         type=Path,
         default=Path("outputs"),
-        help="Output directory 輸出目錄",
+        help="Output directory",
     )
+    analyze_parser.add_argument("-c", "--config", type=Path, help="Config file path")
     analyze_parser.add_argument(
-        "-c", "--config", type=Path, help="Config file path 配置檔案路徑"
-    )
-    analyze_parser.add_argument(
-        "--batch", action="store_true", help="Batch processing mode 批次處理模式"
+        "--batch", action="store_true", help="Batch processing mode"
     )
 
     # calibrate command
-    cal_parser = subparsers.add_parser(
-        "calibrate", help="Calibrate instrument 校準儀器"
-    )
-    cal_parser.add_argument(
-        "standard", type=Path, help="Standard material data file 標準樣品資料檔案"
-    )
+    cal_parser = subparsers.add_parser("calibrate", help="Calibrate instrument")
+    cal_parser.add_argument("standard", type=Path, help="Standard material data file")
     cal_parser.add_argument(
         "-o",
         "--output",
         type=Path,
         default=Path("calibration.yaml"),
-        help="Output calibration file 輸出校正檔案",
+        help="Output calibration file",
     )
     cal_parser.add_argument(
         "--peak-window",
@@ -162,7 +145,7 @@ Examples:
     return 0
 
 
-def _build_analysis_config(config_path: Optional[Path]):
+def _build_analysis_config(config_path: Path | None):
     """Build AnalysisConfig from YAML config (best-effort mapping)."""
     from xrd_analysis.analysis.pipeline import AnalysisConfig
     from xrd_analysis.core.config_loader import load_config
@@ -291,13 +274,10 @@ def _collect_input_files(input_path: Path, batch: bool) -> list[Path]:
 
 
 def _run_analyze(args) -> int:
-    """Run analysis command.
-
-    執行分析指令。
-    """
+    """Run analysis command."""
     from xrd_analysis.analysis.pipeline import XRDAnalysisPipeline
 
-    print("Loading configuration... 載入配置...")
+    print("Loading configuration...")
     config = _build_analysis_config(args.config)
 
     print(f"Analyzing: {args.input}")
@@ -326,18 +306,20 @@ def _run_analyze(args) -> int:
         print("Error: No valid input files were processed.")
         return 1
 
-    print("Analysis complete. 分析完成。")
+    # Write output files (JSON + CSV summary)
+    output_files = _write_analysis_outputs(results, args.output)
+    for label, path in output_files.items():
+        print(f"  {label}: {path}")
+
+    print(f"Analysis complete ({len(results)} sample(s)).")
     return 0
 
 
 def _run_calibrate(args) -> int:
     """Run calibration command.
 
-    執行校正指令。
-
     Calibrates Caglioti parameters (U, V, W) using a standard material
     like LaB6 (NIST SRM 660c) or Si.
-    使用標準樣品（如 LaB6 或 Si）校準 Caglioti 參數。
     """
     from datetime import datetime
 
@@ -493,13 +475,12 @@ def _run_calibrate(args) -> int:
         yaml.safe_dump(calibration, f, default_flow_style=False, sort_keys=False)
 
     print(f"\nCalibration saved to: {args.output}")
-    print("Calibration complete. 校正完成。")
+    print("Calibration complete.")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-
 
 # =============================================================================
 # Output Serialization Helpers
@@ -555,9 +536,11 @@ def _serialize_pipeline_result(result) -> dict:
                 "fwhm_observed": _safe_float(s.fwhm_observed),
                 "fwhm_instrumental": _safe_float(s.fwhm_instrumental),
                 "fwhm_sample": _safe_float(s.fwhm_sample),
-                "validity_flag": s.validity_flag.value
-                if hasattr(s.validity_flag, "value")
-                else str(s.validity_flag),
+                "validity_flag": (
+                    s.validity_flag.value
+                    if hasattr(s.validity_flag, "value")
+                    else str(s.validity_flag)
+                ),
                 "is_reliable": s.is_reliable,
             }
         )
@@ -575,9 +558,7 @@ def _serialize_pipeline_result(result) -> dict:
     return payload
 
 
-def _write_analysis_outputs(
-    results: list, output_dir: Path
-) -> dict:
+def _write_analysis_outputs(results: list, output_dir: Path) -> dict:
     """Write analysis results to JSON and CSV summary files.
 
     Args:
@@ -625,4 +606,3 @@ def _write_analysis_outputs(
         "summary_json": summary_json,
         "summary_csv": summary_csv,
     }
-

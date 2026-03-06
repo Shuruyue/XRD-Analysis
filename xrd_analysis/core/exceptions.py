@@ -1,10 +1,9 @@
-"""Custom Exception Hierarchy 自訂例外體系.
+"""Custom Exception Hierarchy.
 ==========================================
 
 Centralised exception classes for XRD-Analysis.
-集中管理的 XRD-Analysis 例外類別。
 
-Usage 用法::
+Usage::
 
     from xrd_analysis.core.exceptions import FittingError
 
@@ -13,56 +12,32 @@ Usage 用法::
 
 
 class XRDAnalysisError(Exception):
-    """Base exception for all XRD-Analysis errors.
-
-    所有 XRD-Analysis 錯誤的基底例外類別。
-    """
+    """Base exception for all XRD-Analysis errors."""
 
 
 class DataLoadError(XRDAnalysisError):
-    """Failed to load or parse XRD data file.
-
-    無法載入或解析 XRD 資料檔案。
-    """
+    """Failed to load or parse XRD data file."""
 
 
 class CalibrationError(XRDAnalysisError):
-    """Instrument calibration error.
-
-    儀器校準錯誤（如 Caglioti 參數無效）。
-    """
+    """Instrument calibration error (e.g. invalid Caglioti parameters)."""
 
 
 class FittingError(XRDAnalysisError):
-    """Peak fitting convergence or numerical error.
-
-    峰擬合收斂或數值錯誤。
-    """
+    """Peak fitting convergence or numerical error."""
 
 
 class FittingConvergenceError(FittingError):
-    """Fitting failed to converge within maximum iterations.
-
-    擬合在最大迭代次數內未能收斂。
-    """
+    """Fitting failed to converge within maximum iterations."""
 
 
 class ValidationError(XRDAnalysisError):
-    """Data or result validation failed.
-
-    資料或結果驗證失敗。
-    """
+    """Data or result validation failed."""
 
 
 class ConfigurationError(XRDAnalysisError):
-    """Invalid configuration parameter.
-
-    無效的配置參數。
-    """
+    """Invalid configuration parameter."""
 
 
 class PreprocessingError(XRDAnalysisError):
-    """Error during data preprocessing.
-
-    資料預處理過程中的錯誤。
-    """
+    """Error during data preprocessing."""

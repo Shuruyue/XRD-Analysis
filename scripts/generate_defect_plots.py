@@ -77,7 +77,10 @@ def process_raw_files(
                     use_doublet=True,
                     doublet_max_iterations=doublet_max_iterations,
                 )
-                if fit_res.get("success", False) and fit_res.get("r_squared", 0.0) >= min_r2:
+                if (
+                    fit_res.get("success", False)
+                    and fit_res.get("r_squared", 0.0) >= min_r2
+                ):
                     fitted_peaks[hkl] = fit_res
 
             if not fitted_peaks:
@@ -114,9 +117,18 @@ def process_raw_files(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate stacking-fault evolution plots.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
-    parser.add_argument("--output-dir", type=Path, default=None, help="Plot output directory.")
+    parser = argparse.ArgumentParser(
+        description="Generate stacking-fault evolution plots."
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=None, help="Plot output directory."
+    )
     parser.add_argument(
         "--window",
         type=positive_float,

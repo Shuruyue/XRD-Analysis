@@ -6,7 +6,6 @@ Tests stacking fault analysis, lattice constant calculation, and self-annealing 
 Run with: pytest tests/test_defect_analysis.py -v
 """
 
-
 import pytest
 
 from xrd_analysis.methods.defect_analysis import (
@@ -41,7 +40,8 @@ class TestConstants:
         This replaces the previous empirical value of -20.0.
         """
         import math
-        expected_G = -45 * math.sqrt(3) / (math.pi ** 2)  # ≈ -7.8972
+
+        expected_G = -45 * math.sqrt(3) / (math.pi**2)  # ≈ -7.8972
         assert WARREN_G_COEFFICIENT == pytest.approx(expected_G, abs=0.001)
 
     def test_standard_lattice_constant(self):
@@ -169,7 +169,7 @@ class TestSelfAnnealingState:
         state, note = determine_annealing_state(0.5)
 
         assert state == AnnealingState.AS_DEPOSITED
-        assert "鍍態" in note or "7" in note
+        assert "As-deposited" in note or "7" in note
 
     def test_partial_annealing(self):
         """1-24 hours should be PARTIAL."""
@@ -188,7 +188,7 @@ class TestSelfAnnealingState:
         state, note = determine_annealing_state(200)  # > 7 days
 
         assert state == AnnealingState.STABLE
-        assert "穩定" in note
+        assert "Stable" in note or "stable" in note.lower()
 
     def test_unknown_when_none(self):
         """None sample_age should be UNKNOWN."""

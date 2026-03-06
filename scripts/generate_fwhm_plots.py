@@ -68,8 +68,15 @@ def generate_fwhm_plots(data_dir: Path, output_dir: Path) -> int:
 
 def main() -> int:
     root = get_project_root()
-    parser = argparse.ArgumentParser(description="Generate FWHM plots from batch scans.")
-    parser.add_argument("--data-dir", type=Path, default=None, help="Directory containing raw .txt scans.")
+    parser = argparse.ArgumentParser(
+        description="Generate FWHM plots from batch scans."
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help="Directory containing raw .txt scans.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,

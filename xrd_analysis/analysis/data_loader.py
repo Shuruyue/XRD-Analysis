@@ -1,8 +1,7 @@
-"""XRD Data Loader XRD 數據加載器.
+"""XRD Data Loader.
 ================================
 
 Load and parse XRD data files from various instrument formats.
-從各種儀器格式加載和解析 XRD 數據文件。
 """
 
 import re

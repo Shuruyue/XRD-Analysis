@@ -1,12 +1,10 @@
-"""Error Analysis Module 誤差分析模組.
+"""Error Analysis Module.
 ===================================
 Implements instrumental limits and reliability validation.
-實現儀器限制和可靠性驗證。
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 import numpy as np
 
@@ -196,7 +194,7 @@ class ErrorAnalyzer:
         return ValidationResult(is_valid=is_valid, warnings=warnings)
 
     def validate_fit_quality(
-        self, rwp: Optional[float] = None, r_squared: Optional[float] = None
+        self, rwp: float | None = None, r_squared: float | None = None
     ) -> ValidationResult:
         """Validate fit quality metrics.
 
@@ -239,11 +237,11 @@ class ErrorAnalyzer:
 
     def validate_all(
         self,
-        size_nm: Optional[float] = None,
-        fwhm_observed: Optional[float] = None,
-        fwhm_instrumental: Optional[float] = None,
-        rwp: Optional[float] = None,
-        r_squared: Optional[float] = None,
+        size_nm: float | None = None,
+        fwhm_observed: float | None = None,
+        fwhm_instrumental: float | None = None,
+        rwp: float | None = None,
+        r_squared: float | None = None,
     ) -> ValidationResult:
         """Perform all applicable validations.
 
