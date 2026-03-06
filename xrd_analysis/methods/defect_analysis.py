@@ -8,6 +8,7 @@ References:
 
 """
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -63,9 +64,6 @@ STANDARD_PEAK_SEPARATION = (
 #   - Negative sign indicates stacking faults reduce peak separation
 #   - (111) peak shifts to higher angles, (200) shifts to lower angles
 #
-# ═══════════════════════════════════════════════════════════════════════════
-import math
-
 _WARREN_G_THEORETICAL = -45 * math.sqrt(3) / (math.pi**2)  # = -7.897
 
 WARREN_G_COEFFICIENT = _WARREN_G_THEORETICAL  # Theoretical value

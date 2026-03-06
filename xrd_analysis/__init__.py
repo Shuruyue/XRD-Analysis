@@ -3,7 +3,6 @@
 
 A comprehensive toolkit for XRD data analysis including:
 - Scherrer crystallite size calculation
-- Williamson-Hall size/strain separation
 - Harris Texture Coefficient analysis
 - Pseudo-Voigt peak fitting
 
@@ -33,12 +32,6 @@ from xrd_analysis.methods.texture import (
     TextureAnalyzer,
     analyze_texture,
 )
-from xrd_analysis.methods.williamson_hall import (
-    WHQualityLevel,
-    WHResult,
-    WilliamsonHallAnalyzer,
-    analyze_williamson_hall,
-)
 
 __all__ = [
     # Version
@@ -50,11 +43,6 @@ __all__ = [
     "ValidityFlag",
     "calculate_scherrer",
     "calculate_crystallite_size",
-    # Williamson-Hall
-    "WilliamsonHallAnalyzer",
-    "WHResult",
-    "WHQualityLevel",
-    "analyze_williamson_hall",
     # Texture
     "TextureAnalyzer",
     "TextureAnalysisResult",

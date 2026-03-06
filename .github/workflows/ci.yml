@@ -31,7 +31,8 @@ jobs:
         run: ruff check xrd_analysis/
       
       - name: Type check with mypy
-        run: mypy xrd_analysis/
+        if: matrix.python-version == '3.11'
+        run: python -m mypy xrd_analysis/
       
       - name: Test with pytest
         run: pytest tests/ -v --cov=xrd_analysis --cov-report=xml

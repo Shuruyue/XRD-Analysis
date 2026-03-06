@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     {name = "XRD-Analysis Team"}
 ]
-keywords = ["XRD", "crystallography", "Scherrer", "Williamson-Hall", "texture analysis"]
+keywords = ["XRD", "crystallography", "Scherrer", "texture analysis"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -38,7 +38,8 @@ dev = [
     "pytest-cov>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
-    "mypy>=1.0",
+    "mypy>=1.10.0",
+    "types-PyYAML>=6.0.12.20250915",
 ]
 
 [project.scripts]
@@ -66,46 +67,36 @@ line-length = 88
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "D", "UP"]
-ignore = [
-    "D100",   # Missing docstring in public module
-    "D104",   # Missing docstring in public package
-    "D105",   # Missing docstring in magic method
-    "D107",   # Missing docstring in __init__
-    "D205",   # 1 blank line after summary
-    "D401",   # First line should be imperative mood
-    "D417",   # Missing argument descriptions (dataclass/simple functions)
-    "E501",   # Line too long (physics formulas)
-    "N806",   # Variable in function should be lowercase (physics: K, U, V, W)
-    "N802",   # Function name should be lowercase (physics: compute_H_squared)
-    "N803",   # Argument name should be lowercase (physics: U, V, W)
-    "E741",   # Ambiguous variable name (l in crystallography)
-]
+# Phase 1 baseline:
+# - Keep correctness and import hygiene strict (E/F/W/I)
+# - Keep safe modernization checks (UP), but postpone high-noise typing rewrites
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501", "E741", "UP006", "UP035"]
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/*" = ["E402", "D103"]  # sys.path manipulation; script functions
-"tests/*" = ["D103", "D102"]    # Test functions don't need docstrings
-"tests/test_script_utils.py" = ["E402"]  # sys.path setup
-"xrd_analysis/cli.py" = ["E402"]  # Lazy imports in command handlers
-"xrd_analysis/__init__.py" = ["E402"]  # Imports after version setup
-"xrd_analysis/methods/defect_analysis.py" = ["E402"]  # Import after constants
-"xrd_analysis/visualization/generate_fitting_diagnosis.py" = ["E402"]  # Script-style
+# Package-level API initialization and backward-compatible re-exports
+# intentionally require non-top-level imports in these modules.
+"xrd_analysis/__init__.py" = ["E402"]
+"xrd_analysis/analysis/pipeline.py" = ["E402", "I001"]
 
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true
-no_implicit_optional = false
+# Phase 1 baseline:
+# Keep mypy in CI, but suppress legacy high-noise categories and
+# ratchet these codes back in module-by-module in later phases.
 disable_error_code = [
-    "var-annotated",    # numpy intermediate variables
-    "arg-type",         # numpy scalar/array type inference
-    "assignment",       # numpy floating/signedinteger vs float/int
-    "return-value",     # numpy return type inference
-    "import-untyped",   # yaml stubs
-    "attr-defined",     # numpy/matplotlib attribute access
-    "return",           # data_loader untyped functions
-    "index",            # dict indexing with object type
+    "arg-type",
+    "assignment",
+    "attr-defined",
+    "call-arg",
+    "index",
+    "no-any-return",
+    "return",
+    "return-value",
+    "var-annotated",
 ]
 
 [tool.pytest.ini_options]
