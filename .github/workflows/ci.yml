@@ -12,32 +12,67 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-      
+
       - name: Lint with ruff
         run: ruff check xrd_analysis/
-      
+
       - name: Type check with mypy
         if: matrix.python-version == '3.11'
         run: python -m mypy xrd_analysis/
-      
+
       - name: Test with pytest
-        run: pytest tests/ -v --cov=xrd_analysis --cov-report=xml
-      
+        run: |
+          pytest tests/ -v \
+            --cov=xrd_analysis \
+            --cov-report=xml \
+            --cov-report=term-missing
+
+      - name: Write job summary
+        if: always()
+        run: |
+          python - <<'EOF'
+          import xml.etree.ElementTree as ET, os, pathlib
+
+          cov_file = pathlib.Path("coverage.xml")
+          if not cov_file.exists():
+              print("coverage.xml not found; skipping summary")
+              raise SystemExit(0)
+
+          tree = ET.parse(cov_file)
+          root = tree.getroot()
+          line_rate = float(root.get("line-rate", 0)) * 100
+          branch_rate = float(root.get("branch-rate", 0)) * 100
+          lines_covered = root.get("lines-covered", "?")
+          lines_valid = root.get("lines-valid", "?")
+
+          summary = f"""## Performance Metrics — Python ${{ matrix.python-version }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Line coverage | {line_rate:.1f}% ({lines_covered}/{lines_valid} lines) |
+          | Branch coverage | {branch_rate:.1f}% |
+          """
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(summary)
+          EOF
+
       - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml

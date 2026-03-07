@@ -192,29 +192,47 @@ class ParameterConfig:
             warnings.warn(f"Config file {filepath} not found, using defaults")
             return cls()
 
+        # Helper: handle YAML null (None) values with a typed fallback
+        def _float_or(value: object, default: float) -> float:
+            return float(value) if value is not None else default
+
         # Extract instrument parameters
         instrument_dict = yaml_config.get("instrument", {})
         caglioti = instrument_dict.get("caglioti", {})
 
         instrument = InstrumentConfig(
-            caglioti_u=caglioti.get("U", 0.0),
-            caglioti_v=caglioti.get("V", 0.0),
-            caglioti_w=caglioti.get("W", 0.003),
-            wavelength=yaml_config.get("physical", {}).get("wavelength_ka1", CU_KA1),
+            caglioti_u=_float_or(caglioti.get("U"), 0.0),
+            caglioti_v=_float_or(caglioti.get("V"), 0.0),
+            caglioti_w=_float_or(caglioti.get("W"), 0.003),
+            wavelength=_float_or(
+                yaml_config.get("physical_constants", {}).get("wavelength"),
+                CU_KA1,
+            ),
         )
 
         # Extract peak detection parameters
-        peak_fitting = yaml_config.get("peak_fitting", {})
+        fitting = yaml_config.get("fitting", {})
+        peak_detection_yaml = fitting.get("peak_detection", {})
         peak_detection = PeakDetectionConfig(
-            peak_window=peak_fitting.get("peak_window", 2.0),
-            min_intensity=peak_fitting.get("min_intensity", 100),
+            peak_window=_float_or(fitting.get("peak_window"), 2.0),
+            min_intensity=_float_or(peak_detection_yaml.get("min_height"), 100),
         )
 
         # Extract validation parameters
         validation_dict = yaml_config.get("validation", {})
+        size_limits = validation_dict.get("size_limits", {})
         validation = ValidationConfig(
-            max_rwp=validation_dict.get("max_rwp", 10.0),
-            min_r_squared=validation_dict.get("min_r_squared", 0.95),
+            max_rwp=_float_or(validation_dict.get("max_rwp"), 10.0),
+            min_r_squared=_float_or(validation_dict.get("min_r_squared"), 0.95),
+            min_broadening_ratio=_float_or(
+                validation_dict.get("min_broadening_ratio"), MIN_BROADENING_RATIO
+            ),
+            min_reliable_size=_float_or(
+                size_limits.get("min_reliable"), MIN_RELIABLE_SIZE
+            ),
+            max_reliable_size=_float_or(
+                size_limits.get("max_reliable"), MAX_RELIABLE_SIZE
+            ),
         )
 
         # Extract visualization parameters

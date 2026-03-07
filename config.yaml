@@ -81,10 +81,11 @@ validation:
   # Instrumental broadening correction threshold
   # When β_obs < threshold × β_inst, result is flagged as unreliable
   min_broadening_ratio: 1.2
-  
-  # Goodness of fit threshold (%)
-  max_rwp: 10.0
-  
+
+  # Goodness of fit thresholds
+  max_rwp: 10.0                # Maximum acceptable R_wp (%)
+  min_r_squared: 0.95          # Minimum acceptable R² for peak fits
+
   # Physical size limits (nm)
   size_limits:
     min_reliable: 2            # Below this: precision issues

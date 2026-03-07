@@ -22,7 +22,6 @@ from xrd_analysis.core.copper_crystal import CU_JCPDS_EXTENDED
 # =============================================================================
 
 # JCPDS standard data for Cu (PDF 04-0836)
-# JCPDS standard data for Cu (PDF 04-0836)
 # Derived dynamically from centralized SSOT data
 JCPDS_STANDARD_INTENSITY: dict[tuple[int, int, int], float] = {
     hkl: data["intensity"] for hkl, data in CU_JCPDS_EXTENDED.items()
