@@ -84,6 +84,7 @@ python scripts/calibrate_instrument.py data/standards/lab6_standard.txt -o outpu
 
 ## Project Structure
 
+ˋˋˋ
 xrd_analysis/
 ├── config.yaml              # Global configuration
 ├── pyproject.toml           # Python project configuration
@@ -91,7 +92,7 @@ xrd_analysis/
 │   ├── raw/                 # Raw XRD data
 │   ├── standards/           # NIST standard data
 │   └── processed/           # Preprocessed data
-├── xrd_analysis/                  # Core source code
+├── xrd_analysis/            # Core source code
 │   ├── core/                # Physical constants and crystallography
 │   ├── preprocessing/       # Data preprocessing modules
 │   ├── fitting/             # Peak fitting core
@@ -102,7 +103,7 @@ xrd_analysis/
 ├── tests/                   # Unit tests
 ├── references/              # Literature references (PDFs)
 └── outputs/                 # Output directory (Ignored by Git)
-
+ˋˋˋ
 ---
 
 ## Theoretical Background
