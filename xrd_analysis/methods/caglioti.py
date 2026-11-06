@@ -98,7 +98,8 @@ class CagliotiCorrection:
         This is valid when β_obs > 1.2 × β_inst (error < 1%)
 
         Note:
-            "D > 50 nm）"
+            Ignoring instrumental broadening severely underestimates the crystallite size
+            (especially for D > 50 nm).
 
         Args:
             fwhm_observed: Observed FWHM (degrees)

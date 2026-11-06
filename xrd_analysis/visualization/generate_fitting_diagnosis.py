@@ -6,7 +6,6 @@ Generate detailed fitting diagnostic plots for each XRD sample,
 showing peak positions, FWHM, fitting curves, and R² values.
 
 Uses Kα₁/Kα₂ doublet fitting for accurate peak characterization.
-使用 Kα₁/Kα₂ 雙峰擬合進行精確峰型表徵。
 
 Refactored to use xrd_analysis.visualization module.
 """
@@ -46,7 +45,6 @@ def generate_sample_fitting_plot(
     filepath: Path, output_dir: Path, config: AnalysisConfig = None
 ) -> List[Dict] | None:
     """Generate a single diagnostic plot for one XRD sample.
-    使用新視覺化模組生成單一樣品的診斷圖。
 
     Shows 3 subplots (one for each peak) with fitting details.
     """
