@@ -4,6 +4,10 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+**[Interactive page](https://shuruyue.github.io/XRD-Analysis/web/crystallite-size.html)**: set a true crystallite size, microstrain and instrument width, and see how well the Scherrer analysis of this package recovers the size. With illustrative laboratory instrument widths (0.06° to 0.10°), the common quadratic instrument correction underestimates a 100 nm crystallite size by 18 %, while the Voigt (TCH) correction used here recovers it exactly; microstrain, which the Scherrer equation counts as size, still lowers the result (30 nm with 0.15 % strain comes out as 21 nm).
+
+[![The interactive page: simulated Cu pattern and one peak close up](web/crystallite-size.png)](https://shuruyue.github.io/XRD-Analysis/web/crystallite-size.html)
+
 ## XRD Crystallite Size Analysis System
 
 Automated crystallite size analysis system using True Voigt + Kalpha doublet fitting and instrumental correction.
@@ -96,12 +100,13 @@ xrd_analysis/
 │   ├── core/                # Physical constants and crystallography
 │   ├── preprocessing/       # Data preprocessing modules
 │   ├── fitting/             # Peak fitting core
-│   ├── methods/             # Analysis methods (Scherrer, W-H, Texture)
+│   ├── methods/             # Analysis methods (Scherrer, Caglioti, texture, defects)
 │   ├── validation/          # Error analysis and validation
 │   └── visualization/       # Plotting
 ├── scripts/                 # Verification & Utility scripts
+├── web/                     # Interactive page (GitHub Pages)
 ├── tests/                   # Unit tests
-├── references/              # Literature references (PDFs)
+├── references/              # Literature PDFs (kept locally, not in the repository)
 └── outputs/                 # Output directory (Ignored by Git)
 ```
 ---
