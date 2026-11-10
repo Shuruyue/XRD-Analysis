@@ -6,6 +6,7 @@ Unified entry point for all analysis operations.
 """
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -64,16 +65,24 @@ def _unit_interval(value: str) -> float:
     return parsed
 
 
+def configure_console() -> None:
+    """Never fail on characters the console encoding lacks (θ, ², ° on cp950/cp1252 pipes)."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
+
+
 def main(argv: list[str] | None = None) -> int:
     """Main CLI entry point."""
+    configure_console()
     parser = argparse.ArgumentParser(
         prog="xrd-analysis",
-        description="Advanced XRD Crystallite Size Analysis System",
+        description="XRD crystallite size analysis (Scherrer with Caglioti instrument correction)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  xrd-analysis analyze data/sample.txt -o outputs/
-  xrd-analysis calibrate data/LaB6_standard.txt
+  xrd-analysis calibrate examples/lab6_synthetic.txt -o outputs/calibration.yaml
+  xrd-analysis analyze examples/cu_synthetic.txt --calibration outputs/calibration.yaml -o outputs/
         """,
     )
 
@@ -94,6 +103,12 @@ Examples:
         help="Output directory",
     )
     analyze_parser.add_argument("-c", "--config", type=Path, help="Config file path")
+    analyze_parser.add_argument(
+        "--calibration",
+        type=Path,
+        help="Calibration YAML written by 'xrd-analysis calibrate'; its U, V, W "
+        "override the Caglioti parameters of the config",
+    )
     analyze_parser.add_argument(
         "--batch", action="store_true", help="Batch processing mode"
     )
@@ -251,6 +266,24 @@ def _build_analysis_config(config_path: Path | None):
     return config
 
 
+def _apply_calibration(config, calibration_path: Path) -> None:
+    """Override the Caglioti U, V, W of config with those of a calibration YAML."""
+    import yaml
+
+    with open(calibration_path, encoding="utf-8") as f:
+        calibration = yaml.safe_load(f) or {}
+    caglioti = calibration.get("caglioti")
+    if not isinstance(caglioti, dict):  # also accept a config-style file
+        caglioti = (calibration.get("instrument") or {}).get("caglioti")
+    if not isinstance(caglioti, dict) or not all(
+        isinstance(caglioti.get(k), (int, float)) for k in ("U", "V", "W")
+    ):
+        raise ValueError(f"{calibration_path}: no numeric caglioti U, V, W found")
+    config.caglioti_u = float(caglioti["U"])
+    config.caglioti_v = float(caglioti["V"])
+    config.caglioti_w = float(caglioti["W"])
+
+
 def _collect_input_files(input_path: Path, batch: bool) -> list[Path]:
     """Resolve analyze input into concrete files."""
     input_str = str(input_path)
@@ -279,6 +312,13 @@ def _run_analyze(args) -> int:
 
     print("Loading configuration...")
     config = _build_analysis_config(args.config)
+    calibration = getattr(args, "calibration", None)
+    if calibration is not None:
+        _apply_calibration(config, calibration)
+        print(
+            f"Instrument calibration from {calibration}: U = {config.caglioti_u:.6g}, "
+            f"V = {config.caglioti_v:.6g}, W = {config.caglioti_w:.6g}"
+        )
 
     print(f"Analyzing: {args.input}")
     print(f"Output to: {args.output}")
@@ -301,6 +341,16 @@ def _run_analyze(args) -> int:
         print(f"  Processing: {f.name}")
         result = pipeline.process_file(str(f), str(args.output))
         results.append(result)
+        if not result.scherrer_results:
+            print(
+                f"  Warning: no crystallite size for {f.name} ({len(result.peaks)} Cu "
+                "peaks found; need at least 2). Check the file format: Bruker TXT with a "
+                "[Data] section, .xy or .csv."
+            )
+        elif result.average_size_nm is not None:
+            print(f"    mean crystallite size {result.average_size_nm:.1f} nm")
+        else:
+            print("    no peak gave a reliable size; see validity_flag in the JSON output")
 
     if not results:
         print("Error: No valid input files were processed.")
@@ -326,14 +376,14 @@ def _run_calibrate(args) -> int:
     import numpy as np
     import yaml
 
-    from xrd_analysis.analysis.pipeline import find_peak_in_range, load_bruker_txt
+    from xrd_analysis.analysis.pipeline import find_peak_in_range, load_pattern
     from xrd_analysis.methods.caglioti import CagliotiCorrection
 
     print(f"Calibrating with standard: {args.standard}")
 
     # Load standard data
     try:
-        two_theta, intensity = load_bruker_txt(str(args.standard))
+        two_theta, intensity = load_pattern(str(args.standard))
     except Exception as e:
         print(f"Error loading file: {e}")
         return 1
@@ -479,22 +529,24 @@ def _run_calibrate(args) -> int:
     return 0
 
 
-if __name__ == "__main__":
-    sys.exit(main())
-
 # =============================================================================
 # Output Serialization Helpers
 # =============================================================================
 
 
 def _safe_float(v, default=None):
-    """Convert a value to float safely, returning default on failure."""
+    """Convert a value to a finite float, returning default on failure.
+
+    NaN and infinity (e.g. the size of a peak without resolvable sample broadening)
+    become default, so the JSON output stays valid (null rather than NaN).
+    """
     if v is None:
         return default
     try:
-        return float(v)
+        f = float(v)
     except (TypeError, ValueError):
         return default
+    return f if math.isfinite(f) else default
 
 
 def _hkl_to_str(hkl: tuple) -> str:
@@ -606,3 +658,8 @@ def _write_analysis_outputs(results: list, output_dir: Path) -> dict:
         "summary_json": summary_json,
         "summary_csv": summary_csv,
     }
+
+
+# Kept at the end: `python -m xrd_analysis.cli` must see every helper defined above.
+if __name__ == "__main__":
+    sys.exit(main())

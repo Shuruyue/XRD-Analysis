@@ -97,3 +97,30 @@ def test_find_peaks_uses_configured_fitting_controls(monkeypatch):
     assert calls[0]["use_doublet_fitting"] is False
     assert calls[0]["doublet_max_iterations"] == 6789
     assert calls[0]["min_fit_r_squared"] == 0.93
+
+
+def test_double_correction_guard_disables_kalpha_strip_for_doublet_fits():
+    """Doublet fitting models Kα2, so Kα2 must not also be stripped beforehand."""
+    cfg = AnalysisConfig(use_doublet_fitting=True, enable_kalpha_strip=True)
+    pipeline = XRDAnalysisPipeline(cfg)
+    assert pipeline.preprocessing.enable_kalpha_strip is False
+    assert cfg.enable_kalpha_strip is True  # caller's config is not modified
+
+    cfg = AnalysisConfig(use_doublet_fitting=False, enable_kalpha_strip=True)
+    assert XRDAnalysisPipeline(cfg).preprocessing.enable_kalpha_strip is True
+
+
+def test_average_size_skips_unreliable_error_and_nan():
+    from xrd_analysis.analysis.pipeline import PeakData
+
+    pipeline = XRDAnalysisPipeline(
+        AnalysisConfig(caglioti_u=0.0, caglioti_v=0.0, caglioti_w=0.0064)  # β_inst = 0.08°
+    )
+    peaks = [
+        PeakData(hkl=(1, 1, 1), two_theta=43.316, intensity=1000.0, fwhm=0.25, eta=0.5),
+        # narrower than the instrument and Gaussian: nothing left after Voigt deconvolution
+        PeakData(hkl=(2, 0, 0), two_theta=50.448, intensity=500.0, fwhm=0.05, eta=0.0),
+    ]
+    results, avg = pipeline._run_scherrer_analysis(peaks)
+    assert np.isnan(results[1].size_nm)
+    assert avg == results[0].size_nm

@@ -56,3 +56,21 @@ def test_write_analysis_outputs_creates_summary_files(tmp_path: Path):
     assert outputs["summary_json"].exists()
     assert outputs["summary_csv"].exists()
     assert (tmp_path / "sample_a_analysis.json").exists()
+
+
+def test_unresolved_size_is_written_as_null(tmp_path: Path):
+    """NaN sizes become JSON null (valid JSON), not the non-standard NaN token."""
+    import json
+    import math
+
+    result = _build_min_result()
+    result.scherrer_results[0].size_nm = math.nan
+    result.scherrer_results[0].fwhm_sample = math.nan
+    result.average_size_nm = None
+    payload = _serialize_pipeline_result(result)
+    json.dumps(payload, allow_nan=False)  # raises if a NaN slipped through
+    assert payload["scherrer"]["results"][0]["size_nm"] is None
+    assert payload["scherrer"]["results"][0]["fwhm_sample"] is None
+
+    _write_analysis_outputs([result], tmp_path)
+    json.loads((tmp_path / "sample_a_analysis.json").read_text(encoding="utf-8"))

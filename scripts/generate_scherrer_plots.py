@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 import warnings
 from pathlib import Path
@@ -102,7 +103,7 @@ def generate_scherrer_plots(
                 eta_observed=fit_res.get("eta"),
                 eta_instrumental=0.0,
             )
-            if scherrer_res.size_nm <= 0:
+            if not math.isfinite(scherrer_res.size_nm) or scherrer_res.size_nm <= 0:
                 continue
 
             sample_data["peaks"].append(

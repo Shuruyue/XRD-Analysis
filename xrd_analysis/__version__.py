@@ -4,10 +4,17 @@
 Single source of truth for version number.
 """
 
-__version__ = "0.3.0"
-__version_info__ = (0, 3, 0)
+__version__ = "0.3.1"
+__version_info__ = (0, 3, 1)
 
 VERSION_HISTORY = """
+0.3.1 (2026-11-10)
+  - Unresolvable sample broadening (observed width <= instrument width) gives
+    fwhm_sample = NaN and size_nm = NaN instead of a 0.001 deg placeholder width
+  - Restored the double-correction guard (no Kα2 stripping when doublet fitting is on)
+  - analyze --calibration; .xy/.csv input in the CLI; synthetic examples/ for the Quick Start
+  - Fixed scripts/calibrate_instrument.py and `python -m xrd_analysis.cli`
+
 0.3.0 (2026-03-06)
   - Code language standardization
     * Translated all Chinese comments, docstrings, and diagnostics to English
@@ -30,7 +37,6 @@ VERSION_HISTORY = """
     * Enhanced user-adjustable parameter documentation
     * Improved encoding error handling with fallback strategies
   - Total code reduction: ~88 lines (-0.6%)
-  - Code readability improvement: +20%
 
 0.1.0 (2026-01-10)
   - Initial refactored release

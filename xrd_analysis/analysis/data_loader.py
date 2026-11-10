@@ -49,6 +49,19 @@ def load_bruker_txt(filepath: str) -> tuple[np.ndarray, np.ndarray]:
     return np.array(two_theta), np.array(intensity)
 
 
+def load_pattern(filepath: str) -> tuple[np.ndarray, np.ndarray]:
+    """Load a pattern by file extension.
+
+    .xy (two columns) and .csv (header row) go through the multi-format loader of
+    xrd_analysis.preprocessing; anything else is read as Bruker TXT with a [Data] section.
+    """
+    if Path(filepath).suffix.lower() in (".xy", ".csv"):
+        from xrd_analysis.preprocessing.data_loader import load_xrd_data
+
+        return load_xrd_data(filepath)
+    return load_bruker_txt(filepath)
+
+
 def parse_filename(filepath: str) -> dict[str, Any]:
     """Parse sample info from filename.
 

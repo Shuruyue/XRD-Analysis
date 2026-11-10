@@ -1,10 +1,10 @@
 # =============================================================================
 # XRD-Analysis Configuration File
-# Advanced XRD Crystallite Size Analysis System
+# XRD crystallite size analysis
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Physical Constants (Locked for Academic Consistency)
+# Physical Constants (fixed reference values)
 # References:
 #   Bearden, J.A. (1967). X-Ray Wavelengths. Rev. Mod. Phys. 39, 78-124.
 #   Langford, J.I. & Wilson, A.J.C. (1978). Scherrer after Sixty Years.

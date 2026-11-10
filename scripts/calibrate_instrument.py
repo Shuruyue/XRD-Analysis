@@ -19,7 +19,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from xrd_analysis.cli import _run_calibrate
+from xrd_analysis.cli import (
+    _positive_float,
+    _positive_int,
+    _run_calibrate,
+    configure_console,
+)
 
 
 def update_config(config_path: Path, calibration_path: Path) -> None:
@@ -50,6 +55,7 @@ def update_config(config_path: Path, calibration_path: Path) -> None:
 
 
 def main() -> int:
+    configure_console()
     parser = argparse.ArgumentParser(
         description="Calibrate instrument using standard XRD scan and optionally update config.yaml."
     )
@@ -67,13 +73,24 @@ def main() -> int:
         "--update-config",
         type=Path,
         default=None,
-        help="Config YAML to update in-place with calibrated U/V/W",
+        help="Config YAML to update in-place with calibrated U/V/W "
+        "(rewritten by PyYAML, so comments in the file are not kept)",
     )
+    # Same options and defaults as `xrd-analysis calibrate`
+    parser.add_argument("--peak-window", type=_positive_float, default=2.0)
+    parser.add_argument("--doublet-max-iterations", type=_positive_int, default=20000)
+    parser.add_argument("--max-position-error-deg", type=_positive_float, default=0.40)
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
-    run_args = SimpleNamespace(standard=args.standard, output=args.output)
+    run_args = SimpleNamespace(
+        standard=args.standard,
+        output=args.output,
+        peak_window=args.peak_window,
+        doublet_max_iterations=args.doublet_max_iterations,
+        max_position_error_deg=args.max_position_error_deg,
+    )
     code = _run_calibrate(run_args)
     if code != 0:
         return code

@@ -6,6 +6,8 @@ Tests K value lookup, unit conversion, validity flags, and calculation accuracy.
 Run with: pytest tests/test_scherrer.py -v
 """
 
+import math
+
 import numpy as np
 import pytest
 
@@ -13,8 +15,6 @@ from xrd_analysis.core.copper_crystal import (
     SCHERRER_CUBIC_K,
     get_k_for_hkl,
 )
-
-# Add src to path
 from xrd_analysis.methods.scherrer import (
     ScherrerCalculator,
     ValidityFlag,
@@ -200,3 +200,42 @@ class TestBatchCalculation:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestUnresolvedBroadening:
+    """Observed width not larger than the instrument width: NaN, never a placeholder."""
+
+    @pytest.mark.parametrize("fwhm_obs", [0.05, 0.08])  # below and equal to the instrument
+    def test_quadratic_gives_nan(self, fwhm_obs):
+        result = calculate_scherrer(
+            two_theta=43.32,
+            fwhm_observed=fwhm_obs,
+            fwhm_instrumental=0.08,
+            correction_method="quadratic",
+        )
+        assert math.isnan(result.fwhm_sample)
+        assert math.isnan(result.size_nm) and math.isnan(result.size_angstrom)
+        assert result.validity_flag == ValidityFlag.UNRELIABLE
+        assert not result.is_reliable
+
+    def test_voigt_gives_nan_when_no_component_exceeds_instrument(self):
+        calc = ScherrerCalculator()
+        result = calc.calculate(
+            43.32,
+            0.05,
+            fwhm_instrumental=0.08,
+            correction_method="voigt",
+            eta_observed=0.0,
+            eta_instrumental=0.0,
+        )
+        assert math.isnan(result.fwhm_sample)
+        assert math.isnan(result.size_nm)
+        assert result.validity_flag == ValidityFlag.UNRELIABLE
+
+    def test_average_skips_nan_even_with_unreliable_included(self):
+        calc = ScherrerCalculator()
+        good = calc.calculate(43.32, 0.25, fwhm_instrumental=0.08)
+        unresolved = calc.calculate(50.45, 0.05, fwhm_instrumental=0.08)
+        avg, std = calc.average_size([good, unresolved], include_unreliable=True)
+        assert avg == pytest.approx(good.size_nm)
+        assert std == 0.0

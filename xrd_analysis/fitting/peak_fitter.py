@@ -149,7 +149,7 @@ def fit_peak_with_diagnosis(
                 use_doublet = False
 
         if not use_doublet or not result["success"]:
-            # Rigorous True Voigt fitting with polynomial background
+            # True Voigt (Faddeeva) fit with a polynomial background
             from scipy.optimize import least_squares
 
             # Estimate polynomial background (quadratic)
