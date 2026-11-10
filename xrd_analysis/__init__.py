@@ -1,7 +1,7 @@
-"""XRD-Analysis: Advanced XRD Crystallite Size Analysis System.
-=====================================================
+"""XRD-Analysis: crystallite size analysis of XRD patterns.
+============================================================
 
-A comprehensive toolkit for XRD data analysis including:
+Tools for XRD data analysis:
 - Scherrer crystallite size calculation
 - Harris Texture Coefficient analysis
 - Pseudo-Voigt peak fitting
@@ -9,7 +9,7 @@ A comprehensive toolkit for XRD data analysis including:
 Example:
     >>> import xrd_analysis
     >>> print(xrd_analysis.__version__)
-    0.1.0
+    0.3.1
 
 """
 

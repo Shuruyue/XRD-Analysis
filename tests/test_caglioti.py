@@ -91,3 +91,22 @@ class TestConvenience:
     def test_calculate_instrumental_broadening(self):
         fwhm = calculate_instrumental_broadening(43.3, 0.0, 0.0, 0.003)
         assert 0.04 < fwhm < 0.1
+
+
+class TestUnresolvedCorrection:
+    """No sample broadening can be resolved: NaN instead of a 0.001° placeholder."""
+
+    @pytest.mark.parametrize("method", ["geometric", "quadratic"])
+    def test_narrower_than_instrument_gives_nan(self, method):
+        cag = CagliotiCorrection(U=0.0, V=0.0, W=0.003)  # β_inst ≈ 0.0548°
+        corrected, reliable, warning = cag.correct_broadening(0.04, 43.3, method=method)
+        assert np.isnan(corrected)
+        assert not reliable
+        assert "CRITICAL" in warning
+
+    def test_small_resolved_width_is_not_clamped(self):
+        """A real width below 0.001° is returned as computed, not raised to 0.001°."""
+        cag = CagliotiCorrection(U=0.0, V=0.0, W=0.003)
+        inst = cag.calculate_fwhm_inst(43.3)
+        corrected, _, _ = cag.correct_broadening(inst + 0.0005, 43.3, method="geometric")
+        assert corrected == pytest.approx(0.0005, rel=1e-6)

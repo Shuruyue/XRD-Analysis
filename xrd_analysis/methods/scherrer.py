@@ -1,8 +1,8 @@
 """Scherrer Crystallite Size Analysis.
 =======================================================
 
-Implements the Scherrer equation with dynamic K values, validity flags,
-and complete unit conversion safety.
+Implements the Scherrer equation with hkl-dependent K values, validity flags,
+and explicit degree/radian conversion.
 
 Reference:
     Langford, J. I., & Wilson, A. J. C. (1978).
@@ -127,7 +127,7 @@ class ScherrerCalculator:
         >>> calc = ScherrerCalculator()
         >>> result = calc.calculate(43.32, 0.25, fwhm_instrumental=0.08)
         >>> print(f"D = {result.size_nm:.1f} nm")
-        D = 49.0 nm
+        D = 34.3 nm
 
     """
 
@@ -203,7 +203,7 @@ class ScherrerCalculator:
         is_reliable = True
 
         # =========================================================================
-        # Advanced Voigt Component Deconvolution (Accuracy: Highest)
+        # Voigt component deconvolution
         # =========================================================================
         # Algorithm References:
         #
@@ -259,7 +259,10 @@ class ScherrerCalculator:
             if method == "quadratic":
                 fwhm_sq_diff = fwhm_observed**2 - fwhm_instrumental**2
                 if fwhm_sq_diff <= 0:
-                    fwhm_sample = 0.001  # Prevent divide-by-zero / NaN
+                    # No resolvable sample broadening: report NaN, not a placeholder width
+                    fwhm_sample = float("nan")
+                    validity_flag = ValidityFlag.UNRELIABLE
+                    is_reliable = False
                     if fwhm_observed < fwhm_instrumental:
                         warnings.append(
                             f"FWHM_obs ({fwhm_observed:.4f}°) < FWHM_inst ({fwhm_instrumental:.4f}°)"
@@ -289,14 +292,14 @@ class ScherrerCalculator:
                 fG_sq_diff = fG_obs**2 - fG_inst**2
 
                 # Validity Check (Physically impossible cases)
-                if fL_sample < 0 and fG_sq_diff < 0:
-                    # Both components smaller than instrument -> Completely unreliable
+                if fL_sample <= 0 and fG_sq_diff <= 0:
+                    # Neither component wider than the instrument -> no sample broadening
                     validity_flag = ValidityFlag.UNRELIABLE
                     warnings.append(
                         f"FWHM_obs ({fwhm_observed:.4f}°) < FWHM_inst ({fwhm_instrumental:.4f}°)"
                     )
                     is_reliable = False
-                    fwhm_sample = 0.001  # prevent nan
+                    fwhm_sample = float("nan")  # no resolvable sample broadening
                 else:
                     # Handle cases where one component might be slightly negative due to noise/fitting error
                     # We clamp negative correlations to 0 but warn if significant
@@ -327,21 +330,21 @@ class ScherrerCalculator:
             # No instrumental correction
             fwhm_sample = fwhm_observed
 
-        # CRITICAL: Convert to radians
+        # The Scherrer equation needs β and θ in radians
         theta_rad = np.radians(two_theta / 2)
         fwhm_sample_rad = np.radians(fwhm_sample)
 
-        # Scherrer equation: D = K × λ / (β × cos θ)
+        # Scherrer equation: D = K × λ / (β × cos θ); NaN when β is NaN or not positive
         cos_theta = np.cos(theta_rad)
         size_angstrom = (
-            (k_factor * self.wavelength) / (fwhm_sample_rad * cos_theta)
-            if fwhm_sample_rad > 0
-            else 0
+            float((k_factor * self.wavelength) / (fwhm_sample_rad * cos_theta))
+            if np.isfinite(fwhm_sample_rad) and fwhm_sample_rad > 0
+            else float("nan")
         )
         size_nm = size_angstrom / 10
 
         # Check size limits (only if valid calculation)
-        if not np.isnan(size_nm) and size_nm > 0:
+        if np.isfinite(size_nm) and size_nm > 0:
             if size_nm > MAX_RELIABLE_SIZE:
                 if validity_flag == ValidityFlag.VALID:
                     validity_flag = ValidityFlag.WARNING
@@ -351,8 +354,7 @@ class ScherrerCalculator:
                     validity_flag = ValidityFlag.WARNING
                 warnings.append(f"Size {size_nm:.1f} nm below precision limit")
         else:
-            if is_reliable:  # If marked reliable but size is nan/0
-                size_nm = 0
+            if is_reliable:  # marked reliable but no finite size came out
                 validity_flag = ValidityFlag.ERROR
                 warnings.append("Calculation resulted in invalid size")
 
@@ -430,7 +432,8 @@ class ScherrerCalculator:
             include_unreliable: Include UNRELIABLE results in average.
 
         Returns:
-            Tuple of (average_size_nm, std_dev_nm).
+            Tuple of (average_size_nm, std_dev_nm). Peaks without a finite size
+            (no resolvable sample broadening) are never included.
 
         """
         sizes = [
@@ -438,6 +441,7 @@ class ScherrerCalculator:
             for r in results
             if (r.is_reliable or include_unreliable)
             and r.validity_flag != ValidityFlag.ERROR
+            and np.isfinite(r.size_nm)
         ]
 
         if not sizes:
@@ -488,7 +492,7 @@ def calculate_scherrer(
     Example:
         >>> result = calculate_scherrer(43.32, 0.25, 0.08)
         >>> print(f"D = {result.size_nm:.1f} nm")
-        D = 49.0 nm
+        D = 34.3 nm
 
     """
     calc = ScherrerCalculator(use_cubic_habit=use_cubic_habit)

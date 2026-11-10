@@ -1,7 +1,6 @@
 """Caglioti Equation Module.
 ==========================================
 Implements instrumental broadening correction using Caglioti equation.
-Caglioti
 
 Reference:
     Caglioti, G., Paoletti, A., & Ricci, F. P. (1958).
@@ -90,16 +89,18 @@ class CagliotiCorrection:
     ) -> tuple[float, bool, str]:
         """Correct observed FWHM for instrumental broadening.
 
-        For Pseudo-Voigt profiles, simple subtraction is incorrect.
-        We use the geometric approximation:
+        Two textbook limits are available:
 
-        β_sample = β_obs - β²_inst / β_obs
+        - "geometric": β_sample = β_obs − β_inst (linear; exact when both profiles are Lorentzian)
+        - "quadratic": β_sample = √(β_obs² − β_inst²) (exact when both profiles are Gaussian)
 
-        This is valid when β_obs > 1.2 × β_inst (error < 1%)
+        Real profiles lie between the two; ScherrerCalculator's "voigt" method separates the
+        Gaussian and Lorentzian parts instead. Results with β_obs < 1.2 β_inst are flagged
+        unreliable, because the sample width is then a small difference of two similar numbers.
 
         Note:
-            Ignoring instrumental broadening severely underestimates the crystallite size
-            (especially for D > 50 nm).
+            Ignoring instrumental broadening underestimates the crystallite size, more so for
+            large crystallites (D > 50 nm).
 
         Args:
             fwhm_observed: Observed FWHM (degrees)
@@ -107,7 +108,9 @@ class CagliotiCorrection:
             method: Correction method ("geometric" or "quadratic")
 
         Returns:
-            Tuple of (corrected_fwhm, is_reliable, warning_message)
+            Tuple of (corrected_fwhm, is_reliable, warning_message). corrected_fwhm is NaN
+            when the observed width is not larger than the instrument width, since no sample
+            broadening can be resolved.
 
         """
         fwhm_inst = self.calculate_fwhm_inst(two_theta)
@@ -141,22 +144,21 @@ class CagliotiCorrection:
             # β_sample = √(β_obs² − β_inst²)
             # Reference: Keijser, Mittemeijer & Rozendaal (1983), Eq. 9
             fwhm_sq_diff = fwhm_observed**2 - fwhm_inst**2
-            if fwhm_sq_diff <= 0:
-                fwhm_sample = 0.001
-            else:
-                fwhm_sample = np.sqrt(fwhm_sq_diff)
+            fwhm_sample = float(np.sqrt(fwhm_sq_diff)) if fwhm_sq_diff > 0 else np.nan
         elif method == "geometric":
             # Linear subtraction (exact for pure Lorentzian convolution)
             # β_sample = β_obs − β_inst
             # Reference: Scherrer (1918), original assumption
             fwhm_sample = fwhm_observed - fwhm_inst
             if fwhm_sample <= 0:
-                fwhm_sample = 0.001
+                fwhm_sample = np.nan
         else:
             raise ValueError(f"Unknown method: {method}")
 
-        # Ensure positive result
-        fwhm_sample = max(fwhm_sample, 0.001)
+        # No resolvable sample broadening: NaN, never a small placeholder width that would
+        # turn into a large, finite crystallite size downstream.
+        if np.isnan(fwhm_sample):
+            is_reliable = False
 
         return fwhm_sample, is_reliable, warning
 

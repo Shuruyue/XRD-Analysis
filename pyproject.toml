@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "xrd-analysis"
 dynamic = ["version"]
-description = "Advanced XRD Crystallite Size Analysis System"
+description = "XRD crystallite size analysis: Kα doublet peak fitting, Caglioti instrument correction and the Scherrer equation"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"

@@ -102,6 +102,11 @@ def reference(c):
 
 
 def rel(a, b):
+    """Relative difference; NaN on both sides (JSON null from the page) counts as equal."""
+    a_nan = a is None or math.isnan(a)
+    b_nan = b is None or math.isnan(b)
+    if a_nan or b_nan:
+        return 0.0 if a_nan and b_nan else math.inf
     return abs(a - b) / max(abs(b), 1e-300) if b != 0 else abs(a)
 
 

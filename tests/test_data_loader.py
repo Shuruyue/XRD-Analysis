@@ -95,3 +95,32 @@ class TestParseFilename:
         """Should return 0 for missing time."""
         result = parse_filename("random_file.txt")
         assert result["time_hours"] == 0
+
+
+class TestLoadPattern:
+    """load_pattern picks the reader by file extension."""
+
+    def test_xy(self, tmp_path):
+        from xrd_analysis.analysis.data_loader import load_pattern
+
+        f = tmp_path / "scan.xy"
+        f.write_text("# 2theta counts\n40.00 10\n40.02 12\n40.04 15\n", encoding="utf-8")
+        two_theta, intensity = load_pattern(str(f))
+        np.testing.assert_allclose(two_theta, [40.0, 40.02, 40.04])
+        np.testing.assert_allclose(intensity, [10, 12, 15])
+
+    def test_csv(self, tmp_path):
+        from xrd_analysis.analysis.data_loader import load_pattern
+
+        f = tmp_path / "scan.csv"
+        f.write_text("two_theta,counts\n40.00,10\n40.02,12\n", encoding="utf-8")
+        two_theta, intensity = load_pattern(str(f))
+        np.testing.assert_allclose(two_theta, [40.0, 40.02])
+
+    def test_bruker_txt(self, tmp_path):
+        from xrd_analysis.analysis.data_loader import load_pattern
+
+        f = tmp_path / "scan.txt"
+        f.write_text("[Data]\nAngle,PSD\n40.00,10\n40.02,12\n", encoding="utf-8")
+        two_theta, _ = load_pattern(str(f))
+        assert len(two_theta) == 2

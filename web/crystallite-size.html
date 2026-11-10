@@ -500,20 +500,21 @@ function scherrer(tt, fObs, fInst, hkl, method, etaObs, cubic) {
     const ratio = fObs / fInst;
     if (ratio < RATIO_MIN) { flag = "unreliable"; reliable = false; warnings.push(`width ratio ${ratio.toFixed(2)} < ${RATIO_MIN}`); }
     if (method === "quadratic") {
-      const d = fObs * fObs - fInst * fInst; fSample = d <= 0 ? 0.001 : Math.sqrt(d);
+      const d = fObs * fObs - fInst * fInst;
+      if (d <= 0) { fSample = NaN; flag = "unreliable"; reliable = false; } else fSample = Math.sqrt(d);
     } else {
       const [gO, lO] = tchComponents(fObs, etaObs), [gI, lI] = tchComponents(fInst, 0);
       let fLs = lO - lI; const g2 = gO * gO - gI * gI;
-      if (fLs < 0 && g2 < 0) { flag = "unreliable"; reliable = false; fSample = 0.001; }
+      if (fLs <= 0 && g2 <= 0) { flag = "unreliable"; reliable = false; fSample = NaN; }
       else { const fGs = g2 < 0 ? 0 : Math.sqrt(g2); if (fLs < 0) fLs = 0; fSample = 0.5346 * fLs + Math.sqrt(0.2166 * fLs * fLs + fGs * fGs); }
     }
   } else fSample = fObs;
   const th = rad(tt / 2), b = rad(fSample);
-  let size = b > 0 ? K * CU_KA1 / (b * Math.cos(th)) / 10 : 0;
+  const size = isFinite(b) && b > 0 ? K * CU_KA1 / (b * Math.cos(th)) / 10 : NaN;
   if (isFinite(size) && size > 0) {
     if (size > SIZE_MAX_NM) { if (flag === "valid") flag = "warning"; warnings.push("above 200 nm"); }
     else if (size < SIZE_MIN_NM) { if (flag === "valid") flag = "warning"; warnings.push("below 2 nm"); }
-  } else if (reliable) { size = 0; flag = "error"; }
+  } else if (reliable) flag = "error";
   return { size, fSample, K, flag, warnings };
 }
 function pseudoVoigt(x, x0, f, eta) { const d = (x - x0) / (f / 2); return eta / (1 + d * d) + (1 - eta) * Math.exp(-Math.LN2 * d * d); }
@@ -575,7 +576,8 @@ for (const t of TABS) $("t-" + t).addEventListener("click", () => { S.tab = t; u
 const cPattern = new Chart($("cPattern"), { height: 300, m: { l: 46, r: 12, t: 10, b: 40 } });
 const cZoom = new Chart($("cZoom"), { height: 260, m: { l: 46, r: 12, t: 10, b: 40 } });
 const cSizes = new Chart($("cSizes"), { height: 280, m: { l: 52, r: 12, t: 10, b: 40 } });
-const f1 = (v) => v.toFixed(1), f3 = (v) => v.toFixed(3), f4 = (v) => v.toFixed(4);
+const fx = (n) => (v) => (isFinite(v) ? v.toFixed(n) : "—");  // NaN: no resolvable sample width
+const f1 = fx(1), f3 = fx(3), f4 = fx(4);
 function compute() {
   return PEAKS.map((p) => {
     const fw = forward(p.hkl, S.D, S.eps, kFor(p.hkl, S.shape === "cube"), S.U, S.V, S.W);

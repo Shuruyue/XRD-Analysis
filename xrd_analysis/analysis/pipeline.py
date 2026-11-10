@@ -80,9 +80,9 @@ class AnalysisConfig:
     #   Standard lab:     W ≈ 0.002-0.005  (FWHM ≈ 0.045-0.071°)  ← Default
     #   Aging equipment:  W ≈ 0.008-0.015  (FWHM ≈ 0.089-0.122°)
     #
-    # ⚠️ IMPORTANT: These are placeholder values for initial analysis.
-    # For publication-quality results, calibrate using LaB6 (NIST SRM 660c):
-    #   >>> xrd-analysis calibrate data/lab6_standard.txt
+    # These are placeholder values. Calibrate on a standard such as LaB6 (NIST SRM 660c)
+    # and pass the result with --calibration:
+    #   >>> xrd-analysis calibrate lab6_scan.txt -o outputs/calibration.yaml
     #
     # Reference: Caglioti et al. (1958). Nucl. Instrum. 3, 223-228.
     caglioti_u: float = 0.0  # Default: 0 (typically -0.005 to +0.005)
@@ -102,7 +102,11 @@ class AnalysisConfig:
 # Data Loader (delegated to data_loader module)
 # =============================================================================
 # Backward-compatible re-exports
-from xrd_analysis.analysis.data_loader import load_bruker_txt, parse_filename  # noqa: E402,F401
+from xrd_analysis.analysis.data_loader import (  # noqa: E402,F401
+    load_bruker_txt,
+    load_pattern,
+    parse_filename,
+)
 
 # =============================================================================
 # Peak Finding (delegated to peak_finder module)
@@ -173,6 +177,17 @@ class XRDAnalysisPipeline:
         """Initialize pipeline with configuration."""
         self.config = config or AnalysisConfig()
 
+        # Double-correction guard: the doublet fit models Kα2 explicitly, so Kα2 must not
+        # also be stripped beforehand (that would remove it twice). The caller's config is
+        # left unchanged; the effective setting is kept on the pipeline.
+        self.kalpha_strip_active = (
+            self.config.enable_kalpha_strip and not self.config.use_doublet_fitting
+        )
+        if self.config.enable_kalpha_strip and self.config.use_doublet_fitting:
+            logger.info(
+                "Kα2 pre-stripping disabled because doublet fitting models Kα2 explicitly"
+            )
+
         # Initialize analyzers
         self.scherrer = ScherrerCalculator(
             wavelength=self.config.wavelength,
@@ -195,13 +210,13 @@ class XRDAnalysisPipeline:
             background_degree=self.config.background_degree,
             enable_smoothing=self.config.enable_smoothing,
             enable_background=self.config.enable_background,
-            enable_kalpha_strip=self.config.enable_kalpha_strip,
+            enable_kalpha_strip=self.kalpha_strip_active,
         )
 
     def _load_and_validate_data(self, filepath: str):
         """Load XRD data and validate. Returns (two_theta, intensity, error_message)."""
         try:
-            two_theta, intensity = load_bruker_txt(filepath)
+            two_theta, intensity = load_pattern(filepath)
         except (OSError, ValueError, UnicodeDecodeError) as e:
             return None, None, f"Error loading file: {e}"
 
@@ -284,13 +299,14 @@ class XRDAnalysisPipeline:
             )
             scherrer_results.append(result)
 
-        # Calculate average
+        # Average over peaks with a usable size (VALID or WARNING, finite)
         valid_sizes = [
             r.size_nm
             for r in scherrer_results
-            if r.validity_flag != ValidityFlag.UNRELIABLE
+            if r.validity_flag not in (ValidityFlag.UNRELIABLE, ValidityFlag.ERROR)
+            and np.isfinite(r.size_nm)
         ]
-        avg_size = np.mean(valid_sizes) if valid_sizes else None
+        avg_size = float(np.mean(valid_sizes)) if valid_sizes else None
         return scherrer_results, avg_size
 
     def _run_defect_analysis(self, peaks):

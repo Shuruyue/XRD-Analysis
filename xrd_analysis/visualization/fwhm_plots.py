@@ -86,7 +86,7 @@ def plot_fwhm_evolution(
     x_label = x_labels.get(x_param, x_param)
 
     # Determine grouping variable (opposite of x_param)
-    # CRITICAL FIX: Collect ALL unique values from data first to avoid KeyError
+    # Collect all unique group values from the data first, so every group has a colour
     if x_param == "concentration":
         # Group by time when plotting against concentration
         group_key = "time"
